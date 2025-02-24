@@ -1,5 +1,5 @@
-<!-- Gestion des Utilisateurs avec Tailwind CSS -->
-<div style="margin-left: 20px;" class="container py-6">
+ <!-- Gestion des Utilisateurs avec Tailwind CSS -->
+ <div style="margin-left: 20px;" class="container py-6">
 
   <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">Gestion des Utilisateurs</h2>
 
@@ -8,7 +8,7 @@
     {{ errorMessage }}
   </div>
 
-  <!-- Contrôles de recherche et tri -->
+  <!-- ContrÃ´les de recherche et tri -->
   <div class="flex flex-wrap justify-start gap-4 mb-6">
     <!-- Barre de recherche -->
     <div class="w-full sm:w-1/4 md:w-1/5">
@@ -18,10 +18,10 @@
       </div>
     </div>
 
-    <!-- Filtrer par rôle -->
+    <!-- Filtrer par rÃ´le -->
     <div class="w-full sm:w-1/4 md:w-1/5">
       <select class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out" [(ngModel)]="selectedFilter" (change)="filterByType()">
-        <option value="">Tous les rôles</option>
+        <option value="">Tous les roles</option>
         <option value="ADMIN">Admin</option>
         <option value="RESPONSABLE">Responsable</option>
         <option value="TECHNICIEN">Technicien</option>
@@ -44,55 +44,76 @@
   </div>
 
   <!-- Panneau d'ajout de l'utilisateur -->
-  <div *ngIf="showPanel" class="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
-    <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
-      <div class="flex justify-between items-center mb-4">
-        <h4 class="text-xl font-semibold text-gray-800">Ajouter un Utilisateur</h4>
-        <button class="text-lg font-bold text-red-500" (click)="togglePanel()">X</button>
-      </div>
-      <form (ngSubmit)="addUser()">
-        <div class="mb-4">
-          <label for="nom" class="block text-gray-700 font-medium mb-1">Nom</label>
-          <input type="text" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="nom" [(ngModel)]="newUser.nom" name="nom" required>
-        </div>
-        <div class="mb-4">
-          <label for="username" class="block text-gray-700 font-medium mb-1">Nom d'utilisateur</label>
-          <input type="text" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="username" [(ngModel)]="newUser.username" name="username" required>
-        </div>
-        <div class="mb-4">
-          <label for="email" class="block text-gray-700 font-medium mb-1">Email</label>
-          <input type="email" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="email" [(ngModel)]="newUser.email" name="email" required>
-        </div>
-        <div class="mb-4">
-          <label for="gsm" class="block text-gray-700 font-medium mb-1">Numéro de téléphone:</label>
-          <div class="relative">
-            <input type="tel" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="gsm" [(ngModel)]="newUser.gsm" name="password" required>
-          </div>
-        </div>
-        <div class="mb-4">
-          <label for="password" class="block text-gray-700 font-medium mb-1">Mot de passe</label>
-          <div class="relative">
-            <input type="password" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="password" [(ngModel)]="newUser.password" name="password" required>
-            <button type="button" class="absolute right-2 top-1 text-lg" (click)="togglePasswordVisibility()">👁️</button>
-          </div>
-        </div>
-        <div class="mb-4">
-          <label for="role" class="block text-gray-700 font-medium mb-1">Rôle</label>
-          <select class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="role" [(ngModel)]="newUser.role" name="role" required>
-            <option value="ADMIN">Admin</option>
-            <option value="RESPONSABLE">Responsable</option>
-            <option value="TECHNICIEN">Technicien</option>
-            <option value="MAGASINIER">Magasinier</option>
-            <option value="LAMBDA">Lambda</option>
-          </select>
-        </div>
-        <div class="flex justify-between">
-          <button type="submit" class="py-2 px-4 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600">Ajouter</button>
-          <button type="button" class="py-2 px-4 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600" (click)="togglePanel()">Annuler</button>
-        </div>
-      </form>
+<!-- Panneau d'ajout de l'utilisateur -->
+<div *ngIf="showPanel" class="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
+  <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
+    <div class="flex justify-between items-center mb-4">
+      <h4 class="text-xl font-semibold text-gray-800">Ajouter un Utilisateur</h4>
+      <button class="text-lg font-bold text-red-500" (click)="togglePanel()">X</button>
     </div>
+    <form (ngSubmit)="addUser()" #userForm="ngForm">
+      <div class="mb-4">
+        <label for="nom" class="block text-gray-700 font-medium mb-1">Nom</label>
+        <input type="text" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="nom" [(ngModel)]="newUser.nom" name="nom" required>
+      </div>
+
+      <div class="mb-4">
+        <label for="username" class="block text-gray-700 font-medium mb-1">Nom d'utilisateur</label>
+        <input
+          type="text"
+          class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          id="username"
+          [(ngModel)]="newUser.username"
+          name="username"
+          required
+          (ngModelChange)="checkUsername()"
+        />
+        <div *ngIf="usernameTaken" class="text-red-500 text-sm mt-1">Le nom d'utilisateur est deja pris.</div>
+      </div>
+      <div class="mb-4">
+        <label for="civilite" class="block text-gray-700 font-medium mb-1">Civilite</label>
+        <select class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="civilite" [(ngModel)]="newUser.civilite" name="civilite" required>
+            <option value="M">M</option>
+            <option value="Mme">Mme</option>
+            <option value="Mlle">Mlle</option>
+            <option value="Dr">Dr</option>
+            <option value="Pr">Pr</option>
+        </select>
+    </div>
+      <div class="mb-4">
+        <label for="email" class="block text-gray-700 font-medium mb-1">Email</label>
+        <input type="email" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="email" [(ngModel)]="newUser.email" name="email" required>
+        <div *ngIf="emailError" class="text-red-500 text-sm mt-1">L'email doit se terminer par huir.ma.</div>
+      </div>
+      <div class="mb-4">
+        <label for="gsm" class="block text-gray-700 font-medium mb-1">Numero de telephone:</label>
+        <input type="tel" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="gsm" [(ngModel)]="newUser.gsm" name="gsm" required>
+        <div *ngIf="gsmError" class="text-red-500 text-sm mt-1">Le numero de telephone doit contenir exactement 10 chiffres.</div>
+      </div>
+      <div class="mb-4 relative">
+        <label for="password" class="block text-gray-700 font-medium mb-1">Mot de passe</label>
+        <input type="password" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="password" [(ngModel)]="newUser.password" name="password" required>
+        <button type="button" class="absolute right-2 top-1 text-lg" (click)="togglePasswordVisibility()">👁️</button>
+        <div *ngIf="passwordError" class="text-red-500 text-sm mt-1">Le mot de passe doit contenir des caractères spéciaux.</div>
+      </div>      
+      <div class="mb-4">
+        <label for="role" class="block text-gray-700 font-medium mb-1">Role</label>
+        <select class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="role" [(ngModel)]="newUser.role" name="role" required>
+          <option value="ADMIN">Admin</option>
+          <option value="RESPONSABLE">Responsable</option>
+          <option value="TECHNICIEN">Technicien</option>
+          <option value="MAGASINIER">Magasinier</option>
+          <option value="LAMBDA">Lambda</option>
+        </select>
+      </div>
+      <div class="flex justify-between">
+        <button type="submit" class="py-2 px-4 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600">Ajouter</button>
+        <button type="button" class="py-2 px-4 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600" (click)="togglePanel()">Annuler</button>
+      </div>
+    </form>
   </div>
+</div>
+
 
   <!-- Liste des utilisateurs -->
   <div style="padding: 40px" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-2 gap-y-4">
@@ -104,7 +125,7 @@
         <button class="text-white bg-red-500 rounded-lg px-9 py-2 shadow-md hover:bg-red-600 transition duration-300 ease-in-out" (click)="deleteUser(user.id)">
           <i class="fas fa-trash-alt"></i>
         </button>
-        <a [routerLink]="['/details', user.id]" class="text-white bg-blue-500 rounded-lg px-4 py-2 shadow-md hover:bg-blue-600 transition duration-300 ease-in-out">🔍 Détails</a>
+        <a [routerLink]="['/details', user.id]" class="text-white bg-blue-500 rounded-lg px-4 py-2 shadow-md hover:bg-blue-600 transition duration-300 ease-in-out">Details</a>
       </div>
     </div>
   </div>
@@ -115,3 +136,4 @@
 
 <!-- Ajout du support Tailwind CSS -->
 <script src="https://cdn.jsdelivr.net/npm/tailwindcss@3.0.0/dist/tailwind.min.css"></script>
+ 

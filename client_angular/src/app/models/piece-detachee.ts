@@ -1,6 +1,17 @@
+import { Equipement } from "./equipement";
+import { Intervention } from "./intervention";
+
 export interface PieceDetachee {
   id: number;
-  name: string;
+  nom: string;
+  description: string;
   reference: string;
-  quantity: number;
+  fournisseur: string;
+  coutUnitaire: number;
+  quantiteStock: number;
+  quantiteMinimale: number;
+  dateAchat: string;  // Format YYYY-MM-DD
+  datePeremption: string;
+  historiqueUtilisation: string;
+ 
 }

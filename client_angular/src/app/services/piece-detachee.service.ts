@@ -15,14 +15,22 @@ export class PieceDetacheeService {
     return this.http.get<PieceDetachee[]>(this.apiUrl);
   }
 
+
   getPieceDetacheeById(id: number): Observable<PieceDetachee> {
     return this.http.get<PieceDetachee>(`${this.apiUrl}/${id}`);
   }
-
-  createPieceDetachee(pieceDetachee: PieceDetachee): Observable<PieceDetachee> {
-    return this.http.post<PieceDetachee>(this.apiUrl, pieceDetachee);
+  addPiece(pieceDetachee: PieceDetachee): Observable<PieceDetachee> {
+    return this.http.post<PieceDetachee>(`${this.apiUrl}/add`, pieceDetachee);
   }
 
+  createPieceDetachee(pieceDetachee: PieceDetachee): Observable<PieceDetachee> {
+    return this.http.post<PieceDetachee>(`${this.apiUrl}/add`, pieceDetachee);
+  }
+
+  updatePieceDetachee(id: number, pieceDetachee: PieceDetachee): Observable<PieceDetachee> {
+      return this.http.put<PieceDetachee>(`${this.apiUrl}/${id}`, pieceDetachee);
+    }
+  
   deletePieceDetachee(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }

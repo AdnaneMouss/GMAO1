@@ -33,6 +33,11 @@ export class ListeUtilisateursComponent implements OnInit {
   passwordVisible = false;
   showPanel = false; // Controls the panel visibility
   searchVisible: boolean = false;
+  usernameTaken = false;
+  gsmError = false;
+  emailError = false;
+  passwordError = false;
+  existingUsernames: string[] = []; 
 
   constructor(private userService: UserService) { }
 
@@ -52,21 +57,55 @@ export class ListeUtilisateursComponent implements OnInit {
       }
     });
   }
+  checkUsername(): void {
+    this.usernameTaken = this.existingUsernames.includes(this.newUser.username);
+  }
+  
 
   addUser(): void {
+    // Vérification si le nom d'utilisateur est déjà pris
+    this.usernameTaken = this.existingUsernames.includes(this.newUser.username);
+    
+  
+    // Validation du numéro de téléphone (doit contenir exactement 10 chiffres)
+    this.gsmError = !/^\d{10}$/.test(this.newUser.gsm);
+  
+    // Validation de l'email (doit se terminer par @huir.ma)
+    this.emailError = !this.newUser.email.endsWith('@huir.ma');
+  
+    // Validation du mot de passe (doit contenir des caractères spéciaux)
+    this.passwordError = !/[!@#$%^&*(),.?":{}|<>]/.test(this.newUser.password);
+  
+    // Si une des validations échoue, ne pas soumettre le formulaire
+    if (this.usernameTaken || this.gsmError || this.emailError || this.passwordError) {
+      return; // Sortir de la fonction et ne pas envoyer de requête
+    }
+  
+    // Si les validations passent, procéder à la création de l'utilisateur
     this.userService.createUser(this.newUser).subscribe({
       next: () => {
         alert('User added successfully.');
-        this.fetchUsers();
-        this.resetNewUser();
-        this.showPanel = false; // Hide the panel after adding the user
+        this.fetchUsers();  // Rafraîchir la liste des utilisateurs
+        this.resetNewUser(); // Réinitialiser le formulaire
+        this.showPanel = false; // Masquer le panneau après l'ajout
       },
       error: (err) => {
-        console.error('Error adding user:', err);
-        this.errorMessage = 'Failed to add user';
+        console.error('Error adding user:', err); // Affiche toute l'erreur dans la console
+        if (err && err.error) {
+          // Si err.error existe, vous pouvez l'inspecter en profondeur
+          console.error('Error details:', err.error);
+          this.errorMessage = `Failed to add user: ${err.error.message || 'No specific error message'}`
+        } else if (err && err.status) {
+          // Si un code de statut HTTP est renvoyé
+          this.errorMessage = `Failed to add user: HTTP status ${err.status} - ${err.statusText}`;
+        } else {
+          this.errorMessage = 'Failed to add user: Unknown error';
+        }
       }
+      
     });
   }
+  
 
   resetNewUser(): void {
     this.newUser = {
@@ -137,3 +176,4 @@ export class ListeUtilisateursComponent implements OnInit {
     );
   }
 }
+ 
