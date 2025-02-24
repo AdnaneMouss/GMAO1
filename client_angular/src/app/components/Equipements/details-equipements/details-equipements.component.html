@@ -1,0 +1,401 @@
+<!-- Détails de l'Utilisateur avec Bootstrap -->
+<body>
+<div class="container py-10 position-relative">
+  <!-- Bouton Retour à la liste en haut à gauche -->
+  <button class="btn btn-light position-absolute top-0 start-0 m-3" routerLink="/equipements/liste">
+    <i class="bi bi-arrow-left"></i>
+  </button>
+
+
+  <!-- Message d'erreur -->
+  <div *ngIf="errorMessage" class="alert alert-danger text-center">{{ errorMessage }}</div>
+
+  <div *ngIf="equipement">
+    <div class="row">
+      <!-- Left card with avatar and name -->
+      <div class="col-md-3 mb-6">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden h-full flex flex-col">
+          <!-- Image and Info Container with Background Color -->
+          <div class="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-t-lg">
+            <img *ngIf="!isEditMode" [src]="equipement.image || 'https://via.placeholder.com/150'"
+                 class="rounded-full mb-4" width="180" height="180" alt="equipement Avatar">
+            <input *ngIf="isEditMode" type="text" class="form-control mb-2" [(ngModel)]="equipement.image" placeholder="URL de l'image">
+
+
+            <!-- Nom (View Mode) -->
+            <h3 *ngIf="!isEditMode" class="text-2xl font-semibold text-gray-800 mb-2">{{ equipement.nom }}</h3>
+
+            <!-- Nom (Edit Mode) -->
+            <input *ngIf="isEditMode" type="text" class="form-control mb-2" [(ngModel)]="equipement.nom" placeholder="Nom de l'équipement">
+
+            <!-- Date Achat (View Mode) -->
+            <p *ngIf="!isEditMode" class="text-gray-600 text-sm">Acheté le: <span class="font-medium">{{ equipement.dateAchat }}</span></p>
+
+            <!-- Date Achat (Edit Mode) -->
+            <input *ngIf="isEditMode" type="text" class="form-control" [(ngModel)]="equipement.dateAchat" placeholder="Date d'achat">
+             </div>
+
+          <!-- Additional info or actions area -->
+          <div class="px-6 py-4 flex-grow">
+            <!-- Conditional Status Message -->
+            <div *ngIf="equipement.statut === 'En service'" class="text-green-500 text-sm">
+              L'équipement est **en service** et disponible pour utilisation.
+            </div>
+            <div *ngIf="equipement.statut === 'En panne'" class="text-red-500 text-sm">
+              L'équipement est **en panne** et nécessite des réparations immédiates.
+            </div>
+            <div *ngIf="equipement.statut === 'Hors service'" class="text-gray-500 text-sm">
+              L'équipement est **hors service** et ne peut pas être utilisé pour le moment.
+            </div>
+            <div *ngIf="equipement.statut === 'En maintenance'" class="text-yellow-500 text-sm">
+              L'équipement est actuellement **en maintenance**.
+            </div>
+
+            <div class="flex justify-between items-center mt-4">
+              <span class="text-gray-500 text-sm">Statut: <span class="font-semibold text-green-500">{{ equipement.statut }}</span></span>
+            </div>
+          </div>
+
+          <!-- Modifier Button at the Bottom -->
+          <div class="px-6 py-3 mt-auto">
+            <button class="w-full text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none rounded-lg py-2 text-sm font-medium flex items-center justify-center" (click)="enableEditMode()">
+              <i class="bi bi-pencil-fill mr-2"></i> Modifier
+            </button>
+          </div>
+
+          <!-- Edit Mode Buttons -->
+          <div class="text-center py-4" *ngIf="isEditMode">
+            <button class="px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium" (click)="saveChanges()">Sauvegarder</button>
+            <button class="px-4 py-2 text-white bg-gray-400 hover:bg-gray-500 rounded-lg text-sm font-medium ml-2" (click)="isEditMode = false">Annuler</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side cards with equipement information or edit form -->
+      <div class="col-md-8">
+        <div class="row">
+          <!-- Description -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-card-text fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Description</h5>
+                  <p class="card-text">{{ equipement.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4" *ngIf="isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-card-text fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Description</h5>
+                  <input type="text" class="form-control" [(ngModel)]="equipement.description" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Numéro de Série -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-upc-scan fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Numéro de Série</h5>
+                  <p class="card-text">{{ equipement.numeroSerie }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4" *ngIf="isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-upc-scan fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Numéro de série:</h5>
+                  <input type="text" class="form-control" [(ngModel)]="equipement.numeroSerie" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modèle -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-box-seam fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Modèle</h5>
+                  <p class="card-text">{{ equipement.modele }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4" *ngIf="isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-box-seam fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Modèle</h5>
+                  <input type="text" class="form-control" [(ngModel)]="equipement.modele" required>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Marque -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-award fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Marque</h5>
+                  <p class="card-text">{{ equipement.marque }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4" *ngIf="isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-award fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Marque</h5>
+                  <input type="text" class="form-control" [(ngModel)]="equipement.marque" required>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Localisation -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-geo-alt-fill fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Localisation</h5>
+                  <p class="card-text">{{ equipement.localisation }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-geo-alt-fill fs-3 me-3" style="color: #006400;"></i>
+                  <div>
+                    <h5 class="card-title">Localisation</h5>
+                    <input type="text" class="form-control" [(ngModel)]="equipement.localisation" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <!-- Statut -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0" *ngIf="!isEditMode">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-check-circle-fill fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Statut</h5>
+                  <p class="card-text">{{ equipement.statut }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4" *ngIf="isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-check-circle-fill fs-3 me-3" style="color: #006400;"></i>
+                <div class="w-100">
+                  <h5 class="card-title">Statut</h5>
+                  <select class="form-select" [(ngModel)]="equipement.statut" required>
+                    <option value="En service">En service</option>
+                    <option value="En panne">En panne</option>
+                    <option value="Hors service">Hors service</option>
+                    <option value="En maintenance">En maintenance</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Date de mise en service -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-calendar-check fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Date de mise en service</h5>
+                  <p class="card-text">{{ equipement.dateMiseEnService | date }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+                <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                  <div class="card shadow-sm border-0">
+                    <div class="card-body d-flex align-items-center bg-white">
+                      <i class="bi bi-calendar-check fs-3 me-3" style="color: #006400;"></i>
+                      <div>
+                        <h5 class="card-title">Date de mise en service</h5>
+                        <input type="text" class="form-control" [(ngModel)]="equipement.dateMiseEnService" required>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+          <!-- Garantie -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-shield-check fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Garantie</h5>
+                  <p class="card-text">{{ equipement.garantie }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+                  <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                    <div class="card shadow-sm border-0">
+                      <div class="card-body d-flex align-items-center bg-white">
+                        <i class="bi bi-shield-check fs-3 me-3" style="color: #006400;"></i>
+                        <div>
+                          <h5 class="card-title">Garantie</h5>
+                          <input type="text" class="form-control" [(ngModel)]="equipement.garantie" required>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+          <!-- Date dernière maintenance -->
+          <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0" *ngIf="!isEditMode">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-tools fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Dernière maintenance</h5>
+                  <p class="card-text">{{ equipement.dateDerniereMaintenance | date }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+                    <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                      <div class="card shadow-sm border-0">
+                        <div class="card-body d-flex align-items-center bg-white">
+                          <i class="bi bi-tools fs-3 me-3" style="color: #006400;"></i>
+                          <div>
+                            <h5 class="card-title">Dernière maintenance</h5>
+                            <input type="text" class="form-control" [(ngModel)]="equipement.dateDerniereMaintenance" required>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+          <!-- Fréquence maintenance -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-repeat fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Fréquence maintenance</h5>
+                  <p class="card-text">{{ equipement.frequenceMaintenance }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+                      <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                        <div class="card shadow-sm border-0">
+                          <div class="card-body d-flex align-items-center bg-white">
+                            <i class="bi bi-repeat fs-3 me-3" style="color: #006400;"></i>
+                            <div>
+                              <h5 class="card-title">Fréquence maintenance</h5>
+                              <input type="text" class="form-control" [(ngModel)]="equipement.frequenceMaintenance" required>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+          <!-- Historique pannes -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-exclamation-triangle-fill fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Service</h5>
+                  <p class="card-text">{{ equipement.service.nom }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4" *ngIf="isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-exclamation-triangle-fill fs-3 me-3" style="color: #006400;"></i>
+                <div class="flex-grow-1">
+                  <h5 class="card-title">Service</h5>
+                  <select class="form-control" [(ngModel)]="equipement.service.id" required>
+                    <option *ngFor="let service of services" [value]="service.id">
+                      {{ service.nom }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Coût d'achat -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-currency-dollar fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">Coût d'achat</h5>
+                  <p class="card-text">{{ equipement.coutAchat }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+                          <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                            <div class="card shadow-sm border-0">
+                              <div class="card-body d-flex align-items-center bg-white">
+                                <i class="bi bi-currency-dollar fs-3 me-3" style="color: #006400;"></i>
+                                <div>
+                                  <h5 class="card-title">Coût d'achat</h5>
+                                  <input type="text" class="form-control" [(ngModel)]="equipement.coutAchat" required>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+        </div>
+      </div>
+
+      <!-- Attributs dynamiques -->
+      <div class="col-md-12 mb-4">
+        <div class="card shadow-sm border-0">
+          <div class="card-body">
+            <h5 class="card-title">Autres Attributs</h5>
+            <ul class="list-group">
+              <li *ngFor="let attr of equipement.attributs" class="list-group-item d-flex justify-content-between align-items-center">
+                <span class="fw-bold">{{ attr.nom }}</span>
+                <span>{{ attr.valeur }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+  </div>
+
+  <!-- Loading state -->
+  <ng-template #loading>
+    <div class="text-center">
+      <p>Chargement des détails...</p>
+    </div>
+  </ng-template>
+</div>
+</body>
+
+<!-- Ajout du support Bootstrap et des icônes Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">

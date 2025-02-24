@@ -1,0 +1,114 @@
+<div class="container mx-auto p-8">
+
+
+
+  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6">
+    <!-- Conteneur principal en flex -->
+    <h2 class="text-2xl font-bold text-gray-700">Équipements du service <b>{{serviceName}}</b></h2>
+    <p class="text-gray-500 text-sm">Recherchez, triez et gérez facilement tous les équipements hospitaliers.</p>
+
+    <div class="flex flex-wrap md:flex-nowrap justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+      <!-- Conteneur des champs de recherche -->
+      <div class="flex space-x-4 w-full md:w-auto">
+        <div class="relative">
+          <input type="text" class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+                 [(ngModel)]="searchTermNom" (input)="filterEquipementsByName()" placeholder="Rechercher par Nom">
+          <span class="absolute right-3 top-2 text-gray-500"><i class="fa fa-search"></i></span>
+        </div>
+
+        <div class="relative w-full md:w-96"> <!-- Change width here -->
+          <input type="text" class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+                 [(ngModel)]="searchTermNum" (input)="filterEquipementsByNumSerie()" placeholder="Rechercher par Numéro de série">
+          <span class="absolute right-3 top-2 text-gray-500"><i class="fa fa-search"></i></span>
+        </div>
+      </div>
+      <div class="relative w-full md:w-auto">
+        <select [(ngModel)]="selectedStatus" (change)="filterEquipementsByStatus()"
+                class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out">
+          <option value="">Trier par Statut</option>
+          <option value="En service">En service</option>
+          <option value="En panne">En panne</option>
+          <option value="En maintenance">En maintenance</option>
+          <option value="Hors service">Hors service</option>
+        </select>
+      </div>
+
+    </div>
+
+    <br>
+    <div class="overflow-x-auto">
+      <table class="min-w-full border-collapse rounded-lg overflow-hidden">
+        <thead class="bg-green-700 text-white uppercase text-sm font-semibold">
+        <tr>
+          <th class="px-6 py-4 text-left">Image</th>
+          <th class="px-6 py-4 text-left cursor-pointer" (click)="sortTable('nom')">
+            <div class="flex items-center">
+              <span>Nom</span>
+              <i class="ml-2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                  <path *ngIf="sortColumn === 'nom' && sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  <path *ngIf="sortColumn === 'nom' && sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                  <path *ngIf="sortColumn !== 'nom'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                </svg>
+              </i>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left cursor-pointer" (click)="sortTable('numeroSerie')">
+            <div class="flex items-center">
+              <span>Numéro de Série</span>
+              <i class="ml-2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                  <path *ngIf="sortColumn === 'numeroSerie' && sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  <path *ngIf="sortColumn === 'numeroSerie' && sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                  <path *ngIf="sortColumn !== 'numeroSerie'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                </svg>
+              </i>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left cursor-pointer" (click)="sortTable('statut')">
+            <div class="flex items-center">
+              <span>Statut</span>
+              <i class="ml-2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                  <path *ngIf="sortColumn === 'statut' && sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  <path *ngIf="sortColumn === 'statut' && sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                  <path *ngIf="sortColumn !== 'statut'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                </svg>
+              </i>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left">Détails</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let equipement of filteredEquipements" class="border-b hover:bg-gray-50 transition duration-200">
+          <td class="px-6 py-4 text-gray-700">
+            <img [src]="equipement.image || 'https://via.placeholder.com/50'" alt="equipement image" class="w-12 h-12 rounded-full">
+          </td>
+          <td class="px-6 py-4 text-gray-700">{{ equipement.nom }}</td>
+          <td class="px-6 py-4 text-gray-500">{{ equipement.numeroSerie }}</td>
+          <td class="px-6 py-4">
+            <span
+              class="px-3 py-1 text-xs font-semibold rounded-full"
+              [ngClass]="{
+                'bg-green-100 text-green-700': equipement.statut === 'En service',
+                'bg-orange-100 text-orange-700': equipement.statut === 'En panne',
+                'bg-yellow-100 text-yellow-700': equipement.statut === 'En maintenance',
+                'bg-red-100 text-red-700': equipement.statut === 'Hors service'
+              }"
+            >
+              {{ equipement.statut }}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-center">
+            <button [routerLink]="['/details-equipements', equipement.id]" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition duration-200">
+              Détails
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
