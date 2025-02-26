@@ -14,8 +14,6 @@ export class PieceDetacheeService {
   getAllPiecesDetachees(): Observable<PieceDetachee[]> {
     return this.http.get<PieceDetachee[]>(this.apiUrl);
   }
-
-
   getPieceDetacheeById(id: number): Observable<PieceDetachee> {
     return this.http.get<PieceDetachee>(`${this.apiUrl}/${id}`);
   }

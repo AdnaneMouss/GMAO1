@@ -44,6 +44,8 @@ import {DetailsEquipementsComponent} from "./components/Equipements/details-equi
 import {
   EquipementsParCategorieComponent
 } from "./components/Equipements/equipements-par-categorie/equipements-par-categorie.component";
+import { DetailsStockComponent } from './components/Stocks/details-stock/details-stock.component';
+import { DetailsMaintenanceComponent } from './components/Maintenances/details-maintenance/details-maintenance.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -52,6 +54,7 @@ const routes: Routes = [
   { path: 'utilisateurs/liste', component: ListeUtilisateursComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'utilisateurs/permissions', component: GestionAccesUtilisateursComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'details/:id', component: DetailsUtilisateursComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
+  { path: 'detail/:id', component: DetailsStockComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'equipements/liste', component: ListeEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
   { path: 'details-equipements/:id', component: DetailsEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'equipements/categories', component: CategoriesEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
@@ -59,6 +62,7 @@ const routes: Routes = [
   { path: 'stock/liste', component: ListePiecesDetacheesComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN','RESPONSABLE','MAGASINIER'] } },
   { path: 'stock/alertes', component: SuiviStocksAlertesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE'] } },
   { path: 'stock/demande', component: DemandePieceDetacheeComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','TECHNICIEN'] } },
+  { path:'details-maintenance/:id',component:DetailsMaintenanceComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'maintenances/correctives', component: MaintenancesCorrectivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/preventives', component: MaintenancesPreventivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/historique', component: HistoriqueMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },

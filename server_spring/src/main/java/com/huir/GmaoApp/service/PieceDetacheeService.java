@@ -2,6 +2,7 @@ package com.huir.GmaoApp.service;
 
 import com.huir.GmaoApp.dto.PieceDetacheeDTO;
 import com.huir.GmaoApp.model.PieceDetachee;
+import com.huir.GmaoApp.model.User;
 import com.huir.GmaoApp.repository.PieceDetacheeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,12 +44,14 @@ public class PieceDetacheeService {
     
     
     //trouver piece par id
-    public Optional<PieceDetachee> FindPieceById(Long id )
-    {
-    	return pieceDetacheeRepository.findById(id);
+    public PieceDetachee getPieceDetacheeById(Long id) {
+        return pieceDetacheeRepository.findById(id) // ✅ Utilisation correcte de l'instance
+            .orElseThrow(() -> new RuntimeException("Pièce détachée non trouvée avec ID " + id));
     }
-    //mis a jour
     
+
+    
+    //mis a jour
     @Transactional
     public PieceDetacheeDTO updatePiece(Long id, PieceDetacheeDTO pieceDetacheeDTO) {
     	Optional<PieceDetachee> optionalPieceDetachee  =  pieceDetacheeRepository.findById(id);
@@ -84,8 +87,9 @@ public class PieceDetacheeService {
     public void deletePieceDetachee(Long id) {
         pieceDetacheeRepository.deleteById(id);
     }
-    public Optional<PieceDetachee> findPieceDetacheeById(Long id) {
-        return pieceDetacheeRepository.findById(id);
+    public PieceDetachee findPieceDetacheeById(Long id) {
+        return pieceDetacheeRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Pièce détachée non trouvée avec ID " + id));
     }
 
    

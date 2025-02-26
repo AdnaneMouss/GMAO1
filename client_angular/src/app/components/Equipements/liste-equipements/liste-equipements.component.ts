@@ -47,7 +47,6 @@ import {Service} from "../../../models/service";
   styleUrl: './liste-equipements.component.css'
 })
 export class ListeEquipementsComponent implements OnInit {
-
   // Add this variable to control form visibility
   showForm: boolean = false;
   equipement: Equipement = this.initEquipement();
@@ -104,6 +103,8 @@ export class ListeEquipementsComponent implements OnInit {
     }
   }
 
+
+  
 
   addAttribut() {
     if (!this.equipement.attributs) {

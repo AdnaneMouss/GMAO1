@@ -40,6 +40,8 @@ import {ListeEquipementsComponent} from "./components/Equipements/liste-equipeme
 import { DetailsEquipementsComponent } from './components/Equipements/details-equipements/details-equipements.component';
 import { DetailsEquipementsPiecesComponent } from './components/Equipements/details-equipements-pieces/details-equipements-pieces.component';
 import { EquipementsParCategorieComponent } from './components/Equipements/equipements-par-categorie/equipements-par-categorie.component';
+import { DetailsStockComponent } from './components/Stocks/details-stock/details-stock.component';
+import { DetailsMaintenanceComponent } from './components/Maintenances/details-maintenance/details-maintenance.component';
 
 @NgModule({
   declarations: [
@@ -63,6 +65,8 @@ import { EquipementsParCategorieComponent } from './components/Equipements/equip
     DetailsEquipementsComponent,
     DetailsEquipementsPiecesComponent,
     EquipementsParCategorieComponent,
+    DetailsStockComponent,
+    DetailsMaintenanceComponent,
   ],
   imports: [
     AppRoutingModule,

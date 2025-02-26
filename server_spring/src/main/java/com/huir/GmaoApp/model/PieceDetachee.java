@@ -1,12 +1,18 @@
 package com.huir.GmaoApp.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
-@Table(name = "pieces_detachees")
+@Table(name = "pieces_detachees", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "reference"),
+        
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,7 +29,8 @@ public class PieceDetachee {
     @Column(length = 500)
     private String description;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
+    @NotBlank(message = "La reference ne peut pas être vide")
     private String reference;  // Référence spécifique de la pièce
 
     @Column(nullable = false)
@@ -46,12 +53,13 @@ public class PieceDetachee {
 
     @ManyToMany(mappedBy = "piecesDetachees", fetch = FetchType.EAGER)
     private List<Equipement> equipements;
-
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "intervention_pieces",
             joinColumns = @JoinColumn(name = "piece_id"),
             inverseJoinColumns = @JoinColumn(name = "intervention_id")
     )
+    
     private List<Intervention> interventions;
 }
