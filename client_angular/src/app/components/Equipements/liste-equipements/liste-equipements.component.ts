@@ -5,7 +5,7 @@ import { saveAs } from 'file-saver';
 import { EquipementService } from '../../../services/equipement.service';
 import { FormsModule } from '@angular/forms';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
-import { Equipement, Attribut } from '../../../models/equipement';
+import { Equipement } from '../../../models/equipement';
 import { PanelModule } from "primeng/panel";
 import { CardModule } from "primeng/card";
 import { DropdownModule } from "primeng/dropdown";
@@ -60,7 +60,7 @@ export class ListeEquipementsComponent implements OnInit {
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
   selectedStatus: string = '';
-
+  errorMessage: string = '';
   // Dropdown options for 'statut'
   statuts = [
     { label: 'En service', value: 'En service' },
@@ -120,11 +120,7 @@ export class ListeEquipementsComponent implements OnInit {
 
 
   saveEquipement(): void {
-    if (this.equipement.attributs.some(attr => !attr.nom || !attr.valeur)) {
-      this.message = 'Erreur : Tous les attributs doivent être remplis.';
-      return;
-    }
-
+    this.errorMessage = '';
     this.equipementService.createEquipement(this.equipement).subscribe(
       (savedEquipement: Equipement) => {
         this.getEquipements();
@@ -132,10 +128,9 @@ export class ListeEquipementsComponent implements OnInit {
         this.message = 'Équipement ajouté avec succès!';
       },
       (error) => {
-        if (error.error && error.error.message.includes('Numéro de série déjà utilisé')) {
-          this.message = 'Erreur : Ce numéro de série est déjà utilisé par un autre équipement.';
-        } else {
-          this.message = 'Erreur lors de l\'ajout de l\'équipement. Veuillez réessayer.';
+        console.error('Erreur lors de l\'ajout du service:', error);
+        if (error.status != 200) {
+          this.errorMessage = 'Cet équipement exsite déjà. Veuillez en choisir un autre.';
         }
       }
     );
@@ -170,7 +165,8 @@ export class ListeEquipementsComponent implements OnInit {
       historiquePannes: '',
       coutAchat: '',
       attributs: [],
-      service: { id: 0, nom: '', description: '', image: '' } // Ensure this matches your Service model structure
+      serviceNom: '',
+      serviceDetails: {id:0,nom:'',description:'', image:''},
     };
   }
 

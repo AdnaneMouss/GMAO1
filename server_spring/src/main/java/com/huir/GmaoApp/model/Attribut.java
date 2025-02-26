@@ -21,7 +21,6 @@ public class Attribut {
     }
 
     public Attribut() {
-
     }
 
     // Getters and setters

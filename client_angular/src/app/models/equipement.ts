@@ -1,9 +1,5 @@
 import {Service} from "./service";
-
-export interface Attribut {
-  nom: string;
-  valeur: string;
-}
+import {Attribut} from "./attribut"
 
 export interface Equipement {
   id?: number;
@@ -23,7 +19,7 @@ export interface Equipement {
   historiquePannes: string;
   coutAchat: string;
   attributs: Attribut[];
-  service: Service,
-
+  serviceNom: string;
+  serviceDetails?: Service;
 }
 

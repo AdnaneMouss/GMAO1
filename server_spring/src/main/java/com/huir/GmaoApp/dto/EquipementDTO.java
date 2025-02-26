@@ -1,11 +1,13 @@
 package com.huir.GmaoApp.dto;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.huir.GmaoApp.model.Equipement;
 import lombok.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,6 +37,7 @@ public class EquipementDTO {
 
     // Add the list of dynamic attributes
     private List<AttributDTO> attributs;
+    private List<ServiceDTO> serviceDetails;
 
     // Constructor to map Equipement to EquipementDTO
     public EquipementDTO(Equipement equipement) {
@@ -54,8 +57,16 @@ public class EquipementDTO {
         this.historiquePannes = equipement.getHistoriquePannes();
         this.coutAchat = equipement.getCoutAchat();
         this.image = equipement.getImage();
+
+        // Map the service and responsible maintenance details
         this.serviceNom = equipement.getService() != null ? equipement.getService().getNom() : null;
-        this.responsableMaintenanceNom = equipement.getResponsableMaintenance() != null ? equipement.getResponsableMaintenance().getNom() : null;
+        for (Object o : this.serviceDetails != null
+                ? serviceDetails.stream()
+                .map(ServiceDTO::getNom)  // Map each ServiceDTO to its 'Nom'
+                .collect(Collectors.toList()) // Collect the names into a list
+                : Collections.emptyList()) {
+            
+        }
 
         // Map the list of ordresTravail and piecesDetachees
         this.ordresTravail = equipement.getOrdresTravail() != null ? equipement.getOrdresTravail().stream()

@@ -1,50 +1,3 @@
- <!-- Gestion des Utilisateurs avec Tailwind CSS -->
- <div style="margin-left: 20px;" class="container py-6">
-
-  <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">Gestion des Utilisateurs</h2>
-
-  <!-- Message d'erreur -->
-  <div *ngIf="errorMessage" class="alert alert-danger text-center mb-6 bg-red-100 text-red-700 p-4 rounded-xl shadow-md">
-    {{ errorMessage }}
-  </div>
-
-  <!-- ContrÃ´les de recherche et tri -->
-  <div class="flex flex-wrap justify-start gap-4 mb-6">
-    <!-- Barre de recherche -->
-    <div class="w-full sm:w-1/4 md:w-1/5">
-      <div class="relative">
-        <input type="text" class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out" [(ngModel)]="searchTerm" (input)="filterUsers()" placeholder="Rechercher">
-        <span class="absolute right-3 top-2 text-gray-500"><i class="fa fa-search"></i></span>
-      </div>
-    </div>
-
-    <!-- Filtrer par rÃ´le -->
-    <div class="w-full sm:w-1/4 md:w-1/5">
-      <select class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out" [(ngModel)]="selectedFilter" (change)="filterByType()">
-        <option value="">Tous les roles</option>
-        <option value="ADMIN">Admin</option>
-        <option value="RESPONSABLE">Responsable</option>
-        <option value="TECHNICIEN">Technicien</option>
-        <option value="MAGASINIER">Magasinier</option>
-        <option value="LAMBDA">Lambda</option>
-      </select>
-    </div>
-
-    <!-- Trier par nom -->
-    <div class="w-full sm:w-1/4 md:w-1/5">
-      <button class="w-full py-2 px-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 ease-in-out" (click)="sortByName()">
-        Trier par Nom <i class="fa" [ngClass]="{'fa-sort-alpha-down': isSortedAZ, 'fa-sort-alpha-up': !isSortedAZ}"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- Bouton pour afficher le panneau d'ajout -->
-  <div class="text-center mb-6">
-    <button class="py-3 px-6 bg-green-500 text-white rounded-xl shadow-md hover:bg-green-600 transition duration-300 ease-in-out" (click)="togglePanel()">Ajouter un Utilisateur</button>
-  </div>
-
-  <!-- Panneau d'ajout de l'utilisateur -->
-<!-- Panneau d'ajout de l'utilisateur -->
 <div *ngIf="showPanel" class="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
   <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
     <div class="flex justify-between items-center mb-4">
@@ -95,7 +48,7 @@
         <input type="password" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="password" [(ngModel)]="newUser.password" name="password" required>
         <button type="button" class="absolute right-2 top-1 text-lg" (click)="togglePasswordVisibility()">👁️</button>
         <div *ngIf="passwordError" class="text-red-500 text-sm mt-1">Le mot de passe doit contenir des caractères spéciaux.</div>
-      </div>      
+      </div>
       <div class="mb-4">
         <label for="role" class="block text-gray-700 font-medium mb-1">Role</label>
         <select class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="role" [(ngModel)]="newUser.role" name="role" required>
@@ -113,27 +66,69 @@
     </form>
   </div>
 </div>
+<div class="container mx-auto p-8">
+  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-700 mb-4">Gestion des Utilisateurs</h2>
+    <p class="text-gray-500 text-sm mb-6">Recherchez, triez et gérez facilement tous les utilisateurs du système.</p>
 
+    <!-- Contrôles de recherche et tri -->
+    <div class="flex flex-wrap justify-start gap-4 mb-6">
+      <!-- Barre de recherche -->
+      <div class="w-full sm:w-1/4 md:w-1/5">
+        <div class="relative">
+          <input type="text" class="w-full py-2 px-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200 ease-in-out" [(ngModel)]="searchTerm" (input)="filterUsers()" placeholder="Rechercher">
+          <span class="absolute right-3 top-2 text-gray-500"><i class="fa fa-search"></i></span>
+        </div>
+      </div>
 
-  <!-- Liste des utilisateurs -->
-  <div style="padding: 40px" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-2 gap-y-4">
-    <div style="width: 250px; border: darkgreen solid; " *ngFor="let user of filteredUsers" class="bg-white p-6 rounded-xl shadow-lg transition-transform transform hover:scale-105">
-      <img [src]="user.image || 'https://via.placeholder.com/80'" class="rounded-full mx-auto mb-4" width="80" height="80" alt="Avatar">
-      <h5 class="text-lg font-semibold text-center text-gray-800">{{user.civilite}}. {{ user.nom }}</h5>
-      <p class="text-gray-500 text-center">{{ user.role }}</p>
-      <div class="flex justify-between mt-6">
-        <button class="text-white bg-red-500 rounded-lg px-9 py-2 shadow-md hover:bg-red-600 transition duration-300 ease-in-out" (click)="deleteUser(user.id)">
-          <i class="fas fa-trash-alt"></i>
+      <!-- Filtrer par rôle -->
+      <div class="w-full sm:w-1/4 md:w-1/5">
+        <select class="w-full py-2 px-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200 ease-in-out" [(ngModel)]="selectedFilter" (change)="filterByType()">
+          <option value="">Tous les rôles</option>
+          <option value="ADMIN">Admin</option>
+          <option value="RESPONSABLE">Responsable</option>
+          <option value="TECHNICIEN">Technicien</option>
+          <option value="MAGASINIER">Magasinier</option>
+          <option value="LAMBDA">Lambda</option>
+        </select>
+      </div>
+
+      <!-- Trier par nom -->
+      <div class="w-full sm:w-1/4 md:w-1/5">
+        <button class="w-full py-2 px-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition duration-200 ease-in-out" (click)="sortByName()">
+          Trier par Nom <i class="fa" [ngClass]="{'fa-sort-alpha-down': isSortedAZ, 'fa-sort-alpha-up': !isSortedAZ}"></i>
         </button>
-        <a [routerLink]="['/details', user.id]" class="text-white bg-blue-500 rounded-lg px-4 py-2 shadow-md hover:bg-blue-600 transition duration-300 ease-in-out">Details</a>
+      </div>
+
+      <div class="flex space-x-4 justify-end w-full sm:w-auto">
+        <button class="text-blue-600 hover:text-blue-700 transition duration-200" (click)="togglePanel()">
+          <i class="fas fa-plus fa-lg"></i>
+        </button>
+
+        <button class="text-green-600 hover:text-green-700 transition duration-200" (click)="exportToExcel()">
+          <i class="fas fa-download fa-lg"></i>
+        </button>
+      </div>
+    </div>
+
+
+
+    <!-- Liste des utilisateurs -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
+      <div *ngFor="let user of filteredUsers" class="bg-white p-6 border-2 border-green-700 rounded-xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl">
+        <img [src]="user.image || 'https://via.placeholder.com/80'" class="rounded-full mx-auto mb-4 border-2 border-gray-200" width="80" height="80" alt="Avatar">
+        <h5 class="text-lg font-semibold text-center text-gray-800">{{ user.civilite }}. {{ user.nom }}</h5>
+        <p class="text-gray-500 text-center">{{ user.role }}</p>
+        <div class="flex justify-between mt-6">
+          <button class="text-white bg-red-500 rounded-lg px-5 py-2 shadow-md hover:bg-red-600 transition duration-300 ease-in-out" (click)="deleteUser(user.id)">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+          <a [routerLink]="['/details', user.id]" class="text-white bg-green-600 rounded-lg px-4 py-2 shadow-md hover:bg-green-700 transition duration-300 ease-in-out">Détails</a>
+        </div>
       </div>
     </div>
   </div>
-  <!-- Font Awesome CDN -->
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
 </div>
 
-<!-- Ajout du support Tailwind CSS -->
-<script src="https://cdn.jsdelivr.net/npm/tailwindcss@3.0.0/dist/tailwind.min.css"></script>
- 
+<!-- Font Awesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
