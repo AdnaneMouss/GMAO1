@@ -59,7 +59,6 @@ public class Equipement {
     private List<PieceDetachee> piecesDetachees;
 
     // Relationship with Attribut (One-to-Many)
-    @OneToMany(mappedBy = "equipement", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "equipement", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Attribut> attributs;
 }

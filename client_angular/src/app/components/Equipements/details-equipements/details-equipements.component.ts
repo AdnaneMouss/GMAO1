@@ -4,6 +4,7 @@ import { EquipementService } from '../../../services/equipement.service';
 import {Equipement} from "../../../models/equipement";
 import {ServiceService} from "../../../services/service.service";
 import {Service} from "../../../models/service";
+import {Attribut} from "../../../models/attribut";
 
 @Component({
   selector: 'app-details-equipements',
@@ -11,7 +12,29 @@ import {Service} from "../../../models/service";
   styleUrls: ['./details-equipements.component.css']
 })
 export class DetailsEquipementsComponent implements OnInit {
-  equipement: Equipement | undefined;
+  equipement: Equipement = {
+    id: 0,
+    image: '',
+    nom: '',
+    description: '',
+    numeroSerie: '',
+    modele: '',
+    marque: '',
+    localisation: '',
+    statut: '',
+    dateAchat: '',
+    dateMiseEnService: '',
+    garantie: '',
+    dateDerniereMaintenance: '',
+    frequenceMaintenance: '',
+    historiquePannes: '',
+    coutAchat: '',
+    attributs:[],
+    serviceNom: '',
+    serviceDetails: {id:0,nom:'',description:'', image:''},
+  };
+
+
   errorMessage: string = '';
   isEditMode: boolean = false;  // Toggle edit mode
   services: Service[] = [];
@@ -44,7 +67,6 @@ export class DetailsEquipementsComponent implements OnInit {
     this.equipementService.getEquipementById(id).subscribe({
       next: (data) => {
         this.equipement = data;
-        console.log(this.equipement.service.nom)
       },
       error: (err) => {
         console.error('Error fetching  details:', err);

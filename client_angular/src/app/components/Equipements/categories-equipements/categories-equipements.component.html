@@ -64,19 +64,24 @@
     </div>
 <br>
     <!-- Service Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-    <div *ngFor="let service of filteredServices" class="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-transform transform hover:scale-105 text-sm">
-      <div class="relative w-full h-36 overflow-hidden rounded-lg mb-4 flex items-center justify-center">
-        <img [src]="service.image" alt="Service Image" class="w-auto h-24 object-cover transition-transform duration-300 hover:scale-110">
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ service.nom }}</h3>
-      <p class="text-gray-600 text-sm mb-4">{{ service.description }}</p>
-      <button
-        class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-900 text-sm transition"
-        [routerLink]="['/equipements', service.id]">
-        Equipements
-      </button>
+   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+     <div *ngFor="let service of filteredServices"
+          class="bg-white rounded-xl shadow-lg p-6 border border-gray-300 hover:shadow-xl transition-transform transform hover:-translate-y-2 duration-300">
+
+       <div class="relative w-full h-40 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100">
+         <img [src]="service.image" alt="Service Image" class="w-auto h-28 object-cover transition-transform duration-300 hover:scale-110">
+       </div>
+
+       <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2 text-center">{{ service.nom }}</h3>
+
+       <p class="text-gray-600 text-sm text-center">{{ service.description }}</p>
+
+       <button
+         class="w-full bg-green-700 text-white px-4 py-2 rounded-lg mt-4 font-medium shadow-md hover:bg-green-900 transition-all duration-300 transform hover:-translate-y-1" [routerLink]="['/equipements', service.id]">
+         Voir les équipements
+       </button>
+     </div>
+   </div>
+
  </div>
-  </div>
-</div>
 </div>

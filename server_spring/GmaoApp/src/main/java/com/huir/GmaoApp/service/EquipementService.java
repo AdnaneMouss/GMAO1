@@ -29,6 +29,9 @@ public class EquipementService {
     private ServicesRepository serviceRepository;
     // Create or update an equipment
     public Equipement saveEquipement(Equipement equipement) {
+        if (equipementRepository.existsByNumeroSerie(equipement.getNumeroSerie())) {
+            throw new IllegalArgumentException("Un service avec ce nom existe déjà !");
+        }
         return equipementRepository.save(equipement);
     }
 
@@ -93,14 +96,14 @@ public class EquipementService {
             if (equipementDTO.getPiecesDetachees() != null) {
                 equipement.setPiecesDetachees(pieceDetacheeRepository.findAllByNomIn(equipementDTO.getPiecesDetachees()));
             }
-
+*/
             // Update dynamic attributes
             if (equipementDTO.getAttributs() != null) {
                 equipement.setAttributs(equipementDTO.getAttributs().stream()
                         .map(attrDTO -> new Attribut(attrDTO.getNom(), attrDTO.getValeur(), equipement))
                         .collect(Collectors.toList()));
             }
-*/
+
             // Save updated equipement entity
             equipementRepository.save(equipement);
 

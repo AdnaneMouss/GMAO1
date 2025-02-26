@@ -1,5 +1,7 @@
 package com.huir.GmaoApp.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.huir.GmaoApp.model.Services;
 import lombok.*;
 
@@ -16,6 +18,7 @@ public class ServiceDTO {
     private String nom;
     private String image;
     private String description;
+
     private List<EquipementDTO> equipements;
 
     public ServiceDTO(Services services) {
@@ -30,3 +33,4 @@ public class ServiceDTO {
                 : null;
     }
 }
+
