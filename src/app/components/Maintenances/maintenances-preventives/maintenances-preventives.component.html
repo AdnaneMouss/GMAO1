@@ -1,0 +1,156 @@
+<div style="margin-left: 20px;" class="container py-6">
+  <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">Gestion des Maintenances Préventives</h2>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="errorMessage" class="alert alert-danger text-center mb-6 bg-red-100 text-red-700 p-4 rounded-xl shadow-md">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Contrôles de recherche et tri -->
+  <div class="flex flex-wrap justify-start gap-4 mb-6">
+    <!-- Barre de recherche -->
+    <div class="w-full sm:w-1/4 md:w-1/5">
+      <div class="relative">
+        <input type="text" class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out" [(ngModel)]="searchTerm" (input)="fetchMaintenances()" placeholder="Rechercher">
+        <span class="absolute right-3 top-2 text-gray-500"><i class="fa fa-search"></i></span>
+      </div>
+    </div>
+
+    <!-- Filtrer par fréquence -->
+    <div class="w-full sm:w-1/4 md:w-1/5">
+      <select class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out" [(ngModel)]="selectedFilter" (change)="fetchMaintenances()">
+        <option value="">Toutes statut</option>
+        <option value="en cours">en cours</option>
+        <option value="terminee">terminee</option>
+        <option value="En attente">En attente </option>
+      </select>
+    </div>
+
+  </div>
+
+  <!-- Bouton pour afficher le panneau d'ajout -->
+  <div class="text-center mb-6">
+    <button class="py-3 px-6 bg-green-500 text-white rounded-xl shadow-md hover:bg-green-600 transition duration-300 ease-in-out" (click)="togglePanel()">Ajouter une Maintenance</button>
+  </div>
+
+  <!-- Panneau d'ajout de la maintenance -->
+  <div *ngIf="showPanel" class="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
+    <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-xl font-semibold text-gray-800">Ajouter une Maintenance</h4>
+        <button class="text-lg font-bold text-red-500" (click)="togglePanel()">X</button>
+      </div>
+      <form (ngSubmit)="addMaintenance()" #maintenanceForm="ngForm">
+        <div class="mb-4">
+          <label for="equipement" class="block text-gray-700 font-medium mb-1">Équipement</label>
+          <input type="text" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="equipement" [(ngModel)]="newMaintenance.equipement" name="equipement" required>
+        </div>
+
+        <div class="mb-4">
+          <label for="departement" class="block text-gray-700 font-medium mb-1">Département</label>
+          <input type="text" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="departement" [(ngModel)]="newMaintenance.departement" name="departement" required>
+        </div>
+
+        <div class="mb-4">
+          <label for="personneResponsable" class="block text-gray-700 font-medium mb-1">Personne Responsable</label>
+          <input type="text" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="personneResponsable" [(ngModel)]="newMaintenance.personneResponsable" name="personneResponsable" required>
+        </div>
+        <div class="mb-4">
+          <label for="dureeEstimee" class="block text-gray-700 font-medium mb-1">Durée Estimée (en heures)</label>
+          <input type="number" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="dureeEstimee" [(ngModel)]="newMaintenance.dureeEstimee" name="dureeEstimee" required>
+        </div>
+
+        <div class="mb-4">
+          <label for="frequence" class="block text-gray-700 font-medium mb-1">Fréquence</label>
+          <select class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="frequence" [(ngModel)]="newMaintenance.frequence" name="frequence" required>
+            <option value="quotidien">Quotidien</option>
+            <option value="hebdomadaire">Hebdomadaire</option>
+            <option value="mensuel">Mensuel</option>
+            <option value="annuel">Annuel</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label for="dateIntervention" class="block text-gray-700 font-medium mb-1">Date Intervention</label>
+          <input type="date" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="dateIntervention" [(ngModel)]="newMaintenance.dateIntervention" name="dateIntervention" required>
+        </div>
+
+        <div class="mb-4">
+          <label for="piecesRechange" class="block text-gray-700 font-medium mb-1">Pièces de Rechange</label>
+          <input type="text" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="piecesRechange" [(ngModel)]="newMaintenance.piecesRechange" name="piecesRechange" required>
+        </div>
+        <div class="mb-4">
+          <label for="localisation" class="block text-gray-700 font-medium mb-1">localisation</label>
+          <input type="text" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="localisation" [(ngModel)]="newMaintenance.localisation" name="localisation" required>
+        </div>
+        
+        <div class="mb-4">
+          <label for="imageEquipement" class="block text-gray-700 font-medium mb-1">imageEquipement</label>
+          <input type="text" class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="imageEquipement" [(ngModel)]="newMaintenance.imageEquipement" name="imageEquipement" required>
+        </div>
+        <div class="mb-4">
+          <label for="statut" class="block text-gray-700 font-medium mb-1">statut</label>
+          <select class="w-full py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="statut" [(ngModel)]="newMaintenance.statut" name="statut" required>
+            <option value="En attente">En attente</option>
+            <option value="En cours ">En cours </option>
+            <option value="Terminée">Terminée</option>
+          </select>
+        </div>
+
+        <div class="flex justify-between">
+          <button type="submit" class="py-2 px-4 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600">Ajouter</button>
+          <button type="button" class="py-2 px-4 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600" (click)="togglePanel()">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Liste des maintenances   //  -->
+  <div style="padding: 40px" class="w-full">
+    <table class="table-auto w-full">
+      <thead>
+        <tr>
+          <th class="px-4 py-2 bg-gray-200 text-left">id</th>
+          <th class="px-4 py-2 bg-gray-200 text-left">Fréquence</th>
+          <th class="px-4 py-2 bg-gray-200 text-left">Statut de Maintenance</th>
+          <th class="px-4 py-2 bg-gray-200 text-left">Date d'Intervention</th>
+          <th class="px-4 py-2 bg-gray-200 text-left">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let maintenance  of maintenance" class="bg-white hover:bg-gray-100">
+          <td class="px-4 py-2 text-center">{{ maintenance.id }}</td>
+          <td class="px-4 py-2 text-center">{{ maintenance.frequence }}</td>
+          <td class="px-4 py-2 text-center">
+            <!-- Affichage du statut de maintenance -->
+            <span [ngClass]="{
+              'text-blue-500': maintenance.statut === 'En cours',
+              'text-red-500': maintenance.statut === 'En attente',
+              'text-green-500': maintenance.statut === 'Terminée'
+            }">
+              {{ maintenance.statut }}
+            </span>
+          </td>
+          <td class="px-4 py-2 text-center">{{ maintenance.dateIntervention | date:'dd/MM/yyyy' }}</td>
+          <td class="px-4 py-2 text-center">
+            <!-- Conteneur Flex pour les boutons -->
+            <div class="flex justify-center gap-4">
+              
+              <!-- Bouton de détails -->
+              <td class="px-6 py-4 text-center">
+                <button [routerLink]="['/details-maintenance',maintenance.id]" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition duration-200">
+                  Détails
+                </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  
+  
+
+<!-- Font Awesome CDN -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
