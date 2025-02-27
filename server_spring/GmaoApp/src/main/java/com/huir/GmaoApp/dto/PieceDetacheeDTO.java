@@ -15,7 +15,8 @@ public class PieceDetacheeDTO {
     private String dateAchat;
     private String datePeremption;
     private String historiqueUtilisation;
-    
+    private String image;
+
     public PieceDetacheeDTO() {}
 
 
@@ -32,12 +33,8 @@ public class PieceDetacheeDTO {
         this.dateAchat = pieceDetachee.getDateAchat();
         this.datePeremption = pieceDetachee.getDatePeremption();
         this.historiqueUtilisation = pieceDetachee.getHistoriqueUtilisation();
-        
-        
-        
-       
-    
-       
+        this.image=pieceDetachee.getImage();
+
     }
 
 
@@ -148,7 +145,13 @@ public class PieceDetacheeDTO {
 		this.dateAchat = dateAchat;
 	}
 
+	public String getImage() {
+		return image;
+	}
 
+	public void setImage(String image) {
+		this.image = image;
+	}
 
 	public String getDatePeremption() {
 		return datePeremption;

@@ -42,6 +42,10 @@ public class PieceDetachee {
     @Column(nullable = false)
     private int quantiteStock;  // Quantité disponible en stock
 
+    @Column
+    private String image;  // Image
+
+
     @Column(nullable = false)
     private int quantiteMinimale;  // Quantité minimale à maintenir en stock
 
