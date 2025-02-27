@@ -22,6 +22,9 @@ export class EquipementService {
     );
   }
 
+  getPiecesDetacheesByEquipementId(id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/pieces`);
+  }
   getEquipementsByService(serviceId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/service/${serviceId}`);
   }

@@ -21,5 +21,6 @@ export interface Equipement {
   attributs: Attribut[];
   serviceNom: string;
   serviceDetails?: Service;
+  piecesDetachees?: string[];
 }
 

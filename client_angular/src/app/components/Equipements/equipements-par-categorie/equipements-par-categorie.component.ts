@@ -38,7 +38,7 @@ export class EquipementsParCategorieComponent implements OnInit{
     const serviceId = this.route.snapshot.paramMap.get('serviceId');
     if (serviceId) {
       this.serviceService.getServiceById(serviceId).subscribe(service => {
-        this.serviceName = service.nom; // Assuming the API returns { nom: 'Service Name' }
+        this.serviceName = service.nom;
       });
     }
   }

@@ -1,9 +1,11 @@
 package com.huir.GmaoApp.controller;
 
 import com.huir.GmaoApp.dto.EquipementDTO;
+import com.huir.GmaoApp.dto.PieceDetacheeDTO;
 import com.huir.GmaoApp.dto.UserDTO;
 import com.huir.GmaoApp.model.Attribut;
 import com.huir.GmaoApp.model.Equipement;
+import com.huir.GmaoApp.model.PieceDetachee;
 import com.huir.GmaoApp.repository.EquipementRepository;
 import com.huir.GmaoApp.service.EquipementService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,13 @@ public class EquipementController {
     public List<EquipementDTO> getAllEquipements() {
         return equipementService.findAllEquipements().stream()
                 .map(EquipementDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}/pieces")
+    public List<PieceDetacheeDTO> getPiecesDetachees(@PathVariable("id") long equipementId) {
+        return equipementService.getPiecesDetacheesByEquipementId(equipementId).stream()
+                .map(PieceDetacheeDTO::new)  // Assuming you have a PieceDetacheeDTO constructor that accepts a PieceDetachee
                 .collect(Collectors.toList());
     }
 

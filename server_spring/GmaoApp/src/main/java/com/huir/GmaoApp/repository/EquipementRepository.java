@@ -10,4 +10,6 @@ import java.util.List;
 public interface EquipementRepository extends JpaRepository<Equipement, Long> {
     boolean existsByNumeroSerie(String numeroSerie);
     List<Equipement> findByServiceId(Long serviceId);
+    Equipement findById(long id);
 }
+

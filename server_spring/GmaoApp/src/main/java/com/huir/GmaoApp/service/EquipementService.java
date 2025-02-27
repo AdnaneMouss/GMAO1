@@ -3,10 +3,7 @@ package com.huir.GmaoApp.service;
 
 import com.huir.GmaoApp.dto.EquipementDTO;
 import com.huir.GmaoApp.dto.UserDTO;
-import com.huir.GmaoApp.model.Attribut;
-import com.huir.GmaoApp.model.Equipement;
-import com.huir.GmaoApp.model.Services;
-import com.huir.GmaoApp.model.User;
+import com.huir.GmaoApp.model.*;
 import com.huir.GmaoApp.repository.EquipementRepository;
 import com.huir.GmaoApp.repository.ServicesRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -112,6 +110,14 @@ public class EquipementService {
         } else {
             return null; // Equipement not found
         }
+    }
+
+    public List<PieceDetachee> getPiecesDetacheesByEquipementId(long equipementId) {
+        Equipement equipement = equipementRepository.findById(equipementId);
+        if (equipement != null) {
+            return equipement.getPiecesDetachees(); // Returns the list of piecesDetachees
+        }
+        return Collections.emptyList(); // If equipement is not found, return an empty list
     }
 
 

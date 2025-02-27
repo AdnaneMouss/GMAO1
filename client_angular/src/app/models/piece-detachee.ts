@@ -13,5 +13,5 @@ export interface PieceDetachee {
   dateAchat: string;  // Format YYYY-MM-DD
   datePeremption: string;
   historiqueUtilisation: string;
- 
+  image: string;
 }
