@@ -16,7 +16,7 @@ export class CategoriesEquipementsComponent implements OnInit {
   newService: Service = { id: 0, nom: '', description: '', image: '' };
   searchTermNom = '';
   filteredServices = [...this.services];
-  errorMessage: string = '';  // Ajout du message d'erreur
+  errorMessage: string = '';
 
   constructor(private serviceService: ServiceService) {}
 
@@ -69,9 +69,11 @@ export class CategoriesEquipementsComponent implements OnInit {
       (error) => {
         console.error('Erreur lors de l\'ajout du service:', error);
         if (error.status != 200) {
-          this.errorMessage = 'Ce service exsite déjà. Veuillez en choisir un autre.';
+          this.errorMessage = 'Ce service existe déjà. Veuillez en choisir un autre.';
         }
       }
     );
   }
 }
+
+

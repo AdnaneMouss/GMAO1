@@ -95,12 +95,7 @@ public class EquipementService {
                 equipement.setPiecesDetachees(pieceDetacheeRepository.findAllByNomIn(equipementDTO.getPiecesDetachees()));
             }
 */
-            // Update dynamic attributes
-            if (equipementDTO.getAttributs() != null) {
-                equipement.setAttributs(equipementDTO.getAttributs().stream()
-                        .map(attrDTO -> new Attribut(attrDTO.getNom(), attrDTO.getValeur(), equipement))
-                        .collect(Collectors.toList()));
-            }
+
 
             // Save updated equipement entity
             equipementRepository.save(equipement);

@@ -5,7 +5,10 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
 import jakarta.persistence.*;
-import java.util.List;@Entity
+import java.time.LocalDate;
+import java.util.List;
+
+@Entity
 @Table(name = "equipements")
 @Getter
 @Setter
@@ -17,6 +20,7 @@ public class Equipement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String image;
     private String nom;
     private String description;
@@ -25,30 +29,41 @@ public class Equipement {
     private String marque;
     private String localisation;
     private String statut;
-    private String dateAchat;
-    private String dateMiseEnService;
+    private boolean actif; // Indique si l'équipement est toujours en service
+
+    private LocalDate dateAchat;
+    private LocalDate dateMiseEnService;
     private String garantie;
-    private String dateDerniereMaintenance;
+    private LocalDate dateDerniereMaintenance;
     private String frequenceMaintenance;
     private String historiquePannes;
-    private String coutAchat;
+    private Double coutAchat;
 
-    // Relationship with Service
+    // Relation avec TypesEquipements (Chaque équipement appartient à un type)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "type_equipement_id")
+    private TypesEquipements typeEquipement;
+
+    // Relation avec les attributs et leurs valeurs
+    @OneToMany(mappedBy = "equipement", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttributEquipementValeur> attributsValeurs;
+
+    // Relation avec le service auquel appartient l’équipement
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonBackReference
     private Services service;
 
-    // Relationship with ResponsableMaintenance
+    // Relation avec le responsable de maintenance
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonBackReference
     private User responsableMaintenance;
 
-    // Relationship with OrdreTravail
+    // Relation avec les ordres de travail (interventions de maintenance)
     @OneToMany(mappedBy = "equipement", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<OrdreTravail> ordresTravail;
 
-    // Relationship with PieceDetachee (Many-to-Many)
+    // Relation avec les pièces détachées associées à l’équipement
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "equipement_piece_detachee",
@@ -58,7 +73,18 @@ public class Equipement {
     @JsonManagedReference
     private List<PieceDetachee> piecesDetachees;
 
-    // Relationship with Attribut (One-to-Many)
-    @OneToMany(mappedBy = "equipement", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Attribut> attributs;
+    // Relationship with Salle (Each equipment is in a room)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "salle_id")
+    private Salle salle;
+
+    // Relationship with Etage (Each room is in a floor)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "etage_id")
+    private Etage etage;
+
+    // Relationship with Batiment (Each floor is in a building)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "batiment_id")
+    private Batiment batiment;
 }

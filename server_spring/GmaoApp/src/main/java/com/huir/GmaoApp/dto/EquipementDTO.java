@@ -1,13 +1,13 @@
 package com.huir.GmaoApp.dto;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.huir.GmaoApp.model.Equipement;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,22 +22,26 @@ public class EquipementDTO {
     private String modele;
     private String marque;
     private String localisation;
-    private String serviceNom;
     private String statut;
-    private String dateAchat;
-    private String dateMiseEnService;
+    private String serviceNom;
+    private LocalDate dateAchat;
+    private LocalDate dateMiseEnService;
     private String garantie;
-    private String dateDerniereMaintenance;
+    private LocalDate dateDerniereMaintenance;
     private String frequenceMaintenance;
     private String responsableMaintenanceNom;
     private List<String> ordresTravail;
     private List<String> piecesDetachees;
     private String historiquePannes;
-    private String coutAchat;
+    private Double coutAchat;
 
-    // Add the list of dynamic attributes
-    private List<AttributDTO> attributs;
-    private List<ServiceDTO> serviceDetails;
+    // Nouveaux champs ajoutés
+    private String typeEquipement;
+    private String codeBarre;
+    private boolean actif;
+
+    // Liste des attributs dynamiques
+    private List<AttributEquipementValeurDTO> attributs;
 
     // Constructor to map Equipement to EquipementDTO
     public EquipementDTO(Equipement equipement) {
@@ -57,29 +61,27 @@ public class EquipementDTO {
         this.historiquePannes = equipement.getHistoriquePannes();
         this.coutAchat = equipement.getCoutAchat();
         this.image = equipement.getImage();
+        this.actif = equipement.isActif();
+        this.typeEquipement = equipement.getTypeEquipement() != null ? equipement.getTypeEquipement().getType() : null;
 
         // Map the service and responsible maintenance details
         this.serviceNom = equipement.getService() != null ? equipement.getService().getNom() : null;
-        for (Object o : this.serviceDetails != null
-                ? serviceDetails.stream()
-                .map(ServiceDTO::getNom)  // Map each ServiceDTO to its 'Nom'
-                .collect(Collectors.toList()) // Collect the names into a list
-                : Collections.emptyList()) {
-            
-        }
+        this.responsableMaintenanceNom = equipement.getResponsableMaintenance() != null
+                ? equipement.getResponsableMaintenance().getNom()
+                : null;
 
         // Map the list of ordresTravail and piecesDetachees
         this.ordresTravail = equipement.getOrdresTravail() != null ? equipement.getOrdresTravail().stream()
-                .map(ordre -> ordre.getDescription())  // assuming OrdreTravail has a "description" field
-                .collect(Collectors.toList()) : null;
+                .map(ordre -> ordre.getDescription()) // assuming OrdreTravail has a "description" field
+                .collect(Collectors.toList()) : Collections.emptyList();
 
         this.piecesDetachees = equipement.getPiecesDetachees() != null ? equipement.getPiecesDetachees().stream()
-                .map(piece -> piece.getNom())  // assuming PieceDetachee has a "nom" field
-                .collect(Collectors.toList()) : null;
+                .map(piece -> piece.getNom()) // assuming PieceDetachee has a "nom" field
+                .collect(Collectors.toList()) : Collections.emptyList();
 
-        // Map dynamic attributes to DTOs
-        this.attributs = equipement.getAttributs() != null ? equipement.getAttributs().stream()
-                .map(attr -> new AttributDTO(attr.getNom(), attr.getValeur()))
-                .collect(Collectors.toList()) : null;
+        // Mapping des attributs dynamiques
+        this.attributs = equipement.getAttributsValeurs() != null ? equipement.getAttributsValeurs().stream()
+                .map(AttributEquipementValeurDTO::new)
+                .collect(Collectors.toList()) : Collections.emptyList();
     }
 }

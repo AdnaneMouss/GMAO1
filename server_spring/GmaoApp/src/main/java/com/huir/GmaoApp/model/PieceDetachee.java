@@ -66,4 +66,5 @@ public class PieceDetachee {
     )
     
     private List<Intervention> interventions;
+
 }

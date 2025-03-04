@@ -9,7 +9,20 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrl: './details-stock.component.css'
 })
 export class DetailsStockComponent implements OnInit {
-  pieceDetachee: PieceDetachee | undefined;
+  pieceDetachee: PieceDetachee = {
+    id: 0,
+    nom: '',
+    description: '',
+    reference: '',
+    fournisseur: '',
+    coutUnitaire: 0,
+    quantiteStock: 0,
+    quantiteMinimale: 0,
+    dateAchat: '',
+    datePeremption: '',
+    historiqueUtilisation: '',
+    image: ''
+  };
   errorMessage: string = '';
   isEditMode: boolean = false;  // Mode édition
 
@@ -40,14 +53,14 @@ export class DetailsStockComponent implements OnInit {
   enableEditMode(): void {
     this.isEditMode = true;
   }
-  
+
   saveChanges(): void {
     if (this.pieceDetachee) {
       this.pieceDetacheeService.updatePieceDetachee(this.pieceDetachee.id!, this.pieceDetachee).subscribe({
         next: (updatedUser) => {
           this.pieceDetachee = updatedUser;
           this.isEditMode = false;  // Disable edit mode after saving
-          this.router.navigate(['/pieces']);  // Redirect after saving
+          this.router.navigate(['/stock/liste']);  // Redirect after saving
         },
         error: (err) => {
           console.error('Error updating piece:', err);
@@ -57,7 +70,7 @@ export class DetailsStockComponent implements OnInit {
     }
   }
 
-  
+
     }
 
 

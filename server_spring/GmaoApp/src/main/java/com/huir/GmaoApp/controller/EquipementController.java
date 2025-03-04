@@ -2,8 +2,6 @@ package com.huir.GmaoApp.controller;
 
 import com.huir.GmaoApp.dto.EquipementDTO;
 import com.huir.GmaoApp.dto.PieceDetacheeDTO;
-import com.huir.GmaoApp.dto.UserDTO;
-import com.huir.GmaoApp.model.Attribut;
 import com.huir.GmaoApp.model.Equipement;
 import com.huir.GmaoApp.model.PieceDetachee;
 import com.huir.GmaoApp.repository.EquipementRepository;
@@ -46,7 +44,7 @@ public class EquipementController {
         return equipementRepository.findByServiceId(serviceId);
     }
 
-    @PostMapping
+   /* @PostMapping
     public ResponseEntity<EquipementDTO> createEquipement(@RequestBody EquipementDTO equipementDTO) {
         Equipement equipement = new Equipement();
 
@@ -86,7 +84,7 @@ public class EquipementController {
         EquipementDTO responseDTO = new EquipementDTO(savedEquipement);
         return ResponseEntity.ok(responseDTO);
     }
-
+*/
     @GetMapping("/{id}")
     public Optional<EquipementDTO> getEquipementById(@PathVariable("id") Long equipementId) {
         // Fetch the Equipement data by ID

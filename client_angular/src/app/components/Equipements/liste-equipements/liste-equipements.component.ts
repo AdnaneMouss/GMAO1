@@ -104,7 +104,7 @@ export class ListeEquipementsComponent implements OnInit {
   }
 
 
-  
+
 
   addAttribut() {
     if (!this.equipement.attributs) {
@@ -135,6 +135,7 @@ export class ListeEquipementsComponent implements OnInit {
       }
     );
   }
+
 
   editEquipement(equipement: Equipement): void {
     this.equipement = { ...equipement };
