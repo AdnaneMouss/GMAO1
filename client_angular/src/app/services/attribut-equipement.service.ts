@@ -21,6 +21,7 @@ export class AttributEquipementService {
     );
     }
 
+
   updateAttributEquipement(id: number, attrDTO: AttributEquipements): Observable<AttributEquipements> {
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
     return this.http.put<AttributEquipements>(`${this.apiUrl}/${id}`, attrDTO, { headers }).pipe(

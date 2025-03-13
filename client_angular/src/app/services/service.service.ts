@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {catchError, Observable, throwError} from 'rxjs';
+import { Observable } from 'rxjs';
 import { Service } from '../models/service';
 
 @Injectable({
@@ -15,20 +15,37 @@ export class ServiceService {
     return this.http.get<Service[]>(this.apiUrl);
   }
 
-  getServiceById(serviceId: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${serviceId}`);
+  getServiceById(serviceId: string): Observable<Service> {
+    return this.http.get<Service>(`${this.apiUrl}/${serviceId}`);
   }
-
-  createService(service: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl, service).pipe(
-      catchError(error => {
-        return throwError(() => error.error);
-      })
-    );
-  }
-
 
   deleteService(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  createServiceWithImage(serviceData: { nom: string, description: string }, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('nom', serviceData.nom);
+    formData.append('description', serviceData.description);
+
+    return this.http.post<any>(this.apiUrl, formData);
+  }
+
+  /** New Method for Updating a Service */
+  updateService(id: number, serviceDTO: { nom: string, description: string }, imageFile: File): Observable<any> {
+    const formData = new FormData();
+
+    // Append the service fields to the FormData object
+    formData.append('nom', serviceDTO.nom);
+    formData.append('description', serviceDTO.description);
+
+    // If there is an image file, append it to the FormData object
+    if (imageFile) {
+      formData.append('imageFile', imageFile, imageFile.name);
+    }
+
+    // Perform the PUT request to the backend
+    return this.http.put<Service>(`${this.apiUrl}/${id}`, formData);
   }
 }

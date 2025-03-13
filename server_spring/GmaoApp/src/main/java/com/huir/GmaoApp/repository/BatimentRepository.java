@@ -17,4 +17,6 @@ Batiment findById(long id);
 
     boolean existsByIntitule(String intitule);
     boolean existsByNumBatiment(int numBatiment);
+
+    Batiment findByIntitule(String batimentNom);
 }

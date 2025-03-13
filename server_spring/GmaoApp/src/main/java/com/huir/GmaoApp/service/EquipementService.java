@@ -1,20 +1,18 @@
 package com.huir.GmaoApp.service;
 
 
+import com.huir.GmaoApp.dto.AttributEquipementValeurDTO;
 import com.huir.GmaoApp.dto.EquipementDTO;
 import com.huir.GmaoApp.dto.UserDTO;
 import com.huir.GmaoApp.model.*;
-import com.huir.GmaoApp.repository.EquipementRepository;
-import com.huir.GmaoApp.repository.ServicesRepository;
+import com.huir.GmaoApp.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,15 +23,120 @@ public class EquipementService {
 
     @Autowired
     private ServicesRepository serviceRepository;
-    // Create or update an equipment
-    public Equipement saveEquipement(Equipement equipement) {
-        if (equipementRepository.existsByNumeroSerie(equipement.getNumeroSerie())) {
-            throw new IllegalArgumentException("Un service avec ce nom existe déjà !");
+
+    @Autowired
+    private TypesEquipementsRepository typeEquipementRepository;
+
+    @Autowired
+    private SallesRepository salleRepository;
+
+    @Autowired
+    private EtageRepository etageRepository;
+
+    @Autowired
+    private BatimentRepository batimentRepository;
+
+    @Autowired
+    private AttributEquipementsValeursRepository attributEquipementsValeursRepository;
+
+    @Autowired
+    private AttributEquipementsRepository attributEquipementsRepository;
+
+    public Map<String, String> getAttributsByEquipement(Long equipementId) {
+        Map<String, String> attributsValeurs = new HashMap<>();
+
+        Equipement equipement = equipementRepository.findById(equipementId)
+                .orElseThrow(() -> new RuntimeException("Équipement non trouvé"));
+
+        // Retrieve all values at once (avoid multiple DB queries)
+        List<AttributEquipementValeur> valeurs = attributEquipementsValeursRepository.findByEquipement(equipement);
+        Map<AttributEquipements, String> valeursMap = valeurs.stream()
+                .collect(Collectors.toMap(AttributEquipementValeur::getAttributEquipement, AttributEquipementValeur::getValeur));
+
+        for (AttributEquipements attribut : equipement.getTypeEquipement().getAttributs()) {
+            attributsValeurs.put(attribut.getNom(), valeursMap.getOrDefault(attribut, "Non défini"));
         }
-        return equipementRepository.save(equipement);
+
+        return attributsValeurs;
     }
 
-    // Find an equipment by ID
+    public Equipement saveEquipement(EquipementDTO equipementDTO) {
+        // Create Equipement entity from DTO
+        Equipement equipement = Equipement.builder()
+                .nom(equipementDTO.getNom())
+                .description(equipementDTO.getDescription())
+                .numeroSerie(equipementDTO.getNumeroSerie())
+                .modele(equipementDTO.getModele())
+                .marque(equipementDTO.getMarque())
+                .statut(equipementDTO.getStatut())
+                .dateAchat(equipementDTO.getDateAchat())
+                .garantie(equipementDTO.getGarantie())
+                .frequenceMaintenance(equipementDTO.getFrequenceMaintenance())
+                .coutAchat(equipementDTO.getCoutAchat())
+                .build();
+
+        // Set typeEquipement using DTO field
+        Optional<TypesEquipements> typeEquipement = typeEquipementRepository.findByType(equipementDTO.getTypeEquipement());
+        equipement.setTypeEquipement(typeEquipement.get());
+
+        // Set service, responsableMaintenance, salle, etage, batiment using the relevant relationships
+        if (equipementDTO.getServiceNom() != null) {
+            Services service = serviceRepository.findByNom(equipementDTO.getServiceNom());
+            equipement.setService(service);
+        }
+
+        // Fetch and set Batiment, Etage, and Salle based on DTO
+        if (equipementDTO.getBatimentNom() != null) {
+            Batiment batiment = batimentRepository.findByIntitule(equipementDTO.getBatimentNom());
+            equipement.setBatiment(batiment);
+        }
+
+        if (equipementDTO.getEtageNum() != null && equipementDTO.getBatimentNom() != null) {
+            Etage etage = etageRepository.findByNumAndBatimentIntitule(
+                    equipementDTO.getEtageNum(),
+                    equipementDTO.getBatimentNom()
+            );
+            equipement.setEtage(etage);
+        }
+
+        if (equipementDTO.getSalleNum() != null) {
+            Salle salle = salleRepository.findByNumAndEtageNum(
+                    equipementDTO.getSalleNum(),
+                    equipementDTO.getEtageNum());
+            equipement.setSalle(salle);
+        }
+
+
+        // Save Equipement entity
+        Equipement savedEquipement = equipementRepository.save(equipement);
+
+        // Process dynamic attributes (AttributEquipementValeur)
+        if (equipementDTO.getAttributs() != null && !equipementDTO.getAttributs().isEmpty()) {
+            List<AttributEquipementValeur> attributEquipementValeurs = equipementDTO.getAttributs().stream()
+                    .map(dto -> {
+                        // Fetch AttributEquipement and TypesEquipements based on DTO info (assuming the DTO has necessary identifiers)
+                        AttributEquipements attributEquipement = attributEquipementsRepository.findById(dto.getAttributEquipementId())
+                                .orElseThrow(() -> new RuntimeException("AttributEquipement not found"));
+                        TypesEquipements typesEquipement = typeEquipementRepository.findById(dto.getTypesEquipementId())
+                                .orElseThrow(() -> new RuntimeException("TypesEquipement not found"));
+
+                        // Create new AttributEquipementValeur instance
+                        return AttributEquipementValeur.builder()
+                                .valeur(dto.getValeur())
+                                .attributEquipement(attributEquipement)
+                                .typeEquipement(typesEquipement)
+                                .equipement(savedEquipement)  // Link the saved Equipement
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            // Save dynamic attributes
+            attributEquipementsValeursRepository.saveAll(attributEquipementValeurs);
+        }
+
+        return savedEquipement;
+    }
+
     public Optional<Equipement> findEquipementById(Long id) {
         return equipementRepository.findById(id);
     }
@@ -61,7 +164,6 @@ public class EquipementService {
             equipement.setNumeroSerie(equipementDTO.getNumeroSerie());
             equipement.setModele(equipementDTO.getModele());
             equipement.setMarque(equipementDTO.getMarque());
-            equipement.setLocalisation(equipementDTO.getLocalisation());
             equipement.setStatut(equipementDTO.getStatut());
             equipement.setDateAchat(equipementDTO.getDateAchat());
             equipement.setDateMiseEnService(equipementDTO.getDateMiseEnService());

@@ -76,7 +76,8 @@
               "buildTarget": "client_angular:build:production"
             },
             "development": {
-              "buildTarget": "client_angular:build:development"
+              "buildTarget": "client_angular:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
@@ -88,7 +89,7 @@
           }
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular-builders/jest:run",
           "options": {
             "polyfills": [
               "zone.js",

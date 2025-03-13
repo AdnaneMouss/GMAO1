@@ -19,6 +19,7 @@ export class ListeUtilisateursComponent implements OnInit {
   isSearchOpen = false;
   searchTerm = '';
   filteredUsers = [...this.users];
+  imageError: string | null = null;
 
   newUser: User = {
     actif: true,  // Set actif to true by default when adding new user
@@ -41,7 +42,49 @@ export class ListeUtilisateursComponent implements OnInit {
   emailError = false;
   passwordError = false;
   existingUsernames: string[] = [];
+  selectedUser: User | null = null; // Store selected user details
+  showPanel2: boolean = false;
+  isEditing: boolean = false;
+  selectedFile: File | null = null; // To store the selected file for upload
+  viewDetails(userId: number): void {
+    this.userService.getUserById(userId).subscribe({
+      next: (user) => {
+        this.selectedUser = { ...user }; // Clone the object to prevent unwanted changes
+        this.showPanel2 = true;
+        this.isEditing = false; // Ensure it's in view mode by default
+      },
+      error: (err) => {
+        console.error('Error fetching user details:', err);
+      }
+    });
+  }
 
+// Method to toggle edit mode
+  enableEditing(): void {
+    this.isEditing = true;
+  }
+
+// Method to update user details
+  updateUser(): void {
+    if (this.selectedUser) {
+      this.userService.updateUser(this.selectedUser.id, this.selectedUser).subscribe({
+        next: (updatedUser) => {
+          this.selectedUser = updatedUser;
+          this.isEditing = false; // Switch back to view mode
+          alert('User updated successfully!');
+        },
+        error: (err) => {
+          console.error('Error updating user:', err);
+          alert('Failed to update user.');
+        }
+      });
+    }
+  }
+
+// Method to close the panel
+  closePanel(): void {
+    this.showPanel2 = false;
+  }
   constructor(private userService: UserService) {
   }
 
@@ -67,50 +110,46 @@ export class ListeUtilisateursComponent implements OnInit {
   }
 
 
-  addUser(): void {
-    // Vérification si le nom d'utilisateur est déjà pris
-    this.usernameTaken = this.existingUsernames.includes(this.newUser.username);
-
-
-    // Validation du numéro de téléphone (doit contenir exactement 10 chiffres)
-    this.gsmError = !/^\d{10}$/.test(this.newUser.gsm);
-
-    // Validation de l'email (doit se terminer par @huir.ma)
-    this.emailError = !this.newUser.email.endsWith('@huir.ma');
-
-    // Validation du mot de passe (doit contenir des caractères spéciaux)
-    this.passwordError = !/[!@#$%^&*(),.?":{}|<>]/.test(this.newUser.password);
-
-    // Si une des validations échoue, ne pas soumettre le formulaire
-    if (this.usernameTaken || this.gsmError || this.emailError || this.passwordError) {
-      return; // Sortir de la fonction et ne pas envoyer de requête
+  onImageSelect(event: any): void {
+    this.selectedFile = event.target.files[0];
+    if (this.selectedFile && !this.selectedFile.type.startsWith('image/')) {
+      this.imageError = 'Please select a valid image file.';
+      this.selectedFile = null;
+    } else {
+      this.imageError = null;
     }
-
-    // Si les validations passent, procéder à la création de l'utilisateur
-    this.userService.createUser(this.newUser).subscribe({
-      next: () => {
-        alert('User added successfully.');
-        this.fetchUsers();  // Rafraîchir la liste des utilisateurs
-        this.resetNewUser(); // Réinitialiser le formulaire
-        this.showPanel = false; // Masquer le panneau après l'ajout
-      },
-      error: (err) => {
-        console.error('Error adding user:', err); // Affiche toute l'erreur dans la console
-        if (err && err.error) {
-          // Si err.error existe, vous pouvez l'inspecter en profondeur
-          console.error('Error details:', err.error);
-          this.errorMessage = `Failed to add user: ${err.error.message || 'No specific error message'}`
-        } else if (err && err.status) {
-          // Si un code de statut HTTP est renvoyé
-          this.errorMessage = `Failed to add user: HTTP status ${err.status} - ${err.statusText}`;
-        } else {
-          this.errorMessage = 'Failed to add user: Unknown error';
-        }
-      }
-
-    });
   }
 
+  checkUsernameTaken(username: string): boolean {
+    // Add logic to check if the username is already taken, you can make a request to the backend if necessary
+    return false; // Simulate that the username is available
+  }
+
+  // Method to validate the form and create user
+  addUser(): void {
+    // Form validation
+    this.usernameTaken = this.checkUsernameTaken(this.newUser.username);
+    this.gsmError = !/^\d{10}$/.test(this.newUser.gsm);
+    this.emailError = !this.newUser.email.endsWith('@huir.ma');
+    this.passwordError = !/[!@#$%^&*(),.?":{}|<>]/.test(this.newUser.password);
+
+    // If any validation fails, stop the form submission
+    if (this.usernameTaken || this.gsmError || this.emailError || this.passwordError || !this.selectedFile) {
+      this.errorMessage = 'Please fix the errors before submitting the form.';
+      return;
+    }
+
+    // Call the service to create the user and upload the image
+    this.userService.createUser(this.newUser, this.selectedFile).subscribe({
+      next: () => {
+        alert('User added successfully.');
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to add user. Please try again.';
+        console.error(err);
+      }
+    });
+  }
 
   resetNewUser(): void {
     this.newUser = {

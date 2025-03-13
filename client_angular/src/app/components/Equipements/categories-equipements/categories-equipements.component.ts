@@ -1,6 +1,7 @@
-import {Component, OnInit} from '@angular/core';
-import {Service} from "../../../models/service";
-import {ServiceService} from "../../../services/service.service";
+import { Component, OnInit } from '@angular/core';
+import { Service } from "../../../models/service";
+import { ServiceService } from "../../../services/service.service";
+import { environment } from "../../../../environments/environment";
 
 @Component({
   selector: 'app-categories-equipements',
@@ -14,9 +15,13 @@ export class CategoriesEquipementsComponent implements OnInit {
   searchQuery: string = '';
   showForm: boolean = false;
   newService: Service = { id: 0, nom: '', description: '', image: '' };
+  selectedService: Service | null = null; // Track service being updated
   searchTermNom = '';
   filteredServices = [...this.services];
   errorMessage: string = '';
+
+  imageError: string | null = null;
+  selectedFile: File | null = null;  // To store the selected file for upload
 
   constructor(private serviceService: ServiceService) {}
 
@@ -43,37 +48,71 @@ export class CategoriesEquipementsComponent implements OnInit {
 
   toggleForm(): void {
     this.showForm = !this.showForm;
-    this.errorMessage = ''; // Réinitialiser le message d'erreur
+    this.errorMessage = ''; // Reset error message
+    this.selectedService = null; // Reset selected service when toggling the form
   }
 
   resetForm(): void {
     this.newService = { id: 0, nom: '', description: '', image: '' };
+    this.selectedService = null;
     this.showForm = false;
     this.errorMessage = '';
+    this.selectedFile = null;  // Clear selected file
   }
 
   private initService(): Service {
     return { id: 0, nom: '', description: '', image: '' };
   }
 
-  addService(): void {
-    this.errorMessage = ''; // Réinitialise l'erreur avant chaque tentative
+  // Handle file input
+  onImageSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
 
-    this.serviceService.createService(this.newService).subscribe(
-      (savedService: Service) => {
-        console.log('Service ajouté avec succès:', savedService);
-        this.services.push(savedService);
-        this.filterServicesByName();
-        this.resetForm();
-      },
-      (error) => {
-        console.error('Erreur lors de l\'ajout du service:', error);
-        if (error.status != 200) {
-          this.errorMessage = 'Ce service existe déjà. Veuillez en choisir un autre.';
-        }
+      // Vérifier le type de fichier (optionnel)
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(file.type)) {
+        this.imageError = "Seuls les fichiers JPG, JPEG et PNG sont acceptés.";
+        this.selectedFile = null;
+        return;
       }
-    );
+
+      // Vérifier la taille (ex: max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        this.imageError = "La taille de l'image ne doit pas dépasser 5MB.";
+        this.selectedFile = null;
+        return;
+      }
+
+      this.imageError = null; // Aucune erreur
+      this.selectedFile = file;
+    }
   }
+  // Method to create service and upload image
+  addService(): void {
+    if (!this.newService.nom || !this.selectedFile) {
+      this.errorMessage = 'Nom, description, and image are required!';
+      return;
+    }
+
+    this.serviceService.createServiceWithImage(this.newService, this.selectedFile)
+      .subscribe(
+        (response) => {
+          this.services.push(response);  // Add the newly created service to the list
+          this.resetForm();
+          this.getServices();
+        },
+        (error) => {
+          this.errorMessage = 'Failed to create service. Please try again.';
+        }
+      );
+  }
+
+
+  getImageUrl(imagePath: string): string {
+    return `${environment.apiUrl}${imagePath}`;  // Use the apiUrl dynamically
+  }
+
 }
-
-

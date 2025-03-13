@@ -19,6 +19,9 @@ import { MatTable } from "@angular/material/table";
 import { MatCard, MatCardContent, MatCardHeader } from "@angular/material/card";
 import {Router, RouterLink} from "@angular/router";
 import {Service} from "../../../models/service";
+import {AttributEquipements} from "../../../models/attribut-equipement";
+import {TypesEquipements} from "../../../models/types-equipements";
+import {TypesEquipementsService} from "../../../services/types-equipements.service";
 
 @Component({
   selector: 'app-liste-equipements',
@@ -47,7 +50,9 @@ import {Service} from "../../../models/service";
   styleUrl: './liste-equipements.component.css'
 })
 export class ListeEquipementsComponent implements OnInit {
-  // Add this variable to control form visibility
+  // Existing variables
+  currentPage: number = 1;
+  itemsPerPage: number = 5;  // You can change this number
   showForm: boolean = false;
   equipement: Equipement = this.initEquipement();
   equipements: Equipement[] = [];
@@ -61,7 +66,10 @@ export class ListeEquipementsComponent implements OnInit {
   sortDirection: 'asc' | 'desc' = 'asc';
   selectedStatus: string = '';
   errorMessage: string = '';
-  // Dropdown options for 'statut'
+  selectedType: TypesEquipements | null = null;
+  selectedTypeId: number | null = null;
+  typesEquipements: TypesEquipements[] = [];
+  attributes: AttributEquipements[] = [];
   statuts = [
     { label: 'En service', value: 'En service' },
     { label: 'En panne', value: 'En panne' },
@@ -69,18 +77,89 @@ export class ListeEquipementsComponent implements OnInit {
     { label: 'En maintenance', value: 'En maintenance' }
   ];
 
-  constructor(private equipementService: EquipementService, private router: Router) {}
+  equipementsAttributs: { [key: number]: Map<string, string> } = {};
+
+  constructor(
+    private equipementService: EquipementService,
+    private typesEquipementsService: TypesEquipementsService
+  ) {}
 
   ngOnInit(): void {
     this.getEquipements();
+    this.getTypesEquipements(); // Fetch Types Equipements on component initialization
+    this.filteredEquipements = this.getEquipementsForPage();
   }
 
   getEquipements(): void {
     this.equipementService.getAllEquipements().subscribe((data: Equipement[]) => {
+      console.log(this.equipements);
       this.equipements = data;
-      this.filteredEquipements=data;
+      this.filteredEquipements = data;
+
+      // Vérifier si l'ID est défini avant de passer à la fonction
+      data.forEach((equipement) => {
+        if (equipement.id !== undefined) {
+          this.getAttributsByEquipement(equipement.id); // Appeler la fonction uniquement si id est défini
+        }
+      });
     });
   }
+
+  getAttributsByEquipement(equipementId: number): void {
+    this.equipementService.getAttributsByEquipement(equipementId).subscribe(
+      (attributs: Map<string, string>) => {
+        // Associe les attributs sous forme de Map à l'équipement correspondant
+        this.equipementsAttributs[equipementId] = attributs;
+        console.log(this.equipementsAttributs);
+      },
+      (error) => {
+        console.error('Erreur lors de la récupération des attributs : ', error);
+      }
+    );
+  }
+
+  getAttributs(equipementId: number) {
+    const attributsMap = this.equipementsAttributs[equipementId];
+
+    // Check if it's a plain object
+    if (typeof attributsMap === 'object' && !Array.isArray(attributsMap)) {
+      return Object.entries(attributsMap).map(([key, value]) => ({ key, value }));
+    }
+
+    // If it's a Map, you can use .entries()
+    if (attributsMap instanceof Map) {
+      return Array.from(attributsMap.entries()).map(([key, value]) => ({ key, value }));
+    }
+
+    return [];
+  }
+
+  getEquipementsForPage(): any[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return this.equipements.slice(startIndex, endIndex);
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.getTotalPages()) {
+      this.currentPage++;
+      this.filteredEquipements = this.getEquipementsForPage();
+    }
+  }
+
+  // Function to go to the previous page
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.filteredEquipements = this.getEquipementsForPage();
+    }
+  }
+
+  // Get the total number of pages
+  getTotalPages(): number {
+    return Math.ceil(this.equipements.length / this.itemsPerPage);
+  }
+
 
 
   filterEquipementsByName() {
@@ -101,21 +180,6 @@ export class ListeEquipementsComponent implements OnInit {
     } else {
       this.filteredEquipements = [...this.equipements]; // Réinitialiser si aucun statut sélectionné
     }
-  }
-
-
-
-
-  addAttribut() {
-    if (!this.equipement.attributs) {
-      this.equipement.attributs = [];
-    }
-    const existingAttributes = this.equipement.attributs.map(attr => attr.nom.toLowerCase());
-    if (existingAttributes.includes('marque') || existingAttributes.includes('modèle')) {
-      alert("L'attribut existe déjà !");
-      return;
-    }
-    this.equipement.attributs.push({ nom: '', valeur: '' });
   }
 
 
@@ -149,6 +213,7 @@ export class ListeEquipementsComponent implements OnInit {
   // Initialize an empty equipment object
   private initEquipement(): Equipement {
     return {
+      serviceNom: "",
       id: 0,
       image: '',
       nom: '',
@@ -156,8 +221,8 @@ export class ListeEquipementsComponent implements OnInit {
       numeroSerie: '',
       modele: '',
       marque: '',
-      localisation: '',
       statut: '',
+      actif: false,  // Default value for 'actif'
       dateAchat: '',
       dateMiseEnService: '',
       garantie: '',
@@ -165,12 +230,91 @@ export class ListeEquipementsComponent implements OnInit {
       frequenceMaintenance: '',
       historiquePannes: '',
       coutAchat: '',
-      attributs: [],
-      serviceNom: '',
-      serviceDetails: {id:0,nom:'',description:'', image:''},
+      typeEquipement: {
+        id: 0,
+        type: '',
+        image: '',
+        attributs:[]
+      },
+      attributsValeurs: [],  // Assuming this is an empty array initially
+      service: {
+        id: 0,
+        nom: '',
+        image: '',
+        description:''
+      },
+      piecesDetachees: [],  // Empty array for spare parts initially
+      salle: {
+        id: 0,
+        num: 1,
+        etage: {
+          id: 0,
+          num: 1,
+          salles: [],
+          batiment: {
+            id: 0,
+            numBatiment: 1,
+            intitule: '',
+            etages: []
+          }
+        }
+      },
+      etage: {
+        id: 0,
+        num: 1,
+        salles: [],
+        batiment: {        id: 0,
+          numBatiment: 1,
+          intitule:'',
+          etages:[]}
+      },
+      batiment: {
+        id: 0,
+        numBatiment: 1,
+        intitule:'',
+        etages:[]
+
+      }
     };
   }
 
+
+
+
+
+  getTypesEquipements(): void {
+    this.typesEquipementsService.getTypesEquipements().subscribe((data: TypesEquipements[]) => {
+      this.typesEquipements = data;
+    });
+  }
+
+  onTypeSelect(typeId: number | null): void {
+    if (typeId !== null) {
+      this.typesEquipementsService.getAttributesByTypeId(typeId).subscribe((attributes) => {
+        this.attributes = attributes;
+        this.selectedType = this.typesEquipements.find(type => type.id === typeId) || null;
+      });
+    } else {
+      this.selectedType = null; // Explicitly set to null if no type is selected
+    }
+  }
+
+
+
+
+  // Helper method to dynamically generate input fields based on attribute type
+  getInputType(attribute: AttributEquipements): string {
+    switch (attribute.attributEquipementType) {
+      case 'STRING': return 'text';
+      case 'NUMBER': return 'number';
+      case 'DATE': return 'date';
+      case 'BOOLEAN': return 'checkbox';
+      case 'FLOAT': return 'number';
+      case 'ENUM': return 'select'; // For ENUM, you'll need to handle this specially based on values
+      case 'LONGTEXT': return 'textarea';
+      default: return 'text';
+    }
+  }
 
   // Toggle form visibility
   toggleForm(): void {
@@ -193,9 +337,6 @@ export class ListeEquipementsComponent implements OnInit {
 exportToExcel(): void {
   // Extract all unique attribute names dynamically
   const allAttributes = new Set<string>();
-  this.equipements.forEach(equipement => {
-    equipement.attributs.forEach(attr => allAttributes.add(attr.nom));
-  });
 
   const attributeList = Array.from(allAttributes); // Convert Set to Array
 
@@ -208,7 +349,6 @@ exportToExcel(): void {
       'Numéro de Série': equipement.numeroSerie,
       'Modèle': equipement.modele,
       'Marque': equipement.marque,
-      'Localisation': equipement.localisation,
       'Statut': equipement.statut,
       'Date Achat': equipement.dateAchat,
       'Date Mise en Service': equipement.dateMiseEnService,
@@ -219,11 +359,6 @@ exportToExcel(): void {
       'Coût Achat (€)': equipement.coutAchat,
     };
 
-    // Add separate columns for each attribute
-    attributeList.forEach(attrName => {
-      const attribute = equipement.attributs.find(attr => attr.nom === attrName);
-      rowData[attrName] = attribute ? attribute.valeur : ''; // Assign value or empty if missing
-    });
 
     return rowData;
   });

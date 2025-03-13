@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {catchError, Observable, throwError} from 'rxjs';
-import {Equipement} from "../models/equipement";
-import {User} from "../models/user";
+import { catchError, Observable, throwError } from 'rxjs';
+import { Equipement } from "../models/equipement";
+import { User } from "../models/user";
+import { AttributEquipements } from "../models/attribut-equipement"; // Tu peux l'enlever si tu ne l'utilises plus pour la méthode getAttributsByEquipement
 
 
 @Injectable({
@@ -15,16 +16,19 @@ export class EquipementService {
   constructor(private http: HttpClient) {}
 
   createEquipement(equipement: Equipement): Observable<Equipement> {
-    return this.http.post<Equipement>(`${this.apiUrl}`, equipement).pipe(
-      catchError((error) => {
-        return throwError(() => error);
-      })
-    );
+    console.log("Payload being sent:", JSON.stringify(equipement, null, 2));
+    return this.http.post<Equipement>(`${this.apiUrl}/create`, equipement);
+  }
+
+  // Modifié pour renvoyer un Map<string, string> au lieu d'un tableau d'objets AttributEquipements
+  getAttributsByEquipement(equipementId: number): Observable<Map<string, string>> {
+    return this.http.get<Map<string, string>>(`${this.apiUrl}/${equipementId}/attributs`);
   }
 
   getPiecesDetacheesByEquipementId(id: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${id}/pieces`);
   }
+
   getEquipementsByService(serviceId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/service/${serviceId}`);
   }
@@ -38,7 +42,7 @@ export class EquipementService {
     return this.http.put<Equipement>(`${this.apiUrl}/${id}`, equipement);
   }
 
-  getEquipementById(id: number) {
+  getEquipementById(id: number): Observable<Equipement> {
     return this.http.get<Equipement>(`${this.apiUrl}/${id}`);
   }
 

@@ -21,7 +21,6 @@ public class EquipementDTO {
     private String numeroSerie;
     private String modele;
     private String marque;
-    private String localisation;
     private String statut;
     private String serviceNom;
     private LocalDate dateAchat;
@@ -43,6 +42,11 @@ public class EquipementDTO {
     // Liste des attributs dynamiques
     private List<AttributEquipementValeurDTO> attributs;
 
+    // Champs pour les relations Batiment, Etage et Salle
+    private String batimentNom;
+    private Integer etageNum;
+    private Integer salleNum;
+
     // Constructor to map Equipement to EquipementDTO
     public EquipementDTO(Equipement equipement) {
         this.id = equipement.getId();
@@ -51,7 +55,6 @@ public class EquipementDTO {
         this.numeroSerie = equipement.getNumeroSerie();
         this.modele = equipement.getModele();
         this.marque = equipement.getMarque();
-        this.localisation = equipement.getLocalisation();
         this.statut = equipement.getStatut();
         this.dateAchat = equipement.getDateAchat();
         this.dateMiseEnService = equipement.getDateMiseEnService();
@@ -83,5 +86,11 @@ public class EquipementDTO {
         this.attributs = equipement.getAttributsValeurs() != null ? equipement.getAttributsValeurs().stream()
                 .map(AttributEquipementValeurDTO::new)
                 .collect(Collectors.toList()) : Collections.emptyList();
+
+// Assuming equipement.getEtage().getBatiment() is how you access the associated building (Batiment)
+        this.batimentNom = equipement.getBatiment() != null ? equipement.getBatiment().getIntitule() : null;
+        this.etageNum = equipement.getEtage() != null ? equipement.getEtage().getNum() : null;
+        this.salleNum = equipement.getSalle() != null ? equipement.getSalle().getNum() : null;
+
     }
 }

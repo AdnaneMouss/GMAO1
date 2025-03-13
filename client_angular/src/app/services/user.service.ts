@@ -19,9 +19,25 @@ export class UserService {
     return this.http.get<User>(`${this.apiUrl}/${id}`);
   }
 
-  createUser(user: User): Observable<User> {
-    return this.http.post<User>(`${this.apiUrl}/add`, user);
+  createUser(user: User, file: File): Observable<User> {
+    const formData = new FormData();
+
+    // Append the user data to the FormData object
+    formData.append('nom', user.nom);
+    formData.append('email', user.email);
+    formData.append('password', user.password);
+    formData.append('gsm', user.gsm);
+    formData.append('role', user.role);
+    formData.append('username', user.username);
+    formData.append('civilite', user.civilite);
+
+    // Append the file (image) to the FormData object
+    formData.append('file', file, file.name); // 'file' is the key expected by the backend
+
+    // Send the request with the form data
+    return this.http.post<User>(`${this.apiUrl}/add`, formData);
   }
+
 
   updateUser(id: number, user: User): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/${id}`, user);

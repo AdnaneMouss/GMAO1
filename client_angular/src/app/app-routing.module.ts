@@ -40,7 +40,6 @@ import {
 } from "./components/Utilisateurs/gestion-acces-utilisateurs/gestion-acces-utilisateurs.component";
 import {DashboardComponent} from "./components/dashboard/dashboard.component";
 import {ListeEquipementsComponent} from "./components/Equipements/liste-equipements/liste-equipements.component";
-import {DetailsEquipementsComponent} from "./components/Equipements/details-equipements/details-equipements.component";
 import {
   EquipementsParCategorieComponent
 } from "./components/Equipements/equipements-par-categorie/equipements-par-categorie.component";
@@ -51,6 +50,7 @@ import {
 } from "./components/Equipements/details-equipements-pieces/details-equipements-pieces.component";
 import {TypesEquipementsComponent} from "./components/Equipements/types-equipements/types-equipements.component";
 import {BatimentsListeComponent} from "./components/batiments/batiments-liste/batiments-liste.component";
+import {EquipementFormComponent} from "./equipement-form/equipement-form.component";
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -61,8 +61,8 @@ const routes: Routes = [
   { path: 'details/:id', component: DetailsUtilisateursComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'detail/:id', component: DetailsStockComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'equipements/liste', component: ListeEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
+  { path: 'test', component: EquipementFormComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
   { path: 'equipements/type_equipements', component: TypesEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
-  { path: 'details-equipements/:id', component: DetailsEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'equipements/categories', component: CategoriesEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'equipements/:serviceId', component: EquipementsParCategorieComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'equipement/:id/pieces', component: DetailsEquipementsPiecesComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },

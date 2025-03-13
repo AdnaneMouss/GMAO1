@@ -5,7 +5,10 @@ import { EtageService } from '../../../services/etage.service';
 import {Service} from "../../../models/service";
 import {Etage} from "../../../models/etage";
 import {Salle} from "../../../models/salle";
-import {SalleService} from "../../../services/salle.service"; // Import EtageService
+import {SalleService} from "../../../services/salle.service";
+
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-batiments-liste',
@@ -21,13 +24,15 @@ export class BatimentsListeComponent implements OnInit {
   selectedEtage: any | null = null;
   salles: any[] = [];
   filteredBatiments = [...this.batiments];
-  errorMessage: string = '';
+  errorMessageBatiment: string = '';
+  errorMessageEtage: string = '';
+  errorMessageSalle: string = '';
   showForm: boolean = false;
   newBatiment: Batiment = {id:0, numBatiment: 1, intitule: '', etages: []};
   newEtage: number = 1;
   newSalle: number = 1;
   showEtageForm: boolean = false;
-  isLoading: boolean = false;  // Add this line for the loading state
+  isLoading: boolean = false;
 
 
   constructor(private batimentService: BatimentService, private etageService: EtageService, private salleService: SalleService) { }
@@ -83,11 +88,10 @@ export class BatimentsListeComponent implements OnInit {
   resetForm(): void {
     this.newBatiment = {id:0, numBatiment: 0, intitule: '', etages: []};
     this.showForm = false;
-    this.errorMessage = '';
   }
 
   addBatiment(): void {
-    this.errorMessage = '';
+    this.errorMessageBatiment = '';
     this.batimentService.createBatiment(this.newBatiment).subscribe(
       (savedBatiment: Batiment) => {
         console.log('Service ajouté avec succès:', savedBatiment);
@@ -98,7 +102,7 @@ export class BatimentsListeComponent implements OnInit {
       (error) => {
         console.error('Erreur lors de l\'ajout du batiment:', error);
         if (error.status != 200) {
-          this.errorMessage = 'Un batiment avec ces informations existe déjà.';
+          this.errorMessageBatiment = 'Un batiment avec ces informations existe déjà.';
         }
       }
     );
@@ -107,7 +111,7 @@ export class BatimentsListeComponent implements OnInit {
 
 
   addEtage(): void {
-    this.errorMessage='';
+    this.errorMessageEtage='';
     if (this.selectedBatiment && this.newEtage) {
       const etage: Etage = {
         id: 0,
@@ -128,7 +132,7 @@ export class BatimentsListeComponent implements OnInit {
         },
         (error) => {
           if (error.status != 200) {
-            this.errorMessage = 'Cet étage existe déjà.';
+            this.errorMessageEtage = 'Cet étage existe déjà.';
           }
         }
       );
@@ -136,7 +140,7 @@ export class BatimentsListeComponent implements OnInit {
   }
 
   addSalle(): void {
-    this.errorMessage = '';
+    this.errorMessageSalle = '';
 
     if (this.selectedEtage && this.newSalle) {
       const salle: Salle = {
@@ -154,11 +158,66 @@ export class BatimentsListeComponent implements OnInit {
         },
         (error) => {
           if (error.status !== 200) {
-            this.errorMessage = 'Cette salle existe déjà.';
+            this.errorMessageSalle = 'Cette salle existe déjà.';
           }
         }
       );
     }
   }
+
+
+  exportExcel(): void {
+    const data: any[] = [];
+
+    this.batiments.forEach((batiment) => {
+      batiment.etages.forEach((etage, etageIndex) => {
+        etage.salles.forEach((salle, salleIndex) => {
+          data.push({
+            'Nom Bâtiment': etageIndex === 0 && salleIndex === 0 ? batiment.intitule : '',
+            'Numéro Étage': salleIndex === 0 ? etage.num : '',
+            'Numéro Salle': salle.num
+          });
+        });
+
+
+        if (etage.salles.length === 0) {
+          data.push({
+            'Nom Bâtiment': etageIndex === 0 ? batiment.intitule : '',
+            'Numéro Étage': etage.num,
+            'Numéro Salle': ''
+          });
+        }
+      });
+
+
+      if (batiment.etages.length === 0) {
+        data.push({
+          'Nom Bâtiment': batiment.intitule,
+          'Numéro Étage': '',
+          'Numéro Salle': ''
+        });
+      }
+    });
+
+    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+
+    // Auto-width pour un affichage propre
+    const wsCols = [
+      { wch: 20 }, // Nom Bâtiment
+      { wch: 15 }, // Numéro Étage
+      { wch: 15 }  // Numéro Salle
+    ];
+    worksheet['!cols'] = wsCols;
+
+    const workbook: XLSX.WorkBook = {
+      Sheets: { 'Bâtiments': worksheet },
+      SheetNames: ['Bâtiments']
+    };
+    const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    saveAs(blob, 'Batiments.xlsx');
+  }
+
 
 }

@@ -2,17 +2,19 @@ package com.huir.GmaoApp.service;
 
 import com.huir.GmaoApp.dto.AttributEquipementsDTO;
 import com.huir.GmaoApp.dto.UserDTO;
-import com.huir.GmaoApp.model.AttributEquipementType;
-import com.huir.GmaoApp.model.AttributEquipements;
-import com.huir.GmaoApp.model.User;
+import com.huir.GmaoApp.model.*;
 import com.huir.GmaoApp.repository.AttributEquipementsRepository;
+import com.huir.GmaoApp.repository.AttributEquipementsValeursRepository;
+import com.huir.GmaoApp.repository.EquipementRepository;
 import com.huir.GmaoApp.repository.TypesEquipementsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -22,6 +24,13 @@ public class AttributEquipementsService {
 
     private final AttributEquipementsRepository attributEquipementsRepository;
     private final TypesEquipementsRepository typesEquipementsRepository;
+    private final EquipementRepository equipementRepository;
+;
+
+
+
+
+
 
     public List<AttributEquipementsDTO> getAttributesByTypeId(Long typeEquipementId) {
         return attributEquipementsRepository.findByTypeEquipementId(typeEquipementId)

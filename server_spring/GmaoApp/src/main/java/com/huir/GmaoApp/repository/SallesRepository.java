@@ -13,4 +13,9 @@ public interface SallesRepository extends JpaRepository<Salle, Long> {
     Salle findById(long id);
 
     boolean existsByNumAndEtageId(int num, Long etageId);
+
+
+    Salle findByNum(int i);
+
+    Salle findByNumAndEtageNum(int salleNum, int etageNum);
 }

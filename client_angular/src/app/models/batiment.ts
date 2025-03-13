@@ -6,3 +6,6 @@ export interface Batiment {
   intitule: string;
   etages: Etage[];  // List of Etages in the Batiment
 }
+
+
+

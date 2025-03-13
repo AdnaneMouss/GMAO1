@@ -10,9 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -41,26 +47,58 @@ public class ServicesController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createService(@RequestBody ServiceDTO serviceDTO) {
-        if (serviceService.existsByNom(serviceDTO.getNom())) {
+    public ResponseEntity<?> createServiceWithImage(@RequestParam("file") MultipartFile file,
+                                                    @RequestParam("nom") String nom,
+                                                    @RequestParam("description") String description) {
+        // Check if service with the given name already exists
+        if (serviceService.existsByNom(nom)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Ce nom est déjà utilisé.");
         }
 
-
+        // Create the service
         Services service = new Services();
-        service.setNom(serviceDTO.getNom());
-        service.setImage(serviceDTO.getImage());
-        service.setDescription(serviceDTO.getDescription());
+        service.setNom(nom);
+        service.setDescription(description);
 
-        Services savedService = serviceService.saveService(service);
-        return ResponseEntity.ok(new ServiceDTO(savedService));
+        try {
+            // Handle image upload
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            // Save the file in the static/uploads folder within the resources
+            Path filePath = Paths.get("uploads", fileName);  // Just save to 'uploads' directly (relative to project root)
+            Files.createDirectories(filePath.getParent());
+            Files.write(filePath, file.getBytes());
+
+            // Set the image URL in the service (relative to static folder)
+            String imageUrl = fileName;
+            service.setImage(imageUrl);
+
+            // Save the service to the database
+            Services savedService = serviceService.saveService(service);
+
+            // Return the saved service data along with its image URL
+            return ResponseEntity.ok(new ServiceDTO(savedService));
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Image upload failed");
+        }
     }
 
 
     @PutMapping("/{id}")
-    public ServiceDTO updateUser(@PathVariable Long id, @RequestBody ServiceDTO serviceDTO) {
-        return serviceService.updateservice(id, serviceDTO);
+    public ResponseEntity<ServiceDTO> updateService(
+            @PathVariable Long id,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam("nom") String nom,
+            @RequestParam("description") String description) {
+
+        ServiceDTO serviceDTO = new ServiceDTO();
+        serviceDTO.setNom(nom);
+        serviceDTO.setDescription(description);
+
+        ServiceDTO updatedService = serviceService.updateService(id, imageFile, serviceDTO);
+        return updatedService != null ? ResponseEntity.ok(updatedService) : ResponseEntity.notFound().build();
     }
+
 
     // Delete service
     @DeleteMapping("/{id}")

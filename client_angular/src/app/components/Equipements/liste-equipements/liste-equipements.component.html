@@ -1,114 +1,31 @@
 <div class="container mx-auto p-8">
 
 
-  <!-- Equipment Form Panel -->
-  <div *ngIf="showForm" class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-lg w-full max-w-3xl p-6 relative overflow-y-auto max-h-[90vh]">
-      <!-- Close button inside panel (top-right corner) -->
-      <button (click)="showForm = false" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-semibold">
-        <i class="fas fa-times"></i>
-      </button>
 
-      <h2 class="text-2xl font-semibold mb-4 text-center">Ajouter un équipement</h2>
+  <!-- Display Equipments Table
+  <h3>Liste des équipements</h3>
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Nom</th>
+      <th>Type</th>
+      <th>Statut</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let equipement of filteredEquipements">
+      <td>{{ equipement.nom }}</td>
+      <td>{{ equipement.type }}</td>
+      <td>{{ equipement.statut }}</td>
+      <td>
+        <button class="btn btn-warning" (click)="editEquipement(equipement)">Modifier</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+-->
 
-      <form (ngSubmit)="saveEquipement()" #equipementForm="ngForm">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label for="nom" class="block text-sm font-medium text-gray-700">Nom <span class="text-red-500">*</span></label>
-            <input id="nom" type="text" [(ngModel)]="equipement.nom" name="nom" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #nom="ngModel">
-            <div *ngIf="nom.invalid && nom.touched" class="text-red-500 text-sm">Le nom est requis.</div>
-          </div>
-          <div>
-            <label for="numeroSerie" class="block text-sm font-medium text-gray-700">Numéro de série <span class="text-red-500">*</span></label>
-            <input id="numeroSerie" type="text" [(ngModel)]="equipement.numeroSerie" name="numeroSerie" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #numeroSerie="ngModel">
-            <div *ngIf="numeroSerie.invalid && numeroSerie.touched" class="text-red-500 text-sm">Le numéro de série est requis.</div>
-            <div *ngIf="errorMessage" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
-          </div>
-
-
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label for="statut" class="block text-sm font-medium text-gray-700">Statut <span class="text-red-500">*</span></label>
-            <select id="statut" [(ngModel)]="equipement.statut" name="statut" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #statut="ngModel">
-              <option *ngFor="let statutOption of statuts" [value]="statutOption.value">{{ statutOption.label }}</option>
-            </select>
-            <div *ngIf="statut.invalid && statut.touched" class="text-red-500 text-sm">Le statut est requis.</div>
-          </div>
-
-          <div>
-            <label for="localisation" class="block text-sm font-medium text-gray-700">Localisation <span class="text-red-500">*</span></label>
-            <input id="localisation" type="text" [(ngModel)]="equipement.localisation" name="localisation" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #localisation="ngModel">
-            <div *ngIf="localisation.invalid && localisation.touched" class="text-red-500 text-sm">La localisation est requise.</div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label for="dateAchat" class="block text-sm font-medium text-gray-700">Date d'achat <span class="text-red-500">*</span></label>
-            <input id="dateAchat" type="date" [(ngModel)]="equipement.dateAchat" name="dateAchat" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #dateAchat="ngModel">
-            <div *ngIf="dateAchat.invalid && dateAchat.touched" class="text-red-500 text-sm">La date d'achat est requise.</div>
-          </div>
-          <div>
-            <label for="dateMiseEnService" class="block text-sm font-medium text-gray-700">Date de mise en service <span class="text-red-500">*</span></label>
-            <input id="dateMiseEnService" type="date" [(ngModel)]="equipement.dateMiseEnService" name="dateMiseEnService" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #dateMiseEnService="ngModel">
-            <div *ngIf="dateMiseEnService.invalid && dateMiseEnService.touched" class="text-red-500 text-sm">La date de mise en service est requise.</div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label for="garantie" class="block text-sm font-medium text-gray-700">Garantie <span class="text-red-500">*</span></label>
-            <input id="garantie" type="text" [(ngModel)]="equipement.garantie" name="garantie" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #garantie="ngModel">
-            <div *ngIf="garantie.invalid && garantie.touched" class="text-red-500 text-sm">La garantie est requise.</div>
-          </div>
-          <div>
-            <label for="frequenceMaintenance" class="block text-sm font-medium text-gray-700">Fréquence de maintenance <span class="text-red-500">*</span></label>
-            <input id="frequenceMaintenance" type="text" [(ngModel)]="equipement.frequenceMaintenance" name="frequenceMaintenance" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #frequenceMaintenance="ngModel">
-            <div *ngIf="frequenceMaintenance.invalid && frequenceMaintenance.touched" class="text-red-500 text-sm">La fréquence de maintenance est requise.</div>
-          </div>
-        </div>
-
-        <!-- Optional Fields -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label for="marque" class="block text-sm font-medium text-gray-700">Marque (Optionnel)</label>
-            <input id="marque" type="text" [(ngModel)]="equipement.marque" name="marque" class="mt-2 p-3 border border-gray-300 rounded-md w-full">
-          </div>
-          <div>
-            <label for="modele" class="block text-sm font-medium text-gray-700">Modèle (Optionnel)</label>
-            <input id="modele" type="text" [(ngModel)]="equipement.modele" name="modele" class="mt-2 p-3 border border-gray-300 rounded-md w-full">
-          </div>
-        </div>
-
-        <!-- Dynamic Attributes Section -->
-        <h3 class="text-lg font-semibold mb-4">Attributs supplémentaires</h3>
-        <div *ngFor="let attribut of equipement.attributs; let i = index" class="mb-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-sm font-medium text-gray-700">Nom de l'attribut</label>
-              <input type="text" [(ngModel)]="attribut.nom" name="attributNom{{i}}" class="mt-2 p-3 border border-gray-300 rounded-md w-full" #attributNom="ngModel">
-            </div>
-            <div>
-              <label class="text-sm font-medium text-gray-700">Valeur de l'attribut</label>
-              <input type="text" [(ngModel)]="attribut.valeur" name="attributValeur{{i}}" class="mt-2 p-3 border border-gray-300 rounded-md w-full" #attributValeur="ngModel">
-            </div>
-          </div>
-          <button type="button" (click)="equipement.attributs.splice(i, 1)" class="text-red-500 hover:text-red-700 mt-2">
-            <i class="fas fa-trash-alt"></i> Supprimer cet attribut
-          </button>
-        </div>
-
-        <button type="button" (click)="addAttribut()" class="bg-blue-500 text-white py-2 px-4 rounded-md mt-4 hover:bg-blue-600">
-          <i class="fas fa-plus-circle"></i> Ajouter un attribut
-        </button>
-        <button type="submit" [disabled]="equipementForm.invalid" class="bg-green-500 text-white py-2 px-4 rounded-md mt-4 hover:bg-green-600">
-          <i class="fas fa-save"></i> Enregistrer l'équipement
-        </button>
-      </form>
-    </div>
-  </div>
   <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6">
     <!-- Conteneur principal en flex -->
     <h2 class="text-2xl font-bold text-gray-700">Gestion des Équipements</h2>
@@ -155,86 +72,95 @@
 
 
 <br>
-    <div class="overflow-x-auto">
-      <table class="min-w-full border-collapse rounded-lg overflow-hidden">
-        <thead class="bg-green-700 text-white uppercase text-sm font-semibold">
-        <tr>
-          <th class="px-6 py-4 text-left">Image</th>
-          <th class="px-6 py-4 text-left cursor-pointer" (click)="sortTable('nom')">
-            <div class="flex items-center">
-              <span>Nom</span>
-              <i class="ml-2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-                  <path *ngIf="sortColumn === 'nom' && sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                  <path *ngIf="sortColumn === 'nom' && sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                  <path *ngIf="sortColumn !== 'nom'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                </svg>
-              </i>
-            </div>
-          </th>
-          <th class="px-6 py-4 text-left cursor-pointer" (click)="sortTable('numeroSerie')">
-            <div class="flex items-center">
-              <span>Numéro de Série</span>
-              <i class="ml-2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-                  <path *ngIf="sortColumn === 'numeroSerie' && sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                  <path *ngIf="sortColumn === 'numeroSerie' && sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                  <path *ngIf="sortColumn !== 'numeroSerie'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                </svg>
-              </i>
-            </div>
-          </th>
-          <th class="px-6 py-4 text-left cursor-pointer" (click)="sortTable('statut')">
-            <div class="flex items-center">
-              <span>Statut</span>
-              <i class="ml-2 text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-                  <path *ngIf="sortColumn === 'statut' && sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                  <path *ngIf="sortColumn === 'statut' && sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                  <path *ngIf="sortColumn !== 'statut'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                </svg>
-              </i>
-            </div>
-          </th>
-          <th class="px-6 py-4 text-left">Détails</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let equipement of filteredEquipements" class="border-b hover:bg-gray-50 transition duration-200">
-          <td class="px-6 py-4 text-gray-700">
-            <img [src]="equipement.image || 'https://via.placeholder.com/50'" alt="equipement image" class="w-12 h-12 rounded-full">
-          </td>
-          <td class="px-6 py-4 text-gray-700">{{ equipement.nom }}</td>
-          <td class="px-6 py-4 text-gray-500">{{ equipement.numeroSerie }}</td>
-          <td class="px-6 py-4">
-            <span
-              class="px-3 py-1 text-xs font-semibold rounded-full"
-              [ngClass]="{
-                'bg-green-100 text-green-700': equipement.statut === 'En service',
-                'bg-orange-100 text-orange-700': equipement.statut === 'En panne',
-                'bg-yellow-100 text-yellow-700': equipement.statut === 'En maintenance',
-                'bg-red-100 text-red-700': equipement.statut === 'Hors service'
-              }"
-            >
-              {{ equipement.statut }}
-            </span>
-          </td>
-          <td class="px-6 py-4 text-center space-x-2">
-            <button [routerLink]="['/details-equipements', equipement.id]"
-                    class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition duration-200">
-              🔍 Voir détails
-            </button>
+    <div class="max-w-full overflow-x-auto">
+      <div class="w-[1800px] overflow-x-scroll scrollbar-thin scrollbar-track-gray-100">
+        <table class="min-w-max border-collapse rounded-lg overflow-hidden shadow-lg">
+          <thead class="bg-green-700 text-white uppercase text-sm font-semibold">
+          <tr>
+            <th class="px-8 py-4 text-left">Image</th>
+            <th class="px-8 py-4 text-left cursor-pointer" (click)="sortTable('nom')">Nom</th>
+            <th class="px-8 py-4 text-left">Description</th>
+            <th class="px-8 py-4 text-left cursor-pointer" (click)="sortTable('numeroSerie')">Numéro de Série</th>
+            <th class="px-8 py-4 text-left">Modèle</th>
+            <th class="px-8 py-4 text-left">Marque</th>
+            <th class="px-8 py-4 text-left">Statut</th>
+            <th class="px-8 py-4 text-left">Actif</th>
+            <th class="px-8 py-4 text-left">Date Achat</th>
+            <th class="px-8 py-4 text-left">Date Mise en Service</th>
+            <th class="px-8 py-4 text-left">Garantie</th>
+            <th class="px-8 py-4 text-left">Dernière Maintenance</th>
+            <th class="px-8 py-4 text-left">Fréquence Maintenance</th>
+            <th class="px-8 py-4 text-left">Historique Pannes</th>
+            <th class="px-8 py-4 text-left">Coût Achat</th>
+            <th class="px-8 py-4 text-left">Attributs secondaires</th>
+            <th class="px-8 py-4 text-left">Action</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let equipement of filteredEquipements" class="border-b hover:bg-gray-100 transition duration-200">
+            <td class="px-8 py-4">
+              <img [src]="equipement.image || 'https://via.placeholder.com/50'"
+                   alt="equipement image"
+                   class="w-14 h-14 rounded-full border border-gray-300 shadow-sm">
+            </td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ equipement.nom }}</td>
+            <td class="px-8 py-4">{{ equipement.description }}</td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ equipement.numeroSerie }}</td>
+            <td class="px-8 py-4">{{ equipement.modele }}</td>
+            <td class="px-8 py-4">{{ equipement.marque }}</td>
+            <td class="px-8 py-4">
+      <span class="px-4 py-2 text-xs font-semibold rounded-full"
+            [ngClass]="{
+              'bg-green-100 text-green-700': equipement.statut === 'En service',
+              'bg-orange-100 text-orange-700': equipement.statut === 'En panne',
+              'bg-yellow-100 text-yellow-700': equipement.statut === 'En maintenance',
+              'bg-red-100 text-red-700': equipement.statut === 'Hors service'
+            }">
+        {{ equipement.statut }}
+      </span>
+            </td>
+            <td class="px-8 py-4">
+      <span [ngClass]="{'text-green-600 font-bold': equipement.actif, 'text-red-600 font-bold': !equipement.actif}">
+        {{ equipement.actif ? 'Oui' : 'Non' }}
+      </span>
+            </td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ equipement.dateAchat }}</td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ equipement.dateMiseEnService }}</td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ equipement.garantie }}</td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ equipement.dateDerniereMaintenance }}</td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ equipement.frequenceMaintenance }}</td>
+            <td class="px-8 py-4">{{ equipement.historiquePannes }}</td>
+            <td class="px-8 py-4">{{ equipement.coutAchat }}</td>
 
-            <button [routerLink]="['/equipement', equipement.id, 'pieces']"
-                    class="px-4 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-md transition duration-200">
-              🛠️ Gérer les pièces
-            </button>
-          </td>
+            <!-- New TD for displaying attributes -->
+            <td class="px-8 py-4">
+              <!-- Check if equipement.id exists -->
+              <div *ngIf="equipement.id">
+                <div *ngFor="let attribut of getAttributs(equipement.id)">
+                  <p><b>{{ attribut.key }}</b>: {{ attribut.value }}</p>
+                </div>
+              </div>
+            </td>
 
-        </tr>
-        </tbody>
-      </table>
+            <td class="px-8 py-4 text-center space-x-2">
+              <button [routerLink]="['/details-equipements', equipement.id]"
+                      class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition duration-200">
+                🔍 Voir détails
+              </button>
+              <button [routerLink]="['/equipement', equipement.id, 'pieces']"
+                      class="px-4 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-md transition duration-200">
+                🛠️ Gérer les pièces
+              </button>
+            </td>
+          </tr>
+          </tbody>
+
+        </table>
+      </div>
     </div>
+
+
+
   </div>
 
 </div>

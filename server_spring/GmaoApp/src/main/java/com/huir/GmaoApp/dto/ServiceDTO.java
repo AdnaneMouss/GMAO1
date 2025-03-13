@@ -18,7 +18,6 @@ public class ServiceDTO {
     private String nom;
     private String image;
     private String description;
-
     private List<EquipementDTO> equipements;
 
     public ServiceDTO(Services services) {

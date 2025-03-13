@@ -5,14 +5,19 @@ import com.huir.GmaoApp.dto.UserDTO;
 import com.huir.GmaoApp.model.AttributEquipementType;
 import com.huir.GmaoApp.model.AttributEquipements;
 import com.huir.GmaoApp.model.TypesEquipements;
+import com.huir.GmaoApp.repository.AttributEquipementsRepository;
 import com.huir.GmaoApp.repository.TypesEquipementsRepository;
 import com.huir.GmaoApp.service.AttributEquipementsService;
+import com.huir.GmaoApp.service.EquipementService;
 import com.huir.GmaoApp.service.TypesEquipementsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -25,6 +30,15 @@ public class AttributEquipementsController {
 
 @Autowired
 private final TypesEquipementsRepository typesEquipementsRepository;
+@Autowired
+private AttributEquipementsRepository attributEquipementsRepository;
+
+
+    @GetMapping
+public List<AttributEquipements> getAll() {
+    return attributEquipementsRepository.findAll();
+}
+
 
 
     @PostMapping

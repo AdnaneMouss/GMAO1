@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -34,12 +35,13 @@ public class UserController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Map<String, String>> addUser(@RequestBody UserDTO utilisateurDTO) {
+    public ResponseEntity<String> addUser(@RequestParam("file") MultipartFile file, @RequestBody UserDTO utilisateurDTO) {
         try {
-            userService.addUser(utilisateurDTO);
-            return ResponseEntity.ok(Map.of("message", "User added successfully."));
+            // Call the service to handle user creation and image upload
+            userService.addUser(utilisateurDTO, file);
+            return ResponseEntity.ok("User successfully created with image: " + utilisateurDTO.getImage());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Error adding user."));
+            return ResponseEntity.status(500).body("Image upload failed: " + e.getMessage());
         }
     }
 

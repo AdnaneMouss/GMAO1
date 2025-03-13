@@ -11,9 +11,13 @@ export class AppComponent {
     throw new Error('Method not implemented.');
   }
   shouldShowNavbar = true;  // Default to true (show navbar)
+  isLoginPage = false;
 
-  constructor(private router: Router) {}
-
+  constructor(private router: Router) {
+    this.router.events.subscribe(() => {
+      this.isLoginPage = this.router.url === '/login'; // Adjust the path if needed
+    });
+  }
   ngOnInit(): void {
     this.router.events.subscribe(() => {
       // Check the current route and decide whether to show the navbar

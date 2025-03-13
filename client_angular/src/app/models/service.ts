@@ -3,4 +3,5 @@ export interface Service {
   nom: string;
   description: string;
   image: string;
+  imageFile?: File;
 }

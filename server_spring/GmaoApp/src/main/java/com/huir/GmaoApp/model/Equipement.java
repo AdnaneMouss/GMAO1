@@ -1,6 +1,7 @@
 package com.huir.GmaoApp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
@@ -27,10 +28,9 @@ public class Equipement {
     private String numeroSerie;
     private String modele;
     private String marque;
-    private String localisation;
     private String statut;
-    private boolean actif; // Indique si l'équipement est toujours en service
-
+    private boolean actif;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
     private LocalDate dateAchat;
     private LocalDate dateMiseEnService;
     private String garantie;
@@ -45,7 +45,7 @@ public class Equipement {
     private TypesEquipements typeEquipement;
 
     // Relation avec les attributs et leurs valeurs
-    @OneToMany(mappedBy = "equipement", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "equipement", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AttributEquipementValeur> attributsValeurs;
 
     // Relation avec le service auquel appartient l’équipement

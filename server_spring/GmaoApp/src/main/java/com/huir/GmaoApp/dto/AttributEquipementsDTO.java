@@ -26,6 +26,7 @@ public class AttributEquipementsDTO {
         this.id = attributEquipements.getId();
         this.nom = attributEquipements.getNom();
         this.obligatoire=attributEquipements.getObligatoire();
+        this.actif=attributEquipements.getActif();
         // Convert the enum to String here
         this.attributEquipementType = attributEquipements.getAttributEquipementType() != null
                 ? attributEquipements.getAttributEquipementType().name()

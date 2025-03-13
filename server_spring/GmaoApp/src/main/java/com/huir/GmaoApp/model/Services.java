@@ -22,6 +22,7 @@ public class Services {
     @Column
     private String image;
 
+
     @Column
     private String description;
 
