@@ -87,4 +87,6 @@ public class Equipement {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "batiment_id")
     private Batiment batiment;
+    
+    
 }
