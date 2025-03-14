@@ -23,7 +23,7 @@ public class BatimentDTO {
         this.id = batiment.getId();
         this.numBatiment = batiment.getNumBatiment();
         this.intitule = batiment.getIntitule();
-        this.actif = batiment.getActif();
+        this.actif = batiment.isActif();
         this.etages = batiment.getEtages() != null
                 ? batiment.getEtages().stream()
                 .map(EtageDTO::new)

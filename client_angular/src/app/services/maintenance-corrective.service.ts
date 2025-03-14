@@ -26,6 +26,10 @@ export class MaintenanceCorrectiveService {
     return this.http.post<MaintenanceCorrective>(`${this.apiUrl}/add`, maintenance);
   }
 
+  requestMaintenance(maintenance: MaintenanceCorrective): Observable<MaintenanceCorrective> {
+    return this.http.post<MaintenanceCorrective>(`${this.apiUrl}/request`, maintenance);
+  }
+
   // Start a maintenance task
   startTask(id: number): Observable<MaintenanceCorrective> {
     return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${id}/start`, {});
@@ -33,6 +37,10 @@ export class MaintenanceCorrectiveService {
 
   cancelTask(id: number): Observable<MaintenanceCorrective> {
     return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${id}/cancel`, {});
+  }
+
+  approveRequest(id: number, requestDTO: Partial<MaintenanceCorrective>): Observable<MaintenanceCorrective> {
+    return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${id}/approveRequest`, requestDTO);
   }
 
   // Mark a maintenance task as completed
@@ -46,5 +54,9 @@ export class MaintenanceCorrectiveService {
 
   updateMaintenanceCorrective(maintenanceId: number, maintenance: MaintenanceCorrective): Observable<MaintenanceCorrective> {
     return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${maintenanceId}`, maintenance);
+  }
+
+  updateMaintenanceCorrectiveLambda(maintenanceId: number, maintenance: MaintenanceCorrective): Observable<MaintenanceCorrective> {
+    return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${maintenanceId}/updateRequest`, maintenance);
   }
 }

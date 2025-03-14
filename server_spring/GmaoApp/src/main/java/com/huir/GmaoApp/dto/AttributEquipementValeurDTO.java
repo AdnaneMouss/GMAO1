@@ -26,4 +26,5 @@ public class AttributEquipementValeurDTO {
                 ? attributEquipementValeur.getTypeEquipement().getId()
                 : null;
     }
+
 }

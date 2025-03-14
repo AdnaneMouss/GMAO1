@@ -16,6 +16,13 @@
 
     <div class="flex space-x-4 justify-end w-full sm:w-auto">
       <button
+        [routerLink]="'/maintenances/demandes/accepter-demande'"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 transition duration-200 text-sm font-medium shadow-sm"
+      >
+        <i class="fas fa-history fa-sm"></i>
+       Demandes
+      </button>
+      <button
         [routerLink]="'/maintenances/historique-maintenances-correctives'"
         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 transition duration-200 text-sm font-medium shadow-sm"
       >
@@ -374,7 +381,6 @@
       <input type="date" [(ngModel)]="startDate" (change)="applyFilters()" class="px-4 py-2 border rounded-md" title="Sélectionnez une date de début" />
       <input type="date" [(ngModel)]="endDate" (change)="applyFilters()" class="px-4 py-2 border rounded-md" title="Sélectionnez une date de fin" />
     </div>
-
     <div *ngIf="isLoading" class="text-center text-gray-500">Chargement des maintenances...</div>
 
     <div class="overflow-x-auto rounded-xl shadow-md bg-white">

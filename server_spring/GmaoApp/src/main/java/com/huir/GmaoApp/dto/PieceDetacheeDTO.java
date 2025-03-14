@@ -18,7 +18,6 @@ public class PieceDetacheeDTO {
 	private String reference;
 	private String fournisseur;
 	private int quantiteMinimale;
-	private List<String> historiqueUtilisation;
 	private String image;
 	private String statut;
 	private int quantiteStock;  // Added quantiteStock field
@@ -34,7 +33,6 @@ public class PieceDetacheeDTO {
 		this.reference = pieceDetachee.getReference();
 		this.fournisseur = pieceDetachee.getFournisseur();
 		this.quantiteMinimale = pieceDetachee.getQuantiteMinimale();
-		this.historiqueUtilisation = pieceDetachee.getHistoriqueUtilisation();
 		this.image = pieceDetachee.getImage();
 		this.statut = pieceDetachee.getStatut();
 		this.achats = pieceDetachee.getAchats() != null

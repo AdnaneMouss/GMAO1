@@ -6,6 +6,7 @@ import com.huir.GmaoApp.dto.ServiceDTO;
 import com.huir.GmaoApp.model.Equipement;
 import com.huir.GmaoApp.model.Services;
 import com.huir.GmaoApp.model.User;
+import com.huir.GmaoApp.repository.EquipementRepository;
 import com.huir.GmaoApp.repository.ServicesRepository;
 import com.huir.GmaoApp.service.ServicesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class ServicesController {
     @Autowired
     private ServicesRepository servicesRepository;
     @Autowired
-    private ServicesRepository equipementRepository;
+    private EquipementRepository equipementRepository;
 
     // Get all services
     @GetMapping
@@ -137,9 +138,9 @@ public class ServicesController {
         Services service = servicesRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service non trouvé"));
 
-        boolean hasLinkedEquipements = equipementRepository.existsByNom(service);
+        boolean hasLinkedEquipements = equipementRepository.existsByService(service);
         if (hasLinkedEquipements) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d’archiver : ce service est lié à au moins un équipement.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d’archiver : Ce service est lié à au moins un équipement.");
         }
 
         service.setActif(false);
@@ -151,27 +152,38 @@ public class ServicesController {
     }
 
     @PutMapping("/archiver-multiple")
-    public ResponseEntity<Map<String, Object>> archiverServices(@RequestBody List<Long> ids) {
+    public ResponseEntity<?> archiverServices(@RequestBody List<Long> ids) {
         List<Services> services = servicesRepository.findAllById(ids);
-        List<String> archived = new ArrayList<>();
-        List<String> skipped = new ArrayList<>();
+
+        if (services.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun service trouvé pour les IDs donnés.");
+        }
+
+        List<String> linkedServices = new ArrayList<>();
 
         for (Services service : services) {
-            boolean isLinked = equipementRepository.existsByNom(service);
+            boolean isLinked = equipementRepository.existsByService(service);
             if (isLinked) {
-                skipped.add("Service " + service.getNom() + " lié à des équipements");
-                continue;
+                linkedServices.add("Service '" + service.getNom() + "' est lié à des équipements");
             }
+        }
 
+        if (!linkedServices.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Archivage impossible :\n" + String.join("\n", linkedServices)
+            );
+        }
+
+        for (Services service : services) {
             service.setActif(false);
             servicesRepository.save(service);
-            archived.add("Service ID " + service.getId());
         }
 
         Map<String, Object> response = new HashMap<>();
-        response.put("archivés", archived);
-        response.put("ignorés", skipped);
-        response.put("message", "Archivage terminé avec succès.");
+        response.put("message", "Tous les services ont été archivés avec succès.");
+        response.put("archivés", services.stream().map(Services::getNom).toList());
+
         return ResponseEntity.ok(response);
     }
 

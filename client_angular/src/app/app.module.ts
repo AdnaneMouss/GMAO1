@@ -73,7 +73,24 @@ import { LotAchatPieceComponent } from './components/Stocks/lot-achat-piece/lot-
 import { EtagesListeComponent } from './components/batiments/etages-liste/etages-liste.component';
 import { SallesListeComponent } from './components/batiments/salles-liste/salles-liste.component';
 import { EquipementsParSalleComponent } from './components/Equipements/equipements-par-salle/equipements-par-salle.component';
+
 import { ListeFournisseursComponent } from './components/fournisseur/fournisseur.component';
+
+
+import { DemandeMaintenancesComponent } from './components/Maintenances/demande-maintenances/demande-maintenances.component';
+import { HistoriqueDemandesComponent } from './components/Maintenances/historique-demandes/historique-demandes.component';
+import { DashboardAdminComponent } from './components/dashboard-admin/dashboard-admin.component';
+import { DashboardUsersComponent } from './components/dashboards/dashboard-users/dashboard-users.component';
+import { DashboardEquipementsComponent } from './components/dashboards/dashboard-equipements/dashboard-equipements.component';
+import { DashboardPiecesComponent } from './components/dashboards/dashboard-pieces/dashboard-pieces.component';
+import { DashboardMaintenanceComponent } from './components/dashboards/dashboard-maintenance/dashboard-maintenance.component';
+import { DashboardInterventionsComponent } from './components/dashboards/dashboard-interventions/dashboard-interventions.component';
+import { DashboardBatimentsComponent } from './components/dashboards/dashboard-batiments/dashboard-batiments.component';
+import { DashboardServicesComponent } from './components/dashboards/dashboard-services/dashboard-services.component';
+//import {BaseChartDirective} from "ng2-charts";
+import { EquipementFormComponent } from './components/equipement-form/equipement-form.component';
+import { AccepterDemandesMaintenancesComponent } from './components/Maintenances/accepter-demandes-maintenances/accepter-demandes-maintenances.component';
+import { InventaireComponent } from './components/Stocks/inventaire/inventaire.component';
 
 
 
@@ -111,6 +128,7 @@ import { ListeFournisseursComponent } from './components/fournisseur/fournisseur
     EtagesListeComponent,
     SallesListeComponent,
     EquipementsParSalleComponent,
+
     ListeFournisseursComponent
   
   ],
@@ -140,16 +158,21 @@ import { ListeFournisseursComponent } from './components/fournisseur/fournisseur
     MatListModule,
     MatDividerModule,
 
-    MatOption,
-    MatSelect,
-    FormsModule,
-    RouterOutlet,
-    PanneauNavigationComponent,
-    NgOptimizedImage,
-    RouterLink,
-    ReactiveFormsModule,
-    ToastrModule.forRoot()
+    //DemandeMaintenancesComponent,
+    //HistoriqueDemandesComponent,
+    //DashboardAdminComponent,
+    //DashboardUsersComponent,
+    //DashboardEquipementsComponent,
+    //DashboardPiecesComponent,
+    //DashboardMaintenanceComponent,
+    //DashboardInterventionsComponent,
+    //DashboardBatimentsComponent,
+    //DashboardServicesComponent,
+    //EquipementFormComponent,
+    //AccepterDemandesMaintenancesComponent,
+    //InventaireComponent,
   ],
+   
   providers: [
     provideAnimationsAsync()
   ],

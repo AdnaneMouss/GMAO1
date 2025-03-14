@@ -13,7 +13,7 @@ export class ParametresGenerauxComponent implements OnInit {
     { key: 'notifications', label: 'Notifications', icon: 'fas fa-bell' },
     { key: 'compte', label: 'Compte', icon: 'fas fa-user-cog' },
     { key: 'securite', label: 'Sécurité', icon: 'fas fa-lock' },
-    { key: 'language', label: 'Langue', icon: 'fas fa-globe' },
+
   ];
 
 

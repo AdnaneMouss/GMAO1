@@ -21,21 +21,27 @@ export interface Equipement {
   marque: string;
   statut: string;
   serviceNom: string;
+  serviceId: number;
   dateAchat: string; // ISO date string (ex: '2024-05-10')
   dateMiseEnService: string;
   dateDerniereMaintenance: string;
   coutAchat: number;
   batimentNom: string;
+  batimentId: number;
+  batimentNum: number;
   etageNum: number;
+  etageId: number;
   salleNum: number;
-
-
-  typeEquipement: string;
+  salleId: number;
+  sallePrefixe: string;
+  garantie: string;
+  typeEquipementNom: string;
+  typeEquipementId: number;
   actif: boolean;
   labelSuivi: string;
   valeurSuivi: number;
   attributsValeurs: AttributEquipementValeur[];
   attributsEquipement: AttributEquipements[];
-
+  attributs?: { [key: number]: string }
 
 }

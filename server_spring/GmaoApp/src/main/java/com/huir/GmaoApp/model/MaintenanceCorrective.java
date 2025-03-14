@@ -36,7 +36,9 @@ public class MaintenanceCorrective {
     @Enumerated(EnumType.STRING)
     private Priorite priorite = Priorite.NORMALE;
 
-    private LocalDateTime dateCreation = LocalDateTime.now();
+
+    private LocalDateTime dateCreation;
+    private LocalDateTime dateDemande;
     private LocalDateTime dateCloture;
     private LocalDateTime dateCommencement;
 
@@ -45,6 +47,11 @@ public class MaintenanceCorrective {
     @ManyToOne
     @JoinColumn(name = "created_by")
     private User creePar;
+
+	@JsonBackReference("user-demandeePar")
+	@ManyToOne
+	@JoinColumn(name = "requested_by")
+	private User demandeePar;
 
     @JsonBackReference("user-affecteA")
     @ManyToOne

@@ -7,6 +7,7 @@ import com.huir.GmaoApp.model.MaintenanceCorrective;
 import com.huir.GmaoApp.service.MaintenanceCorrectiveService;
 import com.huir.GmaoApp.service.MaintenanceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +41,22 @@ public class MaintenanceCorrectiveController {
             return ResponseEntity.status(400).body(null); // Si la maintenance n'est pas trouvée ou ne peut être commencée
         }
     }
+
+
+    @PutMapping("/{id}/approveRequest")
+    public ResponseEntity<MaintenanceCorrectiveDTO> approveMaintenance(
+            @PathVariable Long id,
+            @RequestBody MaintenanceCorrectiveDTO requestDTO) {
+
+        MaintenanceCorrective approved = maintenanceCorrectiveService.approveTask(
+                id,
+                requestDTO.getAffecteAId(),
+                requestDTO.getCreeParId()
+        );
+
+        return ResponseEntity.ok(new MaintenanceCorrectiveDTO(approved));
+    }
+
 
     @PutMapping("/{id}/start")
     public ResponseEntity<MaintenanceCorrective> startTask(@PathVariable Long id) {
@@ -81,6 +98,12 @@ public class MaintenanceCorrectiveController {
         return ResponseEntity.ok(createdDto);
     }
 
+    @PostMapping("/request")
+    public ResponseEntity<MaintenanceCorrectiveDTO> demanderMaintenance(@RequestBody MaintenanceCorrectiveDTO dto) {
+        MaintenanceCorrectiveDTO saved = maintenanceCorrectiveService.demanderMaintenanceCorrective(dto);
+        return ResponseEntity.ok(saved);
+    }
+
     @PutMapping("/{maintenanceId}")
     public ResponseEntity<MaintenanceCorrectiveDTO> updateMaintenanceCorrective(
             @PathVariable Long maintenanceId,
@@ -91,4 +114,16 @@ public class MaintenanceCorrectiveController {
 
         return ResponseEntity.ok(updatedMaintenanceCorrective);
     }
+
+    @PutMapping("/{maintenanceId}/updateRequest")
+    public ResponseEntity<MaintenanceCorrectiveDTO> updateMaintenanceCorrectiveLambda(
+            @PathVariable Long maintenanceId,
+            @RequestBody MaintenanceCorrectiveDTO maintenanceCorrectiveDTO) {
+
+        MaintenanceCorrectiveDTO updatedMaintenanceCorrective =
+                maintenanceCorrectiveService.updateMaintenanceCorrective(maintenanceId, maintenanceCorrectiveDTO);
+
+        return ResponseEntity.ok(updatedMaintenanceCorrective);
+    }
 }
+

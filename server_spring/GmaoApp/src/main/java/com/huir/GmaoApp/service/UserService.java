@@ -76,6 +76,7 @@ public class UserService {
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
+
     @Transactional
     public UserDTO updateUser(Long id, MultipartFile imageFile, UserDTO userDTO) {
         Optional<User> optionalUser = userRepository.findById(id);

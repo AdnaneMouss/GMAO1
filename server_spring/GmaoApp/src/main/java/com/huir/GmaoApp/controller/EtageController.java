@@ -148,29 +148,37 @@ public class EtageController {
         return ResponseEntity.ok(response);
     }
 
-
     @PutMapping("/archiver-multiple")
-    public ResponseEntity<Map<String, Object>> archiverEtages(@RequestBody List<Long> ids) {
+    public ResponseEntity<?> archiverEtages(@RequestBody List<Long> ids) {
         List<Etage> etages = etageRepository.findAllById(ids);
-        List<String> archived = new ArrayList<>();
-        List<String> skipped = new ArrayList<>();
+
+        if (etages.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun étage trouvé pour les IDs donnés.");
+        }
+
+        List<String> linkedEtages = new ArrayList<>();
 
         for (Etage etage : etages) {
-            boolean isLinked = equipementRepository.existsByEtage(etage);
-            if (isLinked) {
-                skipped.add("Étage " + etage.getNum() + " lié à des équipements");
-                continue;
+            if (equipementRepository.existsByEtage(etage)) {
+                linkedEtages.add("Étage '" + etage.getNum() + "' est lié à des équipements");
             }
+        }
 
+        if (!linkedEtages.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Archivage impossible :\n" + String.join("\n", linkedEtages)
+            );
+        }
+
+        for (Etage etage : etages) {
             etage.setActif(false);
             etageRepository.save(etage);
-            archived.add("Étage ID " + etage.getId());
         }
 
         Map<String, Object> response = new HashMap<>();
-        response.put("archivés", archived);
-        response.put("ignorés", skipped);
-        response.put("message", "Archivage terminé avec succès.");
+        response.put("message", "Tous les étages ont été archivés avec succès.");
+        response.put("archivés", etages.stream().map(Etage::getNum).toList());
 
         return ResponseEntity.ok(response);
     }

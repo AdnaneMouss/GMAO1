@@ -54,7 +54,10 @@ export class LoginComponent {
             this.router.navigate(['/interventions/taches']);
             break;
           case "RESPONSABLE":
-            this.router.navigate(['/equipements/list']);
+            this.router.navigate(['/equipements/liste']);
+            break;
+          case "LAMBDA":
+            this.router.navigate(['/maintenances/demandes']);
             break;
           default:
             this.errorMessage = "Rôle non reconnu.";

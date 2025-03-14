@@ -173,6 +173,14 @@ export class EquipementsParCategorieComponent implements OnInit{
 
   private initEquipement(): Equipement {
     return {
+      batimentId: 0,
+      batimentNum: 0,
+      etageId: 0,
+      garantie: "",
+      salleId: 0,
+      sallePrefixe: "",
+      serviceId: 0,
+      typeEquipementId: 0,
       attributsEquipement: [],
       batimentNom: "", etageNum: 0, salleNum: 0,
       serviceNom: "",
@@ -191,7 +199,7 @@ export class EquipementsParCategorieComponent implements OnInit{
       coutAchat: 0,
       valeurSuivi:0,
       labelSuivi:'',
-      typeEquipement: '',
+      typeEquipementNom: '',
       attributsValeurs: []  // Assuming this is an empty array initially
 
     }

@@ -167,27 +167,36 @@ public class BatimentController {
     }
 
     @PutMapping("/archiver-multiple")
-    public ResponseEntity<Map<String, Object>> archiverBatiments(@RequestBody List<Long> ids) {
+    public ResponseEntity<?> archiverBatiments(@RequestBody List<Long> ids) {
         List<Batiment> batiments = batimentRepository.findAllById(ids);
-        List<String> archived = new ArrayList<>();
-        List<String> skipped = new ArrayList<>();
+
+        if (batiments.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun bâtiment trouvé pour les IDs donnés.");
+        }
+
+        List<String> linkedBatiments = new ArrayList<>();
 
         for (Batiment batiment : batiments) {
-            boolean isLinked = equipementRepository.existsByBatiment(batiment);
-            if (isLinked) {
-                skipped.add("Bâtiment " + batiment.getIntitule() + " lié à des équipements");
-                continue;
+            if (equipementRepository.existsByBatiment(batiment)) {
+                linkedBatiments.add("Bâtiment '" + batiment.getIntitule() + "' est lié à des équipements");
             }
+        }
 
+        if (!linkedBatiments.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Archivage impossible :\n" + String.join("\n", linkedBatiments)
+            );
+        }
+
+        for (Batiment batiment : batiments) {
             batiment.setActif(false);
             batimentRepository.save(batiment);
-            archived.add("Bâtiment ID " + batiment.getId());
         }
 
         Map<String, Object> response = new HashMap<>();
-        response.put("archivés", archived);
-        response.put("ignorés", skipped);
-        response.put("message", "Archivage terminé avec succès.");
+        response.put("message", "Tous les bâtiments ont été archivés avec succès.");
+        response.put("archivés", batiments.stream().map(Batiment::getIntitule).toList());
 
         return ResponseEntity.ok(response);
     }
