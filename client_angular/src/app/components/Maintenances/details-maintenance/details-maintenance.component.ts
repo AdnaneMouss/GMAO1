@@ -6,6 +6,9 @@ import { ServiceService } from '../../../services/service.service';
 import { User } from '../../../models/user';
 import { UserService } from '../../../services/user.service';
 import { maintenance } from '../../../models/maintenance';
+import { Salle } from '../../../models/salle';
+import { Batiment } from '../../../models/batiment';
+import { Etage } from '../../../models/etage';
 
 @Component({
   selector: 'app-details-maintenance',
@@ -57,25 +60,34 @@ export class DetailsMaintenanceComponent implements OnInit {
       
 
   },
-    equipement: {
-      image: '',
-      nom: '',
-      description: '',
-      numeroSerie: '',
-      modele: '',
-      marque: '',
-      localisation: '',
-      statut: '',
-      dateAchat: '',
-      dateMiseEnService: '',
-      garantie: '',
-      dateDerniereMaintenance: '',
-      frequenceMaintenance: '',
-      historiquePannes: '',
-      coutAchat: '',
-      attributs: [],
-      serviceNom: '',
-    },
+     equipement: {  // Reset the Equipement object to its initial state
+         
+            id:0,
+            image: '',
+            nom: '',
+            description: '',
+            numeroSerie: '',
+            modele: '',
+            marque: '',
+            statut: '',
+            actif: true,
+            dateAchat: '',
+            dateMiseEnService: '',
+            garantie: '',
+            dateDerniereMaintenance: '',
+            frequenceMaintenance: '',
+            historiquePannes: '',
+            coutAchat: '',
+            serviceNom: '',
+            typeEquipement: { id: undefined, type: '', image: '', attributs: [] },  // Initial empty type
+            service: {} as Service,
+            piecesDetachees: [],
+            salle: {} as Salle,
+            etage: {} as Etage,
+            batiment: {} as Batiment,
+            attributsValeurs: []
+          
+        },
   };
   errorMessage: string = '';
   isEditMode: boolean = false;  // Mode édition

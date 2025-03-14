@@ -10,6 +10,11 @@ import { UserService } from '../../../services/user.service';
 import { Batiment } from '../../../models/batiment';
 import { BatimentService } from '../../../services/batiment.service';
 import { maintenance } from '../../../models/maintenance';
+import { TypesEquipements } from '../../../models/types-equipements';
+import { Salle } from '../../../models/salle';
+import { Etage } from '../../../models/etage';
+import { Service } from '../../../models/service';
+
                     
 
 @Component({
@@ -96,14 +101,15 @@ export class MaintenancesPreventivesComponent implements OnInit {
 
   newMaintenance: maintenance = {
     equipement: {
+      id:0,
       image: '',
       nom: '',
       description: '',
       numeroSerie: '',
       modele: '',
       marque: '',
-      localisation: '',
       statut: '',
+      actif: true,
       dateAchat: '',
       dateMiseEnService: '',
       garantie: '',
@@ -111,9 +117,14 @@ export class MaintenancesPreventivesComponent implements OnInit {
       frequenceMaintenance: '',
       historiquePannes: '',
       coutAchat: '',
-      attributs: [],
       serviceNom: '',
-     
+      typeEquipement: { id: undefined, type: '', image: '', attributs: [] },  // Initial empty type
+      service: {} as Service,
+      piecesDetachees: [],
+      salle: {} as Salle,
+      etage: {} as Etage,
+      batiment: {} as Batiment,
+      attributsValeurs: []
     },
     batiment :{
       
@@ -436,6 +447,12 @@ addMaintenance() {
   });
 }
 
+joursSelectionnes: string[] = []; // Liste des jours validés
+enregistrerSelection() {
+  this.joursSelectionnes = Object.keys(this.selectedDays).filter(day => this.selectedDays[day]);
+}
+
+
   
       
 
@@ -464,24 +481,32 @@ resetForm() {
     endDate: new Date(''),
 
     equipement: {  // Reset the Equipement object to its initial state
-      id: 0,
-      image: '',
-      nom: '',
-      description: '',
-      numeroSerie: '',
-      modele: '',
-      marque: '',
-      localisation: '',
-      statut: '',
-      dateAchat: '',
-      dateMiseEnService: '',
-      garantie: '',
-      dateDerniereMaintenance: '',
-      frequenceMaintenance: '',
-      historiquePannes: '',
-      coutAchat: '',
-      attributs: [],
-      serviceNom: ''
+     
+        id:0,
+        image: '',
+        nom: '',
+        description: '',
+        numeroSerie: '',
+        modele: '',
+        marque: '',
+        statut: '',
+        actif: true,
+        dateAchat: '',
+        dateMiseEnService: '',
+        garantie: '',
+        dateDerniereMaintenance: '',
+        frequenceMaintenance: '',
+        historiquePannes: '',
+        coutAchat: '',
+        serviceNom: '',
+        typeEquipement: { id: undefined, type: '', image: '', attributs: [] },  // Initial empty type
+        service: {} as Service,
+        piecesDetachees: [],
+        salle: {} as Salle,
+        etage: {} as Etage,
+        batiment: {} as Batiment,
+        attributsValeurs: []
+      
     },
     user: {  
       id: 0,
