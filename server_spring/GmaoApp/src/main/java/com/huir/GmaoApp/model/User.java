@@ -5,6 +5,9 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "users", uniqueConstraints = {
@@ -64,4 +67,7 @@ public class User {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime dateInscription = LocalDateTime.now();
+    
+    
+
 }

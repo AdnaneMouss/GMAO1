@@ -16,7 +16,7 @@ export class ListeUtilisateursComponent implements OnInit {
   selectedFilter: string = '';
   isSortedAZ: boolean = true;
   errorMessage: string = '';
-  isSearchOpen = false;
+  isSearchOpen = false;  
   searchTerm = '';
   filteredUsers = [...this.users];
 
@@ -93,7 +93,7 @@ export class ListeUtilisateursComponent implements OnInit {
         this.fetchUsers();  // Rafraîchir la liste des utilisateurs
         this.resetNewUser(); // Réinitialiser le formulaire
         this.showPanel = false; // Masquer le panneau après l'ajout
-      },
+      },           
       error: (err) => {
         console.error('Error adding user:', err); // Affiche toute l'erreur dans la console
         if (err && err.error) {

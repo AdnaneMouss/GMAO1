@@ -24,3 +24,4 @@ export interface Equipement {
   piecesDetachees?: string[];
 }
 
+
