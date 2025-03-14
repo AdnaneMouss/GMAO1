@@ -1,80 +1,342 @@
-<!-- Détails de l'Utilisateur avec Bootstrap -->
-<div class="container py-10 position-relative">
-    <!-- Bouton Retour à la liste en haut à gauche -->
-    <button class="btn btn-light position-absolute top-0 start-0 m-3" routerLink="/maintenances/preventives">
-      <i class="bi bi-arrow-left"></i>
-    </button>
-  
+<div class="container mx-auto p-8">
+  <button
+    class="flex items-center space-x-2 bg-green-700 hover:bg-green-900 text-white hover:text-gray-900 font-medium px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:-translate-x-1"
+    [routerLink]="'/maintenances/preventives'"
+  >
+    <i class="fas fa-arrow-left"></i>
+    <span>Retour à la page précédente</span>
+  </button>
+
+  <div class="container py-10 position-relative">
     <!-- Message d'erreur -->
     <div *ngIf="errorMessage" class="alert alert-danger text-center">{{ errorMessage }}</div>
-  
-     <div *ngIf="maintenance">
-    <div class="row">
-      <!-- Left card with avatar and name -->
-      <div class="col-md-3 mb-6">
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden h-full flex flex-col">
-         
-          <div class="d-flex justify-content-center">
-            <!-- Label Nom de l'équipement -->
-            <label *ngIf="!isEditMode" for="equipement" class="text-lg font-semibold text-gray-800 mb-2 mr-2">Nom de l'équipement :</label>
-          
-            <!-- Nom (View Mode) -->
-            <h3 *ngIf="!isEditMode" class="text-lg font-semibold text-gray-800 mb-2">{{ maintenance.equipement }}</h3>
-          
-            <!-- Nom (Edit Mode) -->
-            <input *ngIf="isEditMode" type="text" id="equipement" class="form-control mb-2" [(ngModel)]="maintenance.equipement" placeholder="Nom de l'équipement">
+
+    <div *ngIf="maintenance">
+      <div class="row">
+        <!-- Left card with avatar and name -->
+        <div class="col-md-3 mb-6">
+          <div class="bg-white shadow-lg rounded-xl overflow-hidden flex flex-col border border-gray-200 hover:shadow-2xl transition duration-300">
+            <!-- Action Buttons -->
+            <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-center space-x-2">
+              <button class="flex-1 text-white bg-yellow-500 hover:bg-yellow-600 rounded-lg py-2 text-sm font-semibold transition duration-300 flex items-center justify-center"
+                      (click)="enableEditMode()">
+                <i class="bi bi-pencil-fill mr-2"></i> Modifier
+              </button>
+            </div>
+
+            <!-- Edit Mode Buttons -->
+            <div class="flex justify-center items-center space-x-3 py-4 bg-white border-t border-gray-200" *ngIf="isEditMode">
+              <button class="px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg text-sm font-semibold transition-all duration-300"
+                      (click)="saveChanges()">💾 Sauvegarder</button>
+              <button class="px-4 py-2 text-white bg-gray-400 hover:bg-gray-500 rounded-lg text-sm font-semibold transition-all duration-300"
+                      (click)="isEditMode = false">❌ Annuler</button>
+            </div>
           </div>
-          
+        </div>
+
+        <div class="col-md-9">
+          <div class="row">
+            <!-- Affichage du fichier sélectionné -->
+            <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-paperclip fs-3 me-3" style="color: #006400;"></i>
+                  <div>
+                    <h5 class="card-title">Fichier Téléchargé</h5>
+                    <p class="card-text" *ngIf="selectedFileName">{{ selectedFileName }}</p>
+                    <p class="card-text text-muted" *ngIf="!selectedFileName">Aucun fichier sélectionné</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mode édition : Upload du fichier -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-paperclip fs-3 me-3" style="color: #006400;"></i>
+                  <div>
+                    <h5 class="card-title">Télécharger un fichier</h5>
+                    <input type="file" id="file" (change)="onFileSelected($event)" class="form-control">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Commentaires Display -->
+            <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+                  <div>
+                    <h5 class="card-title">Commentaires</h5>
+                    <p class="card-text">{{ maintenance.commentaires }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Commentaires Edit -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+                  <div>
+                    <h5 class="card-title">Commentaires</h5>
+                    <input type="text" class="form-control" [(ngModel)]="maintenance.commentaires" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Statut Display -->
+            <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-info-circle fs-3 me-3" [ngClass]="{
+                    'text-warning': maintenance.statut === 'EN_ATTENTE'
+                    
+                  }"></i>
+                  <div>
+                    <h5 class="card-title" [ngClass]="{
+                      'text-warning': maintenance.statut === 'EN_ATTENTE'
+                     
+                    }">Statut</h5>
+                    <p class="card-text" [ngClass]="{
+                      'text-warning': maintenance.statut === 'EN_ATTENTE'
+                     
+                    }">{{ maintenance.statut }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Statut Edit -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-info-circle fs-3 me-3" style="color: #006400;"></i>
+                  <div>
+                    <h5 class="card-title">Statut</h5>
+                    <select class="form-control" [(ngModel)]="maintenance.statut" required>
+                      <option value="EN_ATTENTE">EN_ATTENTE</option>
+                      <option value="EN_COURS">EN_COURS</option>
+                      <option value="TERMINEE">TERMINEE</option>
+                      <option value="ANNULEE">ANNULEE</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Priorité Display -->
+            <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-exclamation-triangle fs-3 me-3"
+                     [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}"></i>
+                  <div>
+                    <h5 class="card-title" [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}">Priorité</h5>
+                    <p class="card-text" [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}">
+                      {{ maintenance.priorite }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Priorité Edit -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-exclamation-triangle fs-3 me-3"
+                     [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}"></i>
+                  <div>
+                    <h5 class="card-title" [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}">Priorité</h5>
+                    <select class="form-select" [(ngModel)]="maintenance.priorite" required
+                            [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}">
+                      <option value="FAIBLE">FAIBLE</option>
+                      <option value="NORMALE">NORMALE</option>
+                      <option value="URGENTE">URGENTE</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+             <!-- frequence Display  -->
+             <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                  <div>
+                    <h5 class="card-title">Frequence maintenance</h5>
+                    <p class="card-text">{{ maintenance.frequence }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+              <!-- frequence Edit  -->
+           
+              <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                    <div>
+                      <h5 class="card-title">frequence maintenance</h5>
+                      <input type="date" class="form-control" [(ngModel)]="maintenance.frequence" required>
+                    </div>
+                  </div>   
+                </div>
+              </div>
+              <!-- Indicateur Display --> 
+              <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                    <div>
+                      <h5 class="card-title">Indicateur maintenance</h5>
+                      <p class="card-text">{{ maintenance.indicateurs }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+                <!-- Indicateur   Edit -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                  <div>
+                    <h5 class="card-title">indicateur maintenance</h5>
+                    <input type="date" class="form-control" [(ngModel)]="maintenance.indicateurs" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+             <!-- user Display --> 
+             <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                  <div>
+                    <h5 class="card-title">user maintenance</h5>
+                    <p class="card-text">{{ maintenance.user}}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+             <!-- user Edit -->
+             <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                  <div>
+                    <h5 class="card-title">user maintenance</h5>
+                    <input type="date" class="form-control" [(ngModel)]="maintenance.user" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Date de Péremption Display -->
+            <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                  <div>
+                    <h5 class="card-title">Date prochaine maintenance</h5>
+                    <p class="card-text">{{ maintenance.dateProchainemaintenance }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Date de Péremption Edit -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                  <div>
+                    <h5 class="card-title">Date prochaine maintenance</h5>
+                    <input type="date" class="form-control" [(ngModel)]="maintenance.dateProchainemaintenance" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+                <!-- Date de Péremption Display -->
+                <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                  <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex align-items-center bg-white">
+                      <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                      <div>
+                        <h5 class="card-title">Date debut maintenance</h5>
+                        <p class="card-text">{{ maintenance.dateDebutPrevue }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+    
+                <!-- Date de Péremption Edit -->
+                <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                  <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex align-items-center bg-white">
+                      <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i> <!-- Icône pour la fin -->
+                      <div>
+                        <h5 class="card-title">Date debut maintenance</h5>
+                        <input type="date" class="form-control" [(ngModel)]="maintenance.dateDebutPrevue" required>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                    <!-- Date de Péremption Display -->
+            <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                  <div>
+                    <h5 class="card-title">Date fin maintenance</h5>
+                    <p class="card-text">{{ maintenance.dateFinPrevue }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Date de Péremption Edit -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i> <!-- Icône pour la fin -->
+                  <div>
+                    <h5 class="card-title">Date fin maintenance</h5>
+                    <input type="date" class="form-control" [(ngModel)]="maintenance.dateFinPrevue" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Durée Intervention Display -->
+            <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-stopwatch-fill fs-3 me-3" style="color: #00008B;"></i>
+                  <div>
+                    <h5 class="card-title">Durée maintenance en jours</h5>
+                    <p class="card-text">{{ maintenance.dureeIntervention }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
             
+          
+         
            
-             </div>
-             
-
-
- 
-  
-
-
-          <!-- Additional info or actions area -->
-          <div class="px-6 py-4 flex-grow">
-            <!-- Conditional Status Message -->
-            <div *ngIf="maintenance.statut === 'Terminee'" class="text-green-500 text-sm">
-              L'équipement est **en service** et disponible pour utilisation.
-            </div>
-            <div *ngIf="maintenance.statut === 'En cours'" class="text-red-500 text-sm">
-              L'équipement est **en panne** et nécessite des réparations immédiates.
-            </div>
-            <div *ngIf="maintenance.statut === 'En attente'" class="text-gray-500 text-sm">
-              L'équipement est **hors service** et ne peut pas être utilisé pour le moment.
-            </div>
-           
-
-            <div class="flex justify-between items-center mt-4">
-              <span class="text-gray-500 text-sm">Statut: <span class="font-semibold text-green-500">{{ maintenance.statut }}</span></span>
-            </div>
-          </div>
-
-          <!-- Modifier Button at the Bottom -->
-          <div class="px-6 py-3 mt-auto">
-            <button class="w-full text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none rounded-lg py-2 text-sm font-medium flex items-center justify-center" (click)="enableEditMode()">
-              <i class="bi bi-pencil-fill mr-2"></i> Modifier
-            </button>
-          </div>
-
-          <!-- Edit Mode Buttons -->
-          <div class="text-center py-4" *ngIf="isEditMode">
-            <button class="px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium" (click)="saveChanges()">Sauvegarder</button>
-            <button class="px-4 py-2 text-white bg-gray-400 hover:bg-gray-500 rounded-lg text-sm font-medium ml-2" (click)="isEditMode = false">Annuler</button>
-          </div>
         </div>
       </div>
     </div>
-
-    
-
   </div>
-  
-  
-  <!-- Ajout du support Bootstrap et des icônes Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</div>
+
+<!-- Ajout du support Bootstrap et des icônes Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
