@@ -44,6 +44,8 @@ import { DetailsMaintenanceComponent } from './components/Maintenances/details-m
 import {TypesEquipementsComponent} from "./components/Equipements/types-equipements/types-equipements.component";
 import { BatimentsListeComponent } from './components/batiments/batiments-liste/batiments-liste.component';
 import { EquipementFormComponent } from './equipement-form/equipement-form.component';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { ToastrModule } from 'ngx-toastr';
 
 @NgModule({
   declarations: [
@@ -76,6 +78,10 @@ import { EquipementFormComponent } from './equipement-form/equipement-form.compo
     AppRoutingModule,
     ListeEquipementsComponent,
     LoginComponent,
+    MatSnackBarModule,
+ 
+   
+   
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,
@@ -95,6 +101,7 @@ import { EquipementFormComponent } from './equipement-form/equipement-form.compo
     NgOptimizedImage,
     RouterLink,
     ReactiveFormsModule,
+    ToastrModule.forRoot()
   ],
   providers: [
     provideAnimationsAsync()

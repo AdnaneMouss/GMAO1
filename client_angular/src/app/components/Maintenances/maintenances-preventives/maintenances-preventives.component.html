@@ -9,41 +9,63 @@
   <!-- Filtres -->
   <div class="flex flex-wrap justify-start gap-4 mb-6">
     <!-- Filtre par priorité -->
-    <div class="w-full sm:w-1/4 md:w-1/5">
+    <div class="relative w-full md:w-auto">
       <div class="relative">
-        <i class="fas fa-filter absolute left-3 top-3 text-gray-500"></i>
-        <select
-          class="w-full py-2 pl-10 pr-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-200 ease-in-out bg-white"
-          (change)="chargerMaintenance()"
-        >
-          <option value="" class="text-gray-500">Toutes les priorités</option>
-          <option value="URGENTE" class="text-red-600">URGENTE</option>
-          <option value="NORMALE" class="text-yellow-600">NORMALE</option>
-          <option value="FAIBLE" class="text-green-600">FAIBLE</option>
+        <select [(ngModel)]="selectedPriorite" (change)="filterMaintenancesByPriorite()"
+                class="appearance-none w-full py-2 pl-10 pr-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out">
+          <option value="">Trier par priorité</option>
+          <option value="FAIBLE">FAIBLE</option>
+          <option value="URGENTE">URGENTE</option>
+          <option value="NORMALE">NORMALE</option>
         </select>
-        <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-500 pointer-events-none"></i>
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <i class="fas fa-filter text-gray-500"></i> <!-- Icône de filtre -->
+        </div>
       </div>
     </div>
-
     <!-- Filtre par statut -->
-    <div class="w-full sm:w-1/4 md:w-1/5">
-      <div class="relative">
-        <i class="fas fa-tasks absolute left-3 top-3 text-gray-500"></i>
-        <select
-          class="w-full py-2 pl-10 pr-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-200 ease-in-out bg-white"
-          (change)="chargerMaintenance()"
-        >
-          <option value="" class="text-gray-500">Tous les statuts</option>
-          <option value="EN_COURS" class="text-blue-600">En cours</option>
-          <option value="TERMINEE" class="text-green-600">Terminée</option>
-          <option value="EN_ATTENTE" class="text-yellow-600">En attente</option>
-        </select>
-        <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-500 pointer-events-none"></i>
-      </div>
+    <div class="relative w-full md:w-auto">
+      <select [(ngModel)]="selectedStatus" (change)="filterMaintenancesByStatus()"
+              class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out">
+        <option value="">Trier par Statut</option>
+        <option value="EN_ATTENTE" class="text-yellow-500">
+          <i class="fas fa-clock"></i> EN_ATTENTE
+        </option>
+        <option value="EN_COURS" class="text-blue-500">
+          <i class="fas fa-spinner"></i> EN_COURS
+        </option>
+        <option value="TERMINEE" class="text-green-500">
+          <i class="fas fa-check-circle"></i> TERMINEE
+        </option>
+        <option value="ANNULEE" class="text-red-500">
+          <i class="fas fa-times-circle"></i> ANNULEE
+        </option>
+      </select>
     </div>
   </div>
 
-  <!-- Bouton pour démarrer une maintenance -->
+  <div class="notification-icon" (click)="toggleNotificationsPanel()">
+    <i class="fas fa-bell"></i>
+    <span *ngIf="notificationCount > 0" class="badge">{{notificationCount}}</span>
+  </div>
+  
+  <div *ngIf="showNotificationsPanel" class="notifications-panel">
+    <div class="panel-header">
+      <h3>Notifications</h3>
+      <button (click)="clearNotifications()">Tout effacer</button>
+    </div>
+    <div *ngIf="notifications.length === 0" class="empty-message">
+      Aucune nouvelle notification
+    </div>
+    <div *ngFor="let notif of notification" class="notification-item">
+      <div class="notification-message">{{notif.message}}</div>
+      <button [routerLink]="['/maintenances/preventives', notif.id]">Voir</button>
+    </div>
+  </div>
+
+
+
+  <!-- Boutons pour démarrer une maintenance et exporter en Excel -->
   <div class="text-center mb-6">
     <!-- Bouton Démarrer une Maintenance -->
     <button
@@ -65,13 +87,16 @@
       </svg>
       <span class="text-lg font-semibold">Exporter en Excel</span>
     </button>
-  </div>
 
+   
+    
+  </div>
+ 
   <!-- Tableau des Maintenances -->
   <div class="overflow-x-auto rounded-lg shadow-lg mb-6">
     <table class="min-w-full bg-white table-auto">
       <!-- En-tête du tableau -->
-      <thead class="bg-blue-100"> <!-- Couleur pastel bleu -->
+      <thead class="bg-blue-100">
         <tr>
           <th class="py-4 px-6 text-left text-gray-700 font-semibold uppercase tracking-wider">ID</th>
           <th class="py-4 px-6 text-left text-gray-700 font-semibold uppercase tracking-wider">Date Début</th>
@@ -79,13 +104,14 @@
           <th class="py-4 px-6 text-left text-gray-700 font-semibold uppercase tracking-wider">Statut</th>
           <th class="py-4 px-6 text-left text-gray-700 font-semibold uppercase tracking-wider">Priorité</th>
           <th class="py-4 px-6 text-left text-gray-700 font-semibold uppercase tracking-wider">Actions</th>
+       
         </tr>
       </thead>
       <!-- Corps du tableau -->
       <tbody>
-        <tr *ngFor="let maintenance of maintenances" class="hover:bg-blue-50 transition duration-200"> <!-- Surbrillance plus claire au survol -->
+        <tr *ngFor="let maintenance of filteredMaintenace" class="hover:bg-blue-50 transition duration-200">
           <td class="py-4 px-6 text-gray-700">{{ maintenance.id }}</td>
-          <td class="py-4 px-6 text-gray-700">{{ maintenance.dateDebutPrevue | date:'dd/MM/yyyy' }}</td>
+          <td class="py-4 px-6 text-gray-700">{{ maintenance.dateDebutPrevue| date:'dd/MM/yyyy' }}</td>
           <td class="py-4 px-6 text-gray-700">{{ maintenance.dateFinPrevue | date:'dd/MM/yyyy' }}</td>
           <td class="py-4 px-6">
             <span
@@ -103,6 +129,7 @@
               <i class="fas fa-times-circle mr-2" *ngIf="maintenance.statut === 'ANNULEE'"></i>
               {{ maintenance.statut }}
             </span>
+            
           </td>
           <td class="py-4 px-6">
             <span
@@ -119,6 +146,7 @@
               {{ maintenance.priorite }}
             </span>
           </td>
+    
           <td class="py-4 px-6">
             <div class="flex space-x-3">
               <button
@@ -129,44 +157,48 @@
                 Détails
               </button>
               <button
-              class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-200 flex items-center"
-              (click)="confirmDelete(maintenance.id)"
-            >
-              <i class="fas fa-trash mr-2"></i>
-              Supprimer
-            </button>
+                class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-200 flex items-center"
+                (click)="confirmDelete(maintenance.id)"
+              >
+                <i class="fas fa-trash mr-2"></i>
+                Supprimer
+              </button>
             </div>
           </td>
+
+         
         </tr>
       </tbody>
     </table>
   </div>
+
   <!-- Panneau d'ajout de la maintenance -->
   <div *ngIf="showPanel" class="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-4xl w-full mx-4 overflow-y-auto max-h-[90vh]">
       <!-- En-tête du panneau -->
       <div class="flex justify-between items-center mb-8">
         <h4 class="text-3xl font-bold text-gray-800 flex items-center">
-          <i class="bi bi-tools text-blue-600 mr-3"></i> Démarrer une maintenance
+          <i class="fas fa-tools text-blue-600 mr-3"></i> Démarrer une maintenance
         </h4>
         <button
           class="text-gray-500 hover:text-gray-700 transition duration-200"
           (click)="togglePanel()"
         >
-          <i class="bi bi-x-lg text-2xl"></i>
+          <i class="fas fa-times text-2xl"></i>
         </button>
       </div>
-  
-      <!-- Formulaire -->
-      <form (ngSubmit)="addMaintenance()" class="overflow-y-auto max-h-[calc(100vh-10rem)] scrollbar-custom bg-white p-8 rounded-lg shadow-lg">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      
+
+      <!-- Formulaire de maintenance -->
+      <form (ngSubmit)="addMaintenance()" class="space-y-8">
+        <!-- Grille pour les champs -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Équipement -->
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-desktop text-blue-500 mr-2"></i> Équipement
             </label>
             <select
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               [(ngModel)]="newMaintenance.equipement"
               name="equipement"
               required
@@ -176,14 +208,14 @@
               </option>
             </select>
           </div>
-      
+
           <!-- Action -->
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-tools text-blue-500 mr-2"></i> Action
             </label>
             <select
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               [(ngModel)]="newMaintenance.action"
               name="action"
               (change)="onActionChange()"
@@ -200,26 +232,26 @@
               <option value="FORMATION_ENTRETIEN">Formation entretien</option>
               <option value="AUTRE">AUTRE</option>
             </select>
-      
+
             <!-- Champ pour préciser "Autre" -->
             <div *ngIf="newMaintenance.action === 'AUTRE'" class="mt-3">
-              <label for="customAction" class="block text-gray-700 font-medium mb-1">Précisez :</label>
+              <label for="customAction" class="block text-sm font-medium text-gray-700 mb-1">Précisez :</label>
               <input
                 id="customAction"
                 type="text"
-                class="w-full py-2 px-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 [(ngModel)]="newMaintenance.autreAction"
-              >
+              />
             </div>
           </div>
-      
-          <!-- Technicien maintenance -->
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
+
+          <!-- Technicien maintenance --> 
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-user-cog text-blue-500 mr-2"></i> Technicien maintenance
             </label>
             <select
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               [(ngModel)]="newMaintenance.user"
               name="user"
               required
@@ -229,89 +261,106 @@
               </option>
             </select>
           </div>
-      
-          <!-- Responsable maintenance 
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
-              <i class="fas fa-user-tie text-blue-500 mr-2"></i> Responsable maintenance
-            </label>
-            <select
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
-              [(ngModel)]="newMaintenance.user"
-              name="user"
-              required
-            >
-              <option *ngFor="let user of filteredResponsableUsers" [ngValue]="user">
-                {{ user.id }} - {{ user.role }}
-              </option>
-            </select>
-          </div>
-      -->
+
           <!-- Date de début prévue -->
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-calendar-alt text-blue-500 mr-2"></i> Date de début prévue
             </label>
             <input
               type="date"
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               [(ngModel)]="newMaintenance.dateDebutPrevue"
               name="dateDebutPrevue"
               (change)="validateDates()"
             />
           </div>
-      
+
           <!-- Date de fin prévue -->
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-calendar-times text-blue-500 mr-2"></i> Date de fin prévue
             </label>
             <input
               type="date"
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               [(ngModel)]="newMaintenance.dateFinPrevue"
               name="dateFinPrevue"
               (change)="validateDates()"
             />
           </div>
-      
+
           <!-- Durée d'Intervention -->
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-clock text-blue-500 mr-2"></i> Durée d'Intervention (en jours)
             </label>
             <input
               type="text"
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg bg-gray-100 text-gray-700 focus:ring-0 cursor-not-allowed shadow-sm"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:ring-0 cursor-not-allowed"
               name="dureeIntervention"
               [value]="newMaintenance.dureeIntervention > 0 ? newMaintenance.dureeIntervention + ' jours' : ''"
               readonly
             />
-            <p class="text-sm text-gray-500 mt-2 italic">
+            <p class="text-xs text-gray-500 mt-1 italic">
               * Ce champ est calculé automatiquement en fonction des dates de début et de fin.
             </p>
           </div>
-      
+
           <!-- Date de la prochaine maintenance -->
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-calendar-plus text-blue-500 mr-2"></i> Date prochaine maintenance
             </label>
             <input
               type="date"
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               [(ngModel)]="newMaintenance.dateProchainemaintenance"
               name="dateProchainemaintenance"
             />
           </div>
-      
+          
+          <!-- Statut -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-info-circle text-blue-500 mr-2"></i> Statut
+            </label>
+            <select
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              [(ngModel)]="newMaintenance.statut"
+              name="statut"
+            >
+              <option value="EN_ATTENTE" class="text-yellow-500">EN ATTENTE</option>
+              <option value="EN_COURS" disabled>EN COURS</option>
+              <option value="TERMINEE" disabled>TERMINEE</option>
+              <option value="ANNULEE" disabled>ANNULEE</option>
+            </select>
+          </div>
+
+          <!-- Priorité -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-exclamation-triangle text-blue-500 mr-2"></i> Priorité
+            </label>
+            <select
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              [(ngModel)]="newMaintenance.priorite"
+              name="priorite"
+            >
+              <option value="FAIBLE" class="text-green-500">FAIBLE</option>
+              <option value="NORMALE" class="text-yellow-500">NORMALE</option>
+              <option value="URGENTE" class="text-red-500">URGENTE</option>
+            </select>
+          </div>
+
+
           <!-- Type de maintenance -->
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-cogs text-blue-500 mr-2"></i> Type de maintenance
             </label>
             <select
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               [(ngModel)]="maintenanceType"
               name="maintenanceType"
               required
@@ -320,49 +369,28 @@
               <option value="indicateur">Indicateur</option>
             </select>
           </div>
-      
-          <!-- Fréquence (si type est 'frequence') -->
-          <div *ngIf="maintenanceType === 'frequence'" class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
-              <i class="fas fa-calendar-week text-blue-500 mr-2"></i> Fréquence
-            </label>
-            <select
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
-              [(ngModel)]="newMaintenance.frequence"
-              name="frequence"
-              (change)="handleFrequenceChange()"
-              required
-            >
-              <option value="JOURNALIER">Journalier</option>
-              <option value="HEBDOMADAIRE">Hebdomadaire</option>
-              <option value="MENSUEL">Mensuel</option>
-              <option value="TRIMESTRIEL">Trimestriel</option>
-              <option value="SEMESTRIEL">Semestriel</option>
-              <option value="ANNUEL">Annuel</option>
-            </select>
-          </div>
-      
+
           <!-- Indicateurs (si type est 'indicateur') -->
-          <div *ngIf="maintenanceType === 'indicateur'" class="col-span-2 mb-8">
+          <div *ngIf="maintenanceType === 'indicateur'" class="col-span-2">
             <button
               (click)="addIndicateur()"
-              class="bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-6 rounded-lg hover:from-blue-600 hover:to-blue-700 transition duration-200 flex items-center shadow-lg"
+              class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200 flex items-center"
             >
               <i class="fas fa-plus-circle mr-2"></i> Ajouter un indicateur
             </button>
-            <div *ngFor="let indicateur of newMaintenance.indicateurs; let i = index" class="mt-6">
+            <div *ngFor="let indicateur of newMaintenance.indicateurs; let i = index" class="mt-4">
               <div class="flex items-center gap-4">
                 <input
                   [(ngModel)]="indicateur.nom"
                   name="nom{{i}}"
                   placeholder="Nom de l'indicateur"
-                  class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 />
                 <input
                   [(ngModel)]="indicateur.valeur"
                   name="valeur{{i}}"
                   placeholder="Valeur de l'indicateur"
-                  class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 />
                 <button
                   (click)="removeIndicateur(i)"
@@ -373,391 +401,170 @@
               </div>
             </div>
           </div>
-      
-          <!-- Répéter -->
-          <div class="relative inline-block text-left">
-            <label class="block text-gray-700 font-medium mb-2">Répéter</label>
-            <button
-              (click)="toggleDropdown()"
-              class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Sélectionner une option
-              <i class="fas fa-chevron-down ml-2"></i>
-            </button>
-      
-            <!-- Menu du dropdown -->
-            <ul
-              *ngIf="dropdownOpen"
-              class="absolute z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transition ease-out duration-100 transform"
-              [ngClass]="{'opacity-100 scale-100': dropdownOpen, 'opacity-0 scale-95': !dropdownOpen}"
-            >
-              <li>
-                <button
-                  (click)="showForm('form1')"
-                  class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Ne se répète pas
-                </button>
-              </li>
-              <li>
-                <button
-                  (click)="showForm('form2')"
-                  class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Tous les jours de la semaine (lun.-ven.)
-                </button>
-              </li>
-              <li>
-                <button
-                  (click)="showForm('form3')"
-                  class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Tous les jours
-                </button>
-              </li>
-              <li>
-                <button
-                  (click)="showForm('form4')"
-                  class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Toutes les semaines
-                </button>
-              </li>
-              <li>
-                <button
-                  (click)="showForm('form5')"
-                  class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Mensuel
-                </button>
-              </li>
-              <li>
-                <button
-                  (click)="showForm('form6')"
-                  class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Tous les ans
-                </button>
-              </li>
-              <li>
-                <button
-                  (click)="showForm('form7')"
-                  class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Personnalisé
-                </button>
-              </li>
-            </ul>
-          </div>
-          <div *ngIf="selectedForm === 'form2'" class="modal-overlay">
-            <div class="modal-content">
-              <!-- Bouton de fermeture (croix) -->
-              <button
-                class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition duration-200"
-                (click)="closeForm()"
-              >
-                <i class="fas fa-times"></i>
-              </button>
-          
-              <h3 class="text-lg font-semibold text-gray-800 mb-3">
-                Formulaire : Tous les jours de la semaine
-              </h3>
-          
-              <!-- Sélection des jours -->
-              <div class="mt-2">
-                <label class="block text-gray-700 text-sm font-medium mb-2">
-                  Jours sélectionnés :
-                </label>
-                <div class="flex space-x-4">
-                  <div *ngFor="let day of getDays()">
-                    <label [ngClass]="{ 'selected': selectedDays[day] }">
-                      <input type="checkbox" [(ngModel)]="selectedDays[day]" /> {{ day }}
-                    </label>
-                  </div>
-                </div>
-              </div>
-          
-              <!-- Date de début -->
-              <label class="block text-gray-700 text-sm font-medium mt-2">
-                Date début :
-              </label>
-              <input
-                type="date"
-                class="w-full p-2 border rounded-lg focus:ring-blue-500"
-                [(ngModel)]="newMaintenance.startDate"
-              />
-          
-              <!-- Date de fin -->
-              <label class="block text-gray-700 text-sm font-medium mt-2">
-                Date de fin :
-              </label>
-              <input
-                type="date"
-                class="w-full p-2 border rounded-lg focus:ring-blue-500"
-                [(ngModel)]="newMaintenance.endDate"
-              />
-          
-              <!-- Bouton Enregistrer -->
-              <button
-                class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition duration-200"
-                (click)="enregistrerSelection()"
-              >
-                Enregistrer le choix
-              </button>
-          
-              <!-- Affichage des jours sélectionnés -->
-              <div *ngIf="joursSelectionnes.length > 0" class="mt-4 p-2 border rounded-lg bg-gray-100">
-                <h4 class="text-md font-semibold text-gray-800">Jours sélectionnés :</h4>
-                <p class="text-gray-700">{{ joursSelectionnes.join(', ') }}</p>
-              </div>
-            </div>
-          </div>
-          
-          </div>
-          <div *ngIf="selectedForm === 'form3'" class="modal-overlay">
-            <div class="modal-content">
-              <!-- Bouton de fermeture (croix) -->
-              <button
-                class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition duration-200"
-                (click)="closeForm()"
-              >
-                <!-- Icône de croix (FontAwesome) -->
-                <i class="fas fa-times"></i>
-              </button>
-          
-              <h3 class="text-lg font-semibold text-gray-800 mb-3">Formulaire : Tous les jours </h3>
-            
-              <label class="block text-gray-700 text-sm font-medium mt-2">Date debut :</label>
-              <input type="date" class="w-full p-2 border rounded-lg focus:ring-blue-500" [(ngModel)]="newMaintenance.startDate" />
-              <label class="block text-gray-700 text-sm font-medium mt-2">Date de fin :</label>
-              <input type="date" class="w-full p-2 border rounded-lg focus:ring-blue-500" [(ngModel)]="newMaintenance.endDate" />
-              <p class="text-gray-600 mt-2">
-                Se produit chaque jour à partir du <strong>{{ newMaintenance.startDate }}</strong>
-              </p>
-            </div>
-          </div>  
-          
-          
-          <div *ngIf="selectedForm === 'form4'" class="modal-overlay">
-            <div class="modal-content">
-              <!-- Bouton de fermeture (croix) -->
-              <button
-                class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition duration-200"
-                (click)="closeForm()"
-              >
-                <!-- Icône de croix (FontAwesome) -->
-                <i class="fas fa-times"></i>
-              </button>
-          
-              <h3 class="text-lg font-semibold text-gray-800 mb-3">Formulaire : Tous les jours de la semaine</h3>
-              <div class="mt-2">
-                <label class="block text-gray-700 text-sm font-medium mb-2">Jours sélectionnés :</label>
-                <div class="flex space-x-4">
-                
-                  <div *ngFor="let day of getDays()">
-                    <label [ngClass]="{ 'selected': selectedDays[day] }">
-                      <input type="checkbox" [(ngModel)]="selectedDays[day]" /> {{ day }}
-                    </label>
-                  </div>
-                
-              
-              </div>
-              </div>
-              <label class="block text-gray-700 text-sm font-medium mt-2">Date Debut :</label>
-              <input type="date" class="w-full p-2 border rounded-lg focus:ring-blue-500" [(ngModel)]="newMaintenance.startDate" />
-              <label class="block text-gray-700 text-sm font-medium mt-2">Date de fin :</label>
-              <input type="date" class="w-full p-2 border rounded-lg focus:ring-blue-500" [(ngModel)]="newMaintenance.endDate" />
 
-            </div>
-          </div>
-
-
-
-          <div *ngIf="selectedForm === 'form5'" class="modal-overlay">
-            <div class="modal-content">
-              <!-- Bouton de fermeture (croix) -->
-              <button
-                class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition duration-200"
-                (click)="closeForm()"
-              >
-                <!-- Icône de croix (FontAwesome) -->
-                <i class="fas fa-times"></i>
-              </button>
-          
-              <h3 class="text-lg font-semibold text-gray-800 mb-3">Formulaire : Tous les Mois</h3>
-          
-             
-              <div class="mt-2">
-                <label class="block text-gray-700 text-sm font-medium mb-2">mois sélectionnés :</label>
-                <div class="grid grid-cols-5 gap-4">
-                
-                  <div *ngFor="let day of getMois()">
-                    <label [ngClass]="{ 'selected': selectedDays[day] }">
-                      <input type="checkbox" [(ngModel)]="selectedDays[day]" /> {{ day }}
-                    </label>
-                  </div>
-              </div>
-              </div>
-              <label class="block text-gray-700 text-sm font-medium mt-2">Date de fin :</label>
-              <input type="date" class="w-full p-2 border rounded-lg focus:ring-blue-500" [(ngModel)]="newMaintenance.endDate" />
-              <label class="block text-gray-700 text-sm font-medium mt-2">Date debut :</label>
-              <input type="date" class="w-full p-2 border rounded-lg focus:ring-blue-500" [(ngModel)]="newMaintenance.startDate" />
-            </div>
-          </div>
-          <div *ngIf="selectedForm === 'form6'" class="modal-overlay">
-            <div class="modal-content">
-              <!-- Bouton de fermeture (croix) -->
-              <button
-                class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition duration-200"
-                (click)="closeForm()"
-              >
-                <!-- Icône de croix (FontAwesome) -->
-                <i class="fas fa-times"></i>
-              </button>
-          
-              <h3 class="text-lg font-semibold text-gray-800 mb-3">Formulaire : Tous les ANS</h3>
-          
-             
-          
-              <label class="block text-gray-700 text-sm font-medium mt-2">Date Debut :</label>
-              <input type="date" class="w-full p-2 border rounded-lg focus:ring-blue-500" [(ngModel)]="eventDate" />
-          
-          
-              
-              <label class="block text-gray-700 text-sm font-medium mt-2">Date de fin :</label>
-              <input type="date" class="w-full p-2 border rounded-lg focus:ring-blue-500" [(ngModel)]="endDate" />
-            </div>
-          </div>
-          <div *ngIf="selectedForm === 'form7'" class="modal-overlay">
-            <div class="modal-content">
-              <!-- Bouton de fermeture (croix) -->
-              <button
-                class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition duration-200"
-                (click)="closeForm()"
-              >
-                <!-- Icône de croix (FontAwesome) -->
-                <i class="fas fa-times"></i>
-              </button>
-          
-              <h3 class="text-lg font-semibold text-gray-800 mb-3">Personaliser</h3>
-          
-             
-          
-              <label class="block text-gray-700 text-sm font-medium mt-2">Date Debut :</label>
-              <input type="date" class="w-full p-2 border rounded-lg focus:ring-blue-500" [(ngModel)]="eventDate" />
-          
-          
-              
-              <label class="block text-gray-700 text-sm font-medium mt-2">Date de fin :</label>
-              <input type="date" class="w-full p-2 border rounded-lg focus:ring-blue-500" [(ngModel)]="endDate" />
-            </div>
-          </div>
-          
-           <!-- Statut -->
-           <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
-              <i class="bi bi-info-circle text-blue-600 mr-2"></i> Statut
+          <!-- Répétition -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-sync-alt text-blue-500 mr-2"></i> Fréquence
             </label>
             <select
-              class="w-full py-3 px-4 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
-              [(ngModel)]="newMaintenance.statut"
-              name="statut"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              [(ngModel)]="newMaintenance.repetitiontype"
+              name="repetitiontype"
+              required
             >
-              <option value="EN_ATTENTE" class="text-yellow-500" selected>EN ATTENTE</option>
-              <option value="EN_COURS"  disabled>EN COURS</option>
-              <option value="TERMINEE"disabled>TERMINEE</option>
-              <option value="ANNULEE"  disabled>ANNULEE</option>
+              <option value="Ne_pas_repeter">Ne pas répéter</option>
+              <option value="TOUS_LES_JOURS">Tous les jours</option>
+              <option value="TOUS_LES_SEMAINES">Toutes les semaines</option>
+              <option value="MENSUEL">Mensuel</option>
+              <option value="ANNUEL">Annuel</option>
             </select>
           </div>
 
+          <!-- Dates de répétition (si répétition activée) -->
+          <div *ngIf="newMaintenance.repetitiontype !== 'Ne_pas_repeter'" class="col-span-2 grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                <i class="fas fa-calendar-start text-blue-500 mr-2"></i> Date de début
+              </label>
+              <input
+                type="date"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                [(ngModel)]="newMaintenance.startDaterep"
+                name="startDaterep"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                <i class="fas fa-calendar-end text-blue-500 mr-2"></i> Date de fin
+              </label>
+              <input
+                type="date"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                [(ngModel)]="newMaintenance.endDaterep"
+                name="endDaterep"
+              />
+            </div>
+          </div>
 
-      
-         
-      
-          <!-- Priorité -->
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
-              <i class="fas fa-exclamation-triangle text-blue-500 mr-2"></i> Priorité
+          <!-- Jours de la semaine (si répétition hebdomadaire) -->
+          <div *ngIf="newMaintenance.repetitiontype === 'TOUS_LES_SEMAINES'" class="col-span-2 mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-calendar-week text-blue-500 mr-2"></i> Jours de la semaine
             </label>
-            <select
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
-              [(ngModel)]="newMaintenance.priorite"
-              name="priorite"
-            >
-              <option value="FAIBLE" class="text-green-500">FAIBLE</option>
-              <option value="NORMALE" class="text-yellow-500">NORMALE</option>
-              <option value="URGENTE" class="text-red-500">URGENTE</option>
-            </select>
+            <div class="flex flex-wrap gap-4">
+              <div *ngFor="let jour of joursSemaine; let i = index" class="flex items-center">
+                <input
+                  type="checkbox"
+                  [id]="'jour' + i"
+                  [value]="jour"
+                  (change)="toggleJourSelection(jour, $event)"
+                  [checked]="newMaintenance.selectedjours?.includes(jour)"
+                  class="mr-2"
+                />
+                <label [for]="'jour' + i" class="text-sm text-gray-700">{{ jour }}</label>
+              </div>
+            </div>
           </div>
-      
-          <!-- Télécharger un fichier -->
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
-              <i class="fas fa-file-upload text-blue-500 mr-2"></i> Télécharger un fichier
+
+          <!-- Mois de l'année (si répétition mensuelle) -->
+          <div *ngIf="newMaintenance.repetitiontype === 'MENSUEL'" class="col-span-2 mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-calendar-alt text-blue-500 mr-2"></i> Mois de l'année
             </label>
-            <input
-              type="file"
-              id="file"
-              (change)="onFileSelected($event)"
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
-            />
+            <div class="flex flex-wrap gap-4">
+              <div *ngFor="let mois of moisAnnee; let i = index" class="flex items-center">
+                <input
+                  type="checkbox"
+                  [id]="'mois' + i"
+                  [value]="mois"
+                  (change)="toggleMoisSelection(mois, $event)"
+                  [checked]="newMaintenance.selectedmois?.includes(mois)"
+                  class="mr-2"
+                />
+                <label [for]="'mois' + i" class="text-sm text-gray-700">{{ mois }}</label>
+              </div>
+            </div>
           </div>
-      
+
           <!-- Commentaires -->
-          <div class="mb-8">
-            <label class="block text-gray-700 font-medium mb-3 flex items-center">
+          <div class="col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-comment-alt text-blue-500 mr-2"></i> Commentaires
             </label>
             <textarea
-              class="w-full py-3 px-4 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white shadow-sm"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               [(ngModel)]="newMaintenance.commentaires"
               name="commentaires"
               rows="4"
+              placeholder="Ajoutez des commentaires supplémentaires..."
             ></textarea>
           </div>
-      
-          <!-- Boutons centrés avec icônes -->
-          <div class="flex justify-center gap-6 mt-10 col-span-2">
-            <button
-              type="button"
-              class="py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition duration-200 flex items-center shadow-lg"
-              (click)="togglePanel()"
-            >
-              <i class="fas fa-times-circle mr-2"></i> Annuler
-            </button>
-            <button
-              type="submit"
-              class="py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition duration-200 flex items-center shadow-lg"
-            >
-              <i class="fas fa-check-circle mr-2"></i> Ajouter
-            </button>
-          </div>
-        
+        </div>
+        <div *ngIf="nextRepetitionDates.length > 0">
+          <h3 class="text-lg font-semibold">Prochaines Dates de Répétition :</h3>
+          <ul class="list-disc pl-5">
+            <li *ngFor="let date of nextRepetitionDates">
+              {{ date | date: 'short' }}
+            </li>
+          </ul>
+        </div>
+        <!-- Boutons de soumission -->
+        <div class="flex justify-end gap-4 mt-8">
+          <button
+            type="button"
+            class="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 flex items-center"
+            (click)="togglePanel()"
+          >
+            <i class="fas fa-times-circle mr-2"></i> Annuler
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-200 flex items-center"
+          >
+            <i class="fas fa-check-circle mr-2"></i> Ajouter
+          </button>
+        </div>
       </form>
-      
-  
-  <!-- Style pour la barre de défilement -->
-  <style>
-    .scrollbar-custom::-webkit-scrollbar {
-      width: 8px;
-    }
-  
-    .scrollbar-custom::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
-  
-    .scrollbar-custom::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 4px;
-    }
-  
-    .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
-  </style>
-  <link
+
+      <div class="col-md-6 mb-4" *ngIf="!isLoading">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body d-flex align-items-center bg-white">
+            <i class="bi bi-stopwatch-fill fs-3 me-3" style="color: #00008B;"></i>
+            <div>
+              <h5 class="card-title">Prochaines dates</h5>
+              <ul>
+                <li *ngFor="let date of nextRepetitionDates">{{ date | date: 'short' }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Style pour la barre de défilement -->
+<style>
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+</style>
+<link
   rel="stylesheet"
   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
 />
-</div>
