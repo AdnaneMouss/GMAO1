@@ -2,8 +2,11 @@ package com.huir.GmaoApp.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.huir.GmaoApp.dto.IndicateurDTO;
 import com.huir.GmaoApp.dto.MaintenanceDTO;
 import com.huir.GmaoApp.dto.UserDTO;
 import com.huir.GmaoApp.model.Equipement;
@@ -30,14 +37,18 @@ import jakarta.validation.Valid;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory; 
 
 @CrossOrigin(origins = "http://localhost:4200") // Permet à Angular d'accéder à l'API
 @RestController
 @RequestMapping("/api/maintenances")
 public class MaintenanceController {
+	 private static final Logger logger = LoggerFactory.getLogger(MaintenanceController.class);
 	
 
     @Autowired
@@ -73,12 +84,19 @@ public class MaintenanceController {
 
    
            
-  
-    @PutMapping("/{id}")
-    public MaintenanceDTO updateMaintenance(@PathVariable Long id, @RequestBody MaintenanceDTO maintenanceDTO) {
-        return maintenanceService.updateMaintenance(id, maintenanceDTO);
+    //@PutMapping("/{id}")
+    //public MaintenanceDTO updateMaintenance(@PathVariable Long id, @RequestBody MaintenanceDTO maintenanceDTO) {
+      ///  return maintenanceService.updateMaintenance(id, maintenanceDTO);
         		
+    //}
+    
+    @PutMapping("/{id}")
+    public MaintenanceDTO updateMaintenance(@PathVariable Long id, @RequestBody MaintenanceDTO maintenancedto) {
+        return maintenanceService.updateMaintenance(id, maintenancedto);
     }
+
+
+
     // Supprimer une maintenance
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMaintenance(@PathVariable Long id) {
@@ -86,5 +104,35 @@ public class MaintenanceController {
         return ResponseEntity.noContent().build();
         
         
+    } 
+    
+    public class NextRepetitionDatesResponse {
+        private List<Date> nextRepetitionDates;
+
+        public NextRepetitionDatesResponse(List<Date> nextRepetitionDates) {
+            this.nextRepetitionDates = nextRepetitionDates;
+        }
+
+        public List<Date> getNextRepetitionDates() {
+            return nextRepetitionDates;
+        }
+
+        public void setNextRepetitionDates(List<Date> nextRepetitionDates) {
+            this.nextRepetitionDates = nextRepetitionDates;
+        }
     }
+    
+    @PostMapping("/next-dates")
+    public NextRepetitionDatesResponse getNextRepetitionDates(@RequestBody MaintenanceDTO maintenanceDTO) {
+        // Appel de la méthode dans le service pour obtenir toutes les dates de répétition
+        List<Date> nextDates = maintenanceService.getRepetitionDates(maintenanceDTO.getStartDaterep(), maintenanceDTO.getEndDaterep(), maintenanceDTO.getRepetitiontype());
+
+        // Retourner l'objet avec la liste des dates de répétition
+        return new NextRepetitionDatesResponse(nextDates);
+    }
+
+  
+
+    
+ 
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { maintenance } from '../models/maintenance';
+import { RepetitionType } from '../models/RepetitionType';
 
 
 @Injectable({
@@ -48,5 +49,19 @@ export class MaintenanceService {
   
     return this.http.get<any>('/api/maintenancePeriodique', { params });
   }
-  
+
+  // Méthode pour obtenir les dates de répétition
+  getNextRepetitionDates(maintenance: maintenance): Observable<maintenance> {
+    return this.http.post<maintenance>(`${this.apiUrl}/next-dates`, maintenance);
+  }
 }
+
+
+
+
+
+
+
+
+
+ 

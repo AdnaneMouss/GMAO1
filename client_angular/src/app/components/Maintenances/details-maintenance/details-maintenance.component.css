@@ -1,0 +1,124 @@
+.maintenance-container {
+    font-family: Arial, sans-serif;
+    max-width: 300px; /* Réduit la largeur */
+    margin: 0 auto;
+    padding: 15px; /* Réduit le padding */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre plus légère */
+  }
+  
+  .maintenance-title {
+    color: #333;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 18px; /* Taille de police réduite */
+  }
+  
+  .maintenance-button {
+    display: block;
+    width: 100%;
+    padding: 8px; /* Padding réduit */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px; /* Taille de police réduite */
+    transition: background-color 0.3s ease;
+  }
+  
+  .maintenance-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .maintenance-button i {
+    margin-right: 6px; /* Espacement réduit */
+  }
+  
+  .dates-list {
+    margin-top: 15px;
+  }
+  
+  .date-item {
+    list-style-type: none;
+    padding: 8px; /* Padding réduit */
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 8px; /* Espacement réduit */
+    display: flex;
+    align-items: center;
+    color: #555;
+    font-size: 14px; /* Taille de police réduite */
+  }
+  
+  .date-item i {
+    margin-right: 8px; /* Espacement réduit */
+  }
+  
+  .icon-small {
+    font-size: 14px; /* Taille des icônes réduite */
+  }
+
+
+
+.custom-snackbar::before {
+    content: '🔔'; /* Icône de notification (vous pouvez utiliser une icône personnalisée ici) */
+    margin-right: 10px; /* Espacement entre l'icône et le texte */
+    font-size: 1.2em; /* Taille de l'icône */
+}
+
+
+.notification-icon {
+  position: relative;
+  cursor: pointer;
+  font-size: 24px;
+  color: #00008B;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+}
+
+
+.custom-snackbar {
+
+  background-color: #4caf50; /* Couleur de fond */
+  color: white; /* Couleur du texte */
+  font-weight: bold; /* Texte en gras */
+  display: flex; /* Utilisation de flexbox pour aligner l'icône et le texte */
+  align-items: center; /* Alignement vertical des éléments */
+  padding: 10px 20px; /* Espacement interne */
+  border-radius: 8px; /* Coins plus arrondis */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Ombre plus prononcée */
+  font-size: 14px; /* Taille de police */
+  gap: 10px; /* Espace entre l'icône et le texte */
+}
+
+.custom-snackbar .icon {
+  font-size: 20px; /* Taille de l'icône */
+  color: #fff; /* Couleur de l'icône */
+}
+
+.custom-snackbar .close-button {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: auto; /* Aligner le bouton à droite */
+  padding: 0 0 0 20px; /* Espacement */
+}
+
+.custom-snackbar .close-button:hover {
+  color: #f0f0f0; /* Changement de couleur au survol */
+}
+  

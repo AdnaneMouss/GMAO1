@@ -3,6 +3,7 @@ package com.huir.GmaoApp.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -18,23 +19,37 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.AssertTrue;
 
+import com.huir.GmaoApp.dto.IndicateurDTO;
 import com.huir.GmaoApp.model.User;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Entity
 @Data
@@ -63,14 +78,26 @@ public class Maintenance {
 	        return dateDebutPrevue.isBefore(dateFinPrevue);
 	    }
 	  private long dureeIntervention;
+	  
 	  @Enumerated(EnumType.STRING)
 	    private Priorite priorite;  
 	  @Enumerated(EnumType.STRING)
 	    private Statut statut;
 	  private String commentaires;
 	  
-	  @Column(name = "indicateurs")
-	    private String indicateurs; 
+	  @Enumerated(EnumType.STRING)
+	    private repetitiontype repetitiontype;
+	  
+	 @Column(name = "indicateurs")
+	  private String indicateurs; 
+	 
+	 
+	 /////HADI////
+	 private long repetition;
+	
+	 
+	 
+	 
 	  
 	// Relation avec le responsable de maintenance
 	  @ManyToOne(fetch = FetchType.EAGER)
@@ -80,8 +107,8 @@ public class Maintenance {
 	  
 	  @ManyToOne(fetch = FetchType.EAGER)
 	    @JsonBackReference
-	    @JoinColumn(name = "technicien_maintenance_id")
-	    private User technicienMaintenance;
+	    @JoinColumn(name = "technicien_maintenance_id_id")
+	    private User user;
 	  
 	  
 
@@ -134,8 +161,103 @@ public class Maintenance {
 	    @JoinColumn(name = "event_id")
 	    @JsonBackReference
 	    private Event event;
+	    
+	    
+	    
+	     
+	    
+	    
+	    @Temporal(TemporalType.DATE) // Stocker uniquement la date (sans l'heure)
+	    private Date startDaterep; // Date de début
+
+	    @Temporal(TemporalType.DATE) // Stocker uniquement la date (sans l'heure)
+	    private Date endDaterep; // Date de fin
+	    
+	    private String selectedjours;	
+	    private String selectedmois;
+	    
+	    
+	    private List<Date> nextRepetitionDates;
+	    
+	    
+	    ///////////////
+	   
+	    
+	    public List<Date> getNextRepetitionDates() {
+	        return nextRepetitionDates;
+	    }
+
+	    public void setNextRepetitionDates(List<Date> nextRepetitionDates) {
+	        this.nextRepetitionDates = nextRepetitionDates;
+	    }
+	  
+
+	   
+	 
+
+	    
+	    
+	   
+	    
+	  
+		public List<String> getSelectedjours() {
+	        if (this.selectedjours != null && !this.selectedjours.isEmpty()) {
+	            return Arrays.asList(this.selectedjours.split(",")); // Convertir en liste
+	        }
+	        return new ArrayList<>();
+	    }
+	    // Setter qui transforme la liste en chaîne
+	    public void setSelectedjours(List<String> selectedjours) {
+	        this.selectedjours = String.join(",", selectedjours); // Convertir en string
+	    }
+	    
+	    
+	    public List<String> getSelectedmois() {
+	        if (this.selectedmois != null && !this.selectedmois.isEmpty()) {
+	            return Arrays.asList(this.selectedmois.split(",")); // Convertir en liste
+	        }
+	        return new ArrayList<>();
+	    }
+	    // Setter qui transforme la liste en chaîne
+	    public void setSelectedmois(List<String> selectedmois) {
+	        this.selectedmois = String.join(",", selectedmois); // Convertir en string
+	    }
+
+	
+		
+	
+		
+		
 
 
+		
+	
+	
+	
+	
+		
+		
+
+		          
+		       
+		
+		
+	       
+	             
+
+
+	public Date getStartDaterep() {
+			return startDaterep;
+		}
+		public void setStartDaterep(Date startDaterep) {
+			this.startDaterep = startDaterep;
+		}
+		public Date getEndDaterep() {
+			return endDaterep;
+		}
+		public void setEndDaterep(Date endDaterep) {
+			this.endDaterep = endDaterep;
+		}
 	public Long getId() {
 		return id;
 	}
@@ -185,22 +307,190 @@ public class Maintenance {
 		this.commentaires = commentaires;
 	}
 	
+	
+	////////////////////////
+	
+	// public Date getDateRepetition() {
+	  //      if (startDaterep == null || repetitiontype == null) {
+	    //        return null; // Aucune répétition si la date de début ou le type de répétition est manquant
+	      //  }
+	        
+	       // Calendar calendar = Calendar.getInstance();
+	       // calendar.setTime(startDaterep);
+	        
+	        //switch (repetitiontype) {
+	          //  case TOUS_LES_JOURS:
+	            //    calendar.add(Calendar.DAY_OF_MONTH, 1);
+	              //  break;
+	            //case TOUS_LES_SEMAINES:
+	              //  calendar.add(Calendar.WEEK_OF_YEAR, 1);
+	               // break;
+	            //case MENSUEL:
+	              //  calendar.add(Calendar.MONTH, 1);
+	               // break;
+	            //case ANNUEL:
+	              //  calendar.add(Calendar.YEAR, 1);
+	               // break;
+	            //case Ne_pas_repeter:
+	            //default:
+	              //  return null; // Pas de répétition
+	        //}
+	        
+	     //   Date daterepetition = calendar.getTime();
+	        
+	        // Vérifier si la date de répétition dépasse la date de fin
+	       // if (endDaterep != null && daterepetition.after(endDaterep)) {
+	         //   return null; // La répétition ne doit pas dépasser la date de fin
+	        //}
+	        
+	       // return daterepetition;
+	    //}
+	    
+	
+	
+	
+	
+	
+	
 	public void setDureeIntervention(long dureeIntervention) {
 		this.dureeIntervention = dureeIntervention;
 	}
+	//public void setDaterepetition(Date daterepetition) {
+		//this.daterepetition = daterepetition;
+	//}
+	 public void calculateRepetitionDates() {
+	        if (startDaterep == null || endDaterep == null || repetitiontype == null) {
+	            this.nextRepetitionDates = null; // Si les données sont manquantes
+	            return;
+	        }
+
+	        List<Date> repetitionDates = new ArrayList<>();
+	        Calendar calendar = Calendar.getInstance();
+	        calendar.setTime(startDaterep);
+
+	        // Ajouter la première date de répétition
+	        repetitionDates.add(calendar.getTime());
+
+	        // Calculer les dates de répétition
+	        while (calendar.getTime().before(endDaterep)) {
+	            switch (repetitiontype) {
+	                case TOUS_LES_JOURS:
+	                    calendar.add(Calendar.DAY_OF_MONTH, 1);
+	                    break;
+	                case TOUS_LES_SEMAINES:
+	                    calendar.add(Calendar.WEEK_OF_YEAR, 1);
+	                    break;
+	                case MENSUEL:
+	                    calendar.add(Calendar.MONTH, 1);
+	                    break;
+	                case ANNUEL:
+	                    calendar.add(Calendar.YEAR, 1);
+	                    break;
+	                case Ne_pas_repeter:
+	                default:
+	                    this.nextRepetitionDates = repetitionDates;
+	                    return;
+	            }
+
+	            if (!calendar.getTime().after(endDaterep)) {
+	                repetitionDates.add(calendar.getTime());
+	            }
+	        }
+
+	        this.nextRepetitionDates = repetitionDates;
+	    }
+	 
+	 
+	 ///////////HHHADDII///////////////
+	 
+	 public Date getRepetition() {
+	        if (startDaterep == null || endDaterep == null || repetitiontype == null) {
+	            return null; // Si les données sont manquantes
+	        }
+
+	        // Si la répétition est désactivée, retourner null
+	        if (repetitiontype == repetitiontype.Ne_pas_repeter) {
+	            return null;
+	        }
+
+	        // Créer une instance de Calendar pour manipuler les dates
+	        Calendar calendar = Calendar.getInstance();
+	        calendar.setTime(startDaterep);
+
+	        // Calculer la prochaine date en fonction du type de répétition
+	        switch (repetitiontype) {
+	            case TOUS_LES_JOURS:
+	                calendar.add(Calendar.DAY_OF_MONTH, 1); // Ajouter 1 jour
+	                break;
+	            case TOUS_LES_SEMAINES:
+	                calendar.add(Calendar.WEEK_OF_YEAR, 1); // Ajouter 1 semaine
+	                break;
+	            case MENSUEL:
+	                calendar.add(Calendar.MONTH, 1); // Ajouter 1 mois
+	                break;
+	            case ANNUEL:
+	                calendar.add(Calendar.YEAR, 1); // Ajouter 1 an
+	                break;
+	            default:
+	                return null; // Cas par défaut (Ne_pas_repeter déjà géré)
+	        }
+
+	        // Vérifier que la date calculée ne dépasse pas endDaterep
+	        Date nextDate = calendar.getTime();
+	        if (nextDate.after(endDaterep)) {
+	            return null; // Si la date dépasse endDaterep, retourner null
+	        }
+
+	        return nextDate; // Retourner la prochaine date de maintenance
+	    }
+	
+	 //////////////////////////
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public long getDureeIntervention() {
         if (dateDebutPrevue != null && dateFinPrevue != null) {
             return ChronoUnit.DAYS.between(dateDebutPrevue, dateFinPrevue); // Calcul de la durée en jours
         }
         return 0;
     }
-	public String getIndicateurs() {
-		return indicateurs;
-	}
-	public void setIndicateurs(String indicateurs) {
-		this.indicateurs = indicateurs;
-	}
-	 public ActionMaintenance getAction() {
+	
+	
+
+	public void setIndicateurs(List<IndicateurDTO> indicateurs) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            this.indicateurs = objectMapper.writeValueAsString(indicateurs);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+           
+        }
+    }
+	
+	 public List<IndicateurDTO> getIndicateurs() {
+	        ObjectMapper objectMapper = new ObjectMapper();
+	        try {
+	            return objectMapper.readValue(this.indicateurs, new TypeReference<List<IndicateurDTO>>() {});
+	        } catch (JsonProcessingException e) {
+	            e.printStackTrace();
+	            return null;
+	        }
+	    }
+	public ActionMaintenance getAction() {
 	        return action;
 	    }
 
@@ -213,11 +503,12 @@ public class Maintenance {
 		public void setAutreAction(String autreAction) {
 			this.autreAction = autreAction;
 		}
-		public User getTechnicienMaintenance() {
-			return technicienMaintenance;
+		
+		public User getUser() {
+			return user;
 		}
-		public void setTechnicienMaintenance(User technicienMaintenance) {
-			this.technicienMaintenance = technicienMaintenance;
+		public void setUser(User user) {
+			this.user = user;
 		}
 		public Event getEvent() {
 			return event;
@@ -225,7 +516,28 @@ public class Maintenance {
 		public void setEvent(Event event) {
 			this.event = event;
 		}
+		public repetitiontype getRepetitiontype() {
+			return repetitiontype;
+		}
+		public void setRepetitiontype(repetitiontype repetitiontype) {
+			this.repetitiontype = repetitiontype;
+		}
+		public void setRepetition(long repetition) {
+			this.repetition = repetition;
+		}
 		
+		
+	
+
+	    
+	    
+	   
+	   
+	    
+	    
+}
+	   
+	  
 	    
 	   
 	
@@ -237,4 +549,3 @@ public class Maintenance {
 	   
 	  
 	  
-}
