@@ -2,6 +2,7 @@ import { ActionMaintenance } from "./ActionMaintenance";
 import { Batiment } from "./batiment";
 import { Equipement } from "./equipement";
 import { Indicateur } from "./Indicateur";
+import { RepetitionType } from "./RepetitionType";
 import { User } from "./user";
 
 export interface maintenance{
@@ -12,7 +13,7 @@ export interface maintenance{
   dateProchainemaintenance: Date;
   documentPath: File | null;
   commentaires: string;
-  statut: 'EN_ATTENTE'; 
+  statut: 'EN_ATTENTE' | 'EN_COURS' | 'TERMINEE' | 'ANNULEE'; 
   priorite: 'FAIBLE' | 'NORMALE' | 'URGENTE' ; 
   equipement: Equipement;
   user :User;
@@ -27,13 +28,30 @@ export interface maintenance{
   'CONTROLE_CONNECTIVITE' |
   'VERIFICATION_SAUVEARDES' |
   'FORMATION_ENTRETIEN';
-  autreAction?: string ;
+  autreAction: string ;
+  selectedjours: string[];
+  selectedmois: string[];
+  repetitiontype:  'TOUS_LES_JOURS'|     'Ne_pas_repeter'| 
+  'TOUS_LES_SEMAINES' |  
+  'MENSUEL' |            
+  'ANNUEL';
+  startDaterep: Date; 
+  endDaterep: Date; 
+  daterepetition?:Date;
+  nextRepetitionDates?: Date[];
+  RepetitionType:RepetitionType;
+  repetition:number;
 
-  startDate: Date;
-  endDate: Date;
+  
+
+
+
+
+  startDate?: Date;
+  endDate?: Date;
   selectedDays: { [key: string]: boolean };  // Exemple : { "LUNDI": true, "MARDI": false }
   selectedMonth: { [key: string]: boolean }; // Exemple : { "JANVIER": true, "FÉVRIER": false }
-  repetitionType:  'TOUS_LES_JOURS'|     
+  repetitionType:  'TOUS_LES_JOURS'|    'Ne_pas_repeter'|  
   'TOUS_LES_SEMAINES' |  
   'MENSUEL' |            
   'ANNUEL';
@@ -43,6 +61,5 @@ export interface maintenance{
 }  
 
   
-
 
 

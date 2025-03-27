@@ -33,7 +33,7 @@ public class Event {
     private LocalDate endDate;   // Date de fin
 
     @Enumerated(EnumType.STRING) // Stocker l'énumération sous forme de chaîne
-    private RepetitionType repetitionType; // Type de répétition
+    private repetitiontype repetitionType; // Type de répétition
 
     @ElementCollection
     @CollectionTable(name = "selected_days", joinColumns = @JoinColumn(name = "event_id"))
@@ -75,15 +75,17 @@ public class Event {
         this.endDate = endDate;
     }
 
-    public RepetitionType getRepetitionType() {
-        return repetitionType;
-    }
+    
 
-    public void setRepetitionType(RepetitionType repetitionType) {
-        this.repetitionType = repetitionType;
-    }
+    public repetitiontype getRepetitionType() {
+		return repetitionType;
+	}
 
-    public Map<String, Boolean> getSelectedDays() {
+	public void setRepetitionType(repetitiontype repetitionType) {
+		this.repetitionType = repetitionType;
+	}
+
+	public Map<String, Boolean> getSelectedDays() {
         return selectedDays;
     }
 

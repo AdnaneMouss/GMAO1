@@ -1,1 +1,126 @@
-<p>dashboard works!</p>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de Bord Maintenance</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Style général */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    /* Conteneur du tableau de bord */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* 2 colonnes */
+      gap: 20px; /* Espace entre les cartes */
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Style des cartes */
+    .card {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.5em;
+      color: #444;
+      text-align: center;
+    }
+
+    /* Conteneur des graphiques */
+    .chart-container {
+      width: 100%;
+      height: 300px; /* Hauteur fixe pour les graphiques */
+      margin: 0 auto;
+    }
+
+    /* Style de la liste des interventions */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tableau de Bord Maintenance</h1>
+  <div class="dashboard">
+    <!-- Graphique 1 : Interventions par type -->
+    <div class="card">
+      <h2>Interventions par Type</h2>
+      <div class="chart-container">
+        <canvas id="maintenanceChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Graphique 2 : Équipements par statut -->
+    <div class="card">
+      <h2>Statut des Équipements</h2>
+      <div class="chart-container">
+        <canvas id="equipmentChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Graphique 3 : Interventions par Mois -->
+    <div class="card">
+      <h2>Interventions par Mois</h2>
+      <div class="chart-container">
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Graphique 4 : Répartition des techniciens -->
+    <div class="card">
+      <h2>Répartition des Techniciens</h2>
+      <div class="chart-container">
+        <canvas id="technicianChart"></canvas>
+      </div>
+    </div>
+
+  
+  </div>
+
+
+
+</body>
+</html>
