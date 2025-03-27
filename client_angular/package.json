@@ -33,10 +33,7 @@
     "file-saver": "^2.0.5",
     "jspdf": "^3.0.0",
     "jspdf-autotable": "^5.0.2",
-<<<<<<< HEAD
     "ngx-pagination": "^6.0.3",
-=======
->>>>>>> 62decee8937855185212d7301359b0127726a9da
     "ngx-toastr": "^19.0.0",
     "primeicons": "^7.0.0",
     "primeng": "^17.18.15",
