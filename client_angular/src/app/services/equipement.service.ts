@@ -29,7 +29,7 @@ export class EquipementService {
     return this.http.get<any[]>(`${this.apiUrl}/${id}/pieces`);
   }
 
-  getEquipementsByService(serviceId: string): Observable<any[]> {
+  getEquipementsByService(serviceId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/service/${serviceId}`);
   }
 

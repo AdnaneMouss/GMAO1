@@ -4,6 +4,7 @@ import { PieceDetachee } from '../../../models/piece-detachee';
 import * as XLSX from 'xlsx';
 //@ts-ignore
 import { saveAs } from 'file-saver';
+import {environment} from "../../../../environments/environment";
 @Component({
   selector: 'app-liste-pieces-detachees',
   templateUrl: './liste-pieces-detachees.component.html',
@@ -14,8 +15,16 @@ export class ListePiecesDetacheesComponent  implements OnInit {
   pieces_detachees: PieceDetachee[] = [];
   searchTermNom = '';
   filteredPiecesDetachees = [...this.pieces_detachees];
+  showAddSuccessMessage: boolean = false;
+  selectedFile: File = new File([], "");
+  errorMessage: string='';
+  refTakenErrorMessage: string = '';
+  showEditPanel: boolean = false;  // Toggle the visibility of the edit panel
+  pieceUpdated: boolean = false;
+  successMessage: string = '';
 
-newPiece: PieceDetachee = {
+
+  newPiece: PieceDetachee = {
   id: 0,
   nom: '',
   description: '',
@@ -30,12 +39,9 @@ newPiece: PieceDetachee = {
   image:''
 
 };
-referenceTaken = false; // Variable pour gérer l'état de la référence
-
-// Méthode pour vérifier si la référence est unique
-checkReferenceUniqueness(reference: string): boolean {
-  return this.pieces_detachees.some(piece => piece.reference === reference);
-}
+referenceTaken = false;
+selectedPiece: any = {};
+  showEditSuccessMessage: boolean = false;
 
   showPanel = false;
 
@@ -55,28 +61,138 @@ checkReferenceUniqueness(reference: string): boolean {
       }
     });
   }
-  addPiece(): void {
-    // Vérifier si la référence est unique avant d'ajouter la pièce
-    const referenceExistante = this.pieces_detachees.some(piece => piece.reference === this.newPiece.reference);
 
-    if (referenceExistante) {
-        alert('Cette référence existe déjà. Veuillez entrer une référence unique.');
-        return; // Ne pas procéder si la référence existe déjà
+  onFileSelect(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+    }
+  }
+
+  addPiece(): void {
+    // Call the service method to create the piece with image
+    this.PieceDetacheeService.createPieceWithImage(this.newPiece, this.selectedFile).subscribe(
+      (response) => {
+        // Add the new piece to the list
+        this.pieces_detachees.push(response);
+        this.resetNewPiece();  // Reset the form after success
+        this.fetchPieces();  // Refresh the list of pieces
+
+        // Show success message
+        this.showAddSuccessMessage = true;
+        this.showPanel = false;
+
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          this.showAddSuccessMessage = false;
+        }, 3000);
+      },
+      (error) => {
+        // Handle error, show specific message
+        if (error.status === 409) {
+          this.referenceTaken=true;
+          this.refTakenErrorMessage = 'Une pièce avec cette référence existe déjà.';
+        } else {
+          this.errorMessage = 'Échec de la création de la pièce. Veuillez réessayer.';
+        }
+      }
+    );
+  }
+
+  updatePiece(): void {
+    // Check if the selected piece exists and is properly selected
+    if (!this.selectedPiece || this.selectedPiece.id === undefined) {
+      this.errorMessage = 'Aucune pièce sélectionnée pour la mise à jour!';
+      return;
     }
 
-    // Si la référence est unique, procéder à l'ajout de la pièce
-    this.PieceDetacheeService.createPieceDetachee(this.newPiece).subscribe({
-        next: () => {
-            alert('Pièce ajoutée avec succès.');
-            this.fetchPieces(); // Rafraîchir la liste des pièces
-            this.resetNewPiece(); // Réinitialiser le formulaire
-            this.showPanel = false; // Fermer le panneau
-        },
-        error: (err) => {
-            console.error('Erreur lors de l\'ajout de la pièce:', err);
+    // Check for missing required fields
+    if (!this.selectedPiece.nom || !this.selectedPiece.reference || !this.selectedPiece.fournisseur) {
+      this.errorMessage = 'Les champs nom, référence et fournisseur sont obligatoires';
+      return;
+    }
+
+    // Check if a file has been selected (if required for the update)
+    const fileToSend = this.selectedFile === null ? undefined : this.selectedFile;
+
+
+    // Prepare the piece data
+    const pieceData = {
+      nom: this.selectedPiece.nom,
+      description: this.selectedPiece.description,
+      reference: this.selectedPiece.reference,
+      fournisseur: this.selectedPiece.fournisseur,
+      coutUnitaire: this.selectedPiece.coutUnitaire,
+      quantiteStock: this.selectedPiece.quantiteStock,
+      quantiteMinimale: this.selectedPiece.quantiteMinimale,
+      dateAchat: this.selectedPiece.dateAchat,
+      datePeremption: this.selectedPiece.datePeremption,
+    };
+
+    // Call the service to update the piece with the selected file if available
+    this.PieceDetacheeService.updatePiece(
+      this.selectedPiece.id,
+      pieceData,
+      fileToSend
+    ).subscribe(
+      (updatedPiece) => {
+        // Find and update the piece in the pieces list
+        const index = this.pieces_detachees.findIndex(piece => piece.id === updatedPiece.id);
+        if (index !== -1) {
+          this.pieces_detachees[index] = updatedPiece;
         }
-    });
-}
+
+        this.resetNewPiece();
+        this.fetchPieces();
+        this.pieceUpdated = true;
+        this.showEditPanel = false;
+        this.successMessage = 'Pièce modifiée avec succès';
+
+        // Hide the success message after 3 seconds
+        setTimeout(() => {
+          this.pieceUpdated = false;
+        }, 3000);
+      },
+      (error) => {
+        // Handle specific error cases
+        if (error.status === 409 && error.error) {
+          // Check for conflict errors (reference, fournisseur, etc.)
+          const field = error.error.field;
+          const message = error.error.message;
+
+          if (field === 'reference') {
+            this.referenceTaken = true;
+            this.errorMessage = message;
+          }
+          else {
+            this.errorMessage = message || 'Un conflit est survenu lors de la mise à jour.';
+          }
+        } else if (error.status === 400) {
+          console.log("Sent data:",pieceData);
+          this.errorMessage = 'Des données invalides ont été envoyées. Veuillez vérifier et réessayer.';
+        } else if (error.status === 404) {
+          // Handle not found error (piece not found)
+          this.errorMessage = 'Pièce non trouvée.';
+        } else {
+          // Generic error fallback
+          this.errorMessage = 'Échec de la mise à jour de la pièce.';
+        }
+      }
+    );
+  }
+
+
+  openEditPanel(piece: any): void {
+    this.selectedPiece = { ...piece };
+    this.showEditPanel=true;
+  }
+
+  closeEditPanel(): void {
+    this.selectedPiece = null; // Close the edit panel
+  }
+
+
+
 
 
   filterPiecesDetacheesByName() {
@@ -99,28 +215,12 @@ checkReferenceUniqueness(reference: string): boolean {
           datePeremption: '',
           historiqueUtilisation: '',
           image:''
-
       };
-
+        this.referenceTaken=false;
     }
 
-  togglePanel(): void {
-    this.showPanel = !this.showPanel;
-  }
 
-  deletePiece(id: number): void {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer la pièce avec l'ID ${id} ?`)) {
-        this.PieceDetacheeService.deletePieceDetachee(id).subscribe({
-            next: () => {
-                this.fetchPieces();
-                alert('Pièce supprimée avec succès.');
-            },
-            error: (err) => {
-                console.error('Erreur lors de la suppression de la pièce :', err);
-            }
-        });
-    }
-}
+
 
   exportToExcel(): void {
     // Create data with the piece attributes
@@ -215,6 +315,15 @@ checkReferenceUniqueness(reference: string): boolean {
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(data, 'pieces_professionnel.xlsx');
+  }
+
+  getImageUrl(imagePath: string): string {
+    return `${environment.apiUrl}${imagePath}`;
+  }
+
+  togglePanel(): void {
+    this.showPanel = !this.showPanel;
+    this.resetNewPiece();
   }
 
 

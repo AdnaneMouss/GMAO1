@@ -15,13 +15,19 @@ export class CategoriesEquipementsComponent implements OnInit {
   searchQuery: string = '';
   showForm: boolean = false;
   newService: Service = { id: 0, nom: '', description: '', image: '' };
-  selectedService: Service | null = null; // Track service being updated
+  selectedService: any = {}; // Initialize with an empty object
+  showAddSuccessMessage: boolean = false;
+  showEditSuccessMessage: boolean = false;
+  showAddForm: boolean = false;
   searchTermNom = '';
   filteredServices = [...this.services];
   errorMessage: string = '';
-
+  showEditForm: boolean = false;
   imageError: string | null = null;
   selectedFile: File | null = null;  // To store the selected file for upload
+  isLoading: boolean = false; // Loading state for API requests
+  serviceTaken: boolean = false;
+
 
   constructor(private serviceService: ServiceService) {}
 
@@ -29,11 +35,20 @@ export class CategoriesEquipementsComponent implements OnInit {
     this.getServices();
   }
 
+  // Function to show loading spinner while getting services
   getServices(): void {
-    this.serviceService.getAllServices().subscribe((data: Service[]) => {
-      this.services = data;
-      this.filteredServices = [...this.services];
-    });
+    this.isLoading = true;  // Set loading state
+    this.serviceService.getAllServices().subscribe(
+      (data: Service[]) => {
+        this.services = data;
+        this.filteredServices = [...this.services];
+        this.isLoading = false;  // Stop loading after response
+      },
+      (error) => {
+        this.errorMessage = 'Failed to load services. Please try again later.';
+        this.isLoading = false;  // Stop loading if error occurs
+      }
+    );
   }
 
   filterServicesByName() {
@@ -47,17 +62,16 @@ export class CategoriesEquipementsComponent implements OnInit {
   }
 
   toggleForm(): void {
-    this.showForm = !this.showForm;
-    this.errorMessage = ''; // Reset error message
-    this.selectedService = null; // Reset selected service when toggling the form
+    this.showAddForm = false;
+    this.showEditForm = false;
+    this.resetForm();
   }
 
   resetForm(): void {
     this.newService = { id: 0, nom: '', description: '', image: '' };
+    this.errorMessage = ''; // Reset error message
     this.selectedService = null;
-    this.showForm = false;
-    this.errorMessage = '';
-    this.selectedFile = null;  // Clear selected file
+    this.serviceTaken=false;
   }
 
   private initService(): Service {
@@ -90,29 +104,116 @@ export class CategoriesEquipementsComponent implements OnInit {
       this.selectedFile = file;
     }
   }
-  // Method to create service and upload image
+
   addService(): void {
-    if (!this.newService.nom || !this.selectedFile) {
-      this.errorMessage = 'Nom, description, and image are required!';
+    if (!this.newService.nom) {
+      this.errorMessage = 'Le nom du service est requis!';
       return;
     }
 
-    this.serviceService.createServiceWithImage(this.newService, this.selectedFile)
+    // Block submission if there's an image error
+    if (this.imageError) {
+      this.errorMessage = 'Veuillez sélectionner une image valide avant d\'ajouter le service.';
+      return;
+    }
+
+    this.isLoading = true; // Show loading spinner while making the request
+
+    this.serviceService.createServiceWithImage(
+      {
+        nom: this.newService.nom,
+        description: this.newService.description || '' // Ensure description is always defined
+      },
+      this.selectedFile || undefined // If no file, pass undefined
+    ).subscribe(
+      (response) => {
+        this.services.push(response);
+        this.resetForm();
+        this.getServices();
+
+        // Show success message
+        this.showAddSuccessMessage = true;
+        this.showAddForm = false;
+
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          this.showAddSuccessMessage = false;
+        }, 3000);
+
+        this.isLoading = false; // Stop loading after success
+      },
+      (error) => {
+        if (error.status === 409) {
+          this.serviceTaken = true;
+          this.errorMessage = 'Un service avec ce nom existe déjà';
+        } else {
+          this.errorMessage = 'Échec de la création du service. Veuillez réessayer.';
+        }
+        this.isLoading = false; // Stop loading on error
+      }
+    );
+  }
+
+  updateService(): void {
+    if (!this.selectedService || this.selectedService.id === undefined) {
+      this.errorMessage = 'Aucun service sélectionné pour la mise à jour!';
+      return;
+    }
+
+    if (!this.selectedService.nom) {
+      this.errorMessage = 'Le nom du service est obligatoire';
+      return;
+    }
+
+    // Block update if there's an image error
+    if (this.imageError) {
+      this.errorMessage = 'Veuillez sélectionner une image valide avant de mettre à jour le service.';
+      return;
+    }
+
+    const fileToSend = this.selectedFile === null ? undefined : this.selectedFile;
+
+    this.isLoading = true;  // Show loading spinner while making the request
+    this.serviceService.updateService(this.selectedService.id, this.selectedService, fileToSend)
       .subscribe(
-        (response) => {
-          this.services.push(response);  // Add the newly created service to the list
+        (updatedService) => {
+          const index = this.services.findIndex(service => service.id === updatedService.id);
+          if (index !== -1) {
+            this.services[index] = updatedService;
+          }
           this.resetForm();
           this.getServices();
+
+          // Show the success message
+          this.showEditSuccessMessage = true;
+
+          // Hide the success message after 3 seconds
+          setTimeout(() => {
+            this.showEditSuccessMessage = false;
+          }, 3000);
+
+          this.isLoading = false;  // Stop loading after success
         },
         (error) => {
-          this.errorMessage = 'Failed to create service. Please try again.';
+          // Check for 409 Conflict error and set the specific message
+          if (error.status === 409) {
+            this.serviceTaken = true;
+            this.errorMessage = 'Un service avec ce nom existe déjà';
+          } else {
+            this.errorMessage = 'Échec de la mise à jour du service.';
+          }
+          this.isLoading = false;  // Stop loading on error
         }
       );
   }
 
-
-  getImageUrl(imagePath: string): string {
-    return `${environment.apiUrl}${imagePath}`;  // Use the apiUrl dynamically
+  editService(service: Service): void {
+    this.selectedService = { ...service }; // Clone the object to avoid direct mutations
+    this.showEditForm = true; // Show the form
+    this.errorMessage = ''; // Reset errors
   }
 
+  getImageUrl(imagePath: string): string {
+    return `${environment.apiUrl}${imagePath}`;
+  }
 }

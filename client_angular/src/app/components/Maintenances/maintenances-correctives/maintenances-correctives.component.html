@@ -1,1 +1,168 @@
-<p>maintenances-correctives works!</p>
+<div class="container mx-auto p-8">
+  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6">
+    <h2 class="text-3xl font-semibold text-gray-800 mb-4">Gestion des Maintenances Correctives</h2>
+    <p class="text-gray-600 mb-6">Consultez et gérez les tickets de maintenance corrective des équipements hospitaliers.</p>
+
+    <div class="flex space-x-4 justify-end w-full sm:w-auto">
+      <button class="text-blue-600 hover:text-blue-700 transition duration-200" (click)="openAddModal()">
+        <i class="fas fa-plus fa-lg"></i>
+      </button>
+      <button class="text-green-600 hover:text-green-700 transition duration-200">
+        <i class="fas fa-download fa-lg"></i>
+      </button>
+    </div>
+<br>
+    <!-- Modal for adding new maintenance -->
+    <div *ngIf="showModal" class="fixed inset-0 z-50 bg-gray-500 bg-opacity-75 flex justify-center items-center">
+      <div class="modal-content bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
+        <form (ngSubmit)="addMaintenance()">
+          <h3 class="text-2xl font-semibold text-gray-800 mb-6">Ajouter une Maintenance Corrective</h3>
+
+          <!-- Form Fields -->
+          <div class="mb-4">
+            <label for="titre" class="block text-gray-700 text-sm font-medium mb-2">
+              Titre <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="titre" [(ngModel)]="newMaintenance.titre" name="titre" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div class="mb-4">
+            <label for="equipementNom" class="block text-gray-700 text-sm font-medium mb-2">
+              Équipement <span class="text-red-500">*</span>
+            </label>
+            <select id="equipementNom" [(ngModel)]="newMaintenance.equipementNom" name="equipementNom" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option *ngFor="let equipement of equipements" [value]="equipement.nom">{{ equipement.nom }}</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label for="description" class="block text-gray-700 text-sm font-medium mb-2">
+              Description <span class="text-red-500">*</span>
+            </label>
+            <textarea id="description" [(ngModel)]="newMaintenance.description" name="description" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4"></textarea>
+          </div>
+
+          <div class="mb-4">
+            <label for="priorite" class="block text-gray-700 text-sm font-medium mb-2">
+              Priorité <span class="text-red-500">*</span>
+            </label>
+            <select id="priorite" [(ngModel)]="newMaintenance.priorite" name="priorite" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="URGENTE">Urgente</option>
+              <option value="NORMALE">Normale</option>
+              <option value="FAIBLE">Faible</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label for="user" class="block text-gray-700 text-sm font-medium mb-2">
+              Technicien <span class="text-red-500">*</span>
+            </label>
+            <div class="flex space-x-2">
+              <select id="user" [(ngModel)]="newMaintenance.affecteAId" name="affecte" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option *ngFor="let user of users" [value]="user.id">{{ user.nom }}</option>
+              </select>
+              <button type="button" (click)="autoSelectTechnicien()"
+                      class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                Auto
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-between">
+            <button type="submit" [disabled]="!newMaintenance.titre || !newMaintenance.equipementNom || !newMaintenance.description || !newMaintenance.affecteAId" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none">
+              Ajouter
+            </button>
+            <button type="button" (click)="closeAddModal()" class="bg-gray-300 text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-400 focus:outline-none">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="flex justify-between mb-6">
+      <input type="text" [(ngModel)]="searchKeyword" (input)="applyFilters()" placeholder="Recherche par titre ou description..." class="px-4 py-2 border rounded-md" />
+      <select [(ngModel)]="selectedStatut" (change)="applyFilters()" class="px-4 py-2 border rounded-md">
+        <option value="">Statut</option>
+        <option value="TERMINEE">Terminé</option>
+        <option value="EN_COURS">En Cours</option>
+        <option value="EN_ATTENTE">En Attente</option>
+        <option value="ANNULEE">Annulée</option>
+      </select>
+      <select [(ngModel)]="selectedPriorite" (change)="applyFilters()" class="px-4 py-2 border rounded-md">
+        <option value="">Priorité</option>
+        <option value="URGENTE">Urgente</option>
+        <option value="NORMALE">Normale</option>
+        <option value="FAIBLE">Faible</option>
+      </select>
+      <input type="text" [(ngModel)]="selectedEquipement" (input)="applyFilters()" placeholder="Filtrer par équipement..." class="px-4 py-2 border rounded-md" />
+      <input type="date" [(ngModel)]="startDate" (change)="applyFilters()" class="px-4 py-2 border rounded-md" title="Sélectionnez une date de début" />
+      <input type="date" [(ngModel)]="endDate" (change)="applyFilters()" class="px-4 py-2 border rounded-md" title="Sélectionnez une date de fin" />
+    </div>
+
+    <div *ngIf="isLoading" class="text-center text-gray-500">Chargement des maintenances...</div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full table-auto text-left bg-white border-collapse">
+        <thead class="bg-green-700 text-white">
+        <tr>
+          <th class="px-6 py-3 text-sm font-semibold">Titre</th>
+          <th class="px-6 py-3 text-sm font-semibold">Equipement</th>
+          <th class="px-6 py-3 text-sm font-semibold">Emplacement</th>
+          <th class="px-6 py-3 text-sm font-semibold">Description</th>
+          <th class="px-6 py-3 text-sm font-semibold">Statut</th>
+          <th class="px-6 py-3 text-sm font-semibold">Priorité</th>
+          <th class="px-6 py-3 text-sm font-semibold">Date de Création</th>
+          <th class="px-6 py-3 text-sm font-semibold">Créée par</th>
+          <th class="px-6 py-3 text-sm font-semibold">Affectée à</th>
+          <th class="px-6 py-3 text-sm font-semibold">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let maintenance of filteredMaintenanceCorrectives" class="border-b hover:bg-gray-50">
+          <td class="px-6 py-4 text-gray-800 font-medium">{{ maintenance.titre }}</td>
+          <td class="px-6 py-4 text-gray-800 font-medium">{{ maintenance.equipementNom }}</td>
+          <td class="px-6 py-4 text-gray-800 font-medium">{{ maintenance.equipementBatiment }}  Etage:{{maintenance.equipementEtage}}  Salle:{{maintenance.equipementSalle}}</td>
+          <td class="px-6 py-4 text-gray-600">{{ maintenance.description || 'Non renseignée' }}</td>
+          <td class="px-6 py-4">
+              <span [ngClass]="{
+                'bg-green-100 text-green-700': maintenance.statut === 'TERMINEE',
+                'bg-yellow-100 text-yellow-700': maintenance.statut === 'EN_COURS',
+                'bg-red-100 text-red-700': maintenance.statut === 'EN_ATTENTE',
+                'bg-gray-100 text-gray-700': maintenance.statut === 'ANNULEE'
+              }" class="px-4 py-1 rounded-full text-xs font-semibold">
+                {{ maintenance.statut }}
+              </span>
+          </td>
+          <td class="px-6 py-4">
+              <span [ngClass]="{
+                'bg-red-100 text-red-700': maintenance.priorite === 'URGENTE',
+                'bg-yellow-100 text-yellow-700': maintenance.priorite === 'NORMALE',
+                'bg-green-100 text-green-700': maintenance.priorite === 'FAIBLE'
+              }" class="px-4 py-1 rounded-full text-xs font-semibold">
+                {{ maintenance.priorite }}
+              </span>
+          </td>
+          <td class="px-6 py-4 text-gray-600">{{ formatDateWithIntl(maintenance.dateCreation)}}</td>
+          <td class="px-6 py-4 text-gray-600">{{ maintenance.creeParNom }}</td>
+          <td class="px-6 py-4 text-gray-600">{{ maintenance.affecteANom }}</td>
+          <td class="px-6 py-4">
+            <button *ngIf="maintenance.statut=='EN_ATTENTE'" class="text-blue-500 hover:text-blue-700">
+              <i class="fas fa-edit"></i> Modifier
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="flex justify-center mt-6">
+      <button (click)="changePage(currentPage - 1)" *ngIf="currentPage != 1" [disabled]="currentPage === 1" class="px-4 py-2 bg-gray-200 rounded-l-md hover:bg-gray-300" aria-label="Page précédente">Précédent</button>
+      <span class="px-4 py-2 text-gray-700">Page {{ currentPage }}</span>
+      <button (click)="changePage(currentPage + 1)" class="px-4 py-2 bg-gray-200 rounded-r-md hover:bg-gray-300" aria-label="Page suivante">Suivant</button>
+    </div>
+  </div>
+</div>

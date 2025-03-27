@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface InterventionRepository extends JpaRepository<Intervention, Long> {
-    List<Intervention> findByTechnicien(User technicien);
+    List<Intervention> findByTechnicienId(Long id);
 }

@@ -2,6 +2,7 @@ package com.huir.GmaoApp.service;
 
 import com.huir.GmaoApp.dto.PieceDetacheeDTO;
 import com.huir.GmaoApp.model.PieceDetachee;
+import com.huir.GmaoApp.model.Services;
 import com.huir.GmaoApp.model.User;
 import com.huir.GmaoApp.repository.PieceDetacheeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,20 +27,8 @@ public class PieceDetacheeService {
    
     //add  piece
     @Transactional
-    public void addPiece(PieceDetacheeDTO pieceDTO) {
-    	 PieceDetachee pieceDetachee = new PieceDetachee();
-    	    pieceDetachee.setNom(pieceDTO.getNom());
-    	    pieceDetachee.setDescription(pieceDTO.getDescription());
-    	    pieceDetachee.setReference(pieceDTO.getReference());
-    	    pieceDetachee.setFournisseur(pieceDTO.getFournisseur());
-    	    pieceDetachee.setCoutUnitaire(pieceDTO.getCoutUnitaire());
-    	    pieceDetachee.setQuantiteStock(pieceDTO.getQuantiteStock());
-    	    pieceDetachee.setQuantiteMinimale(pieceDTO.getQuantiteMinimale());
-    	    pieceDetachee.setDateAchat(pieceDTO.getDateAchat());
-    	    pieceDetachee.setDatePeremption(pieceDTO.getDatePeremption());
-    	    pieceDetachee.setHistoriqueUtilisation(pieceDTO.getHistoriqueUtilisation());
-    	    
-    	    pieceDetacheeRepository.save(pieceDetachee);
+    public PieceDetachee addPiece(PieceDetachee piece) {
+    	  return  pieceDetacheeRepository.save(piece);
     }
     
     

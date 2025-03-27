@@ -6,7 +6,7 @@ export interface User {
   username: string;
   password: string;
   gsm: string;
-  image?: string;
+  image: string;
   role: 'ADMIN' | 'RESPONSABLE' | 'TECHNICIEN' | 'MAGASINIER' | 'LAMBDA'; // Role avec des valeurs possibles
   actif: boolean;
   dateInscription: string;

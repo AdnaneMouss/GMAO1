@@ -1,89 +1,150 @@
-<div class="container mx-auto p-8">
 
-  <!-- Modal Window -->
-  <div *ngIf="showForm" class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-lg w-full max-w-3xl p-6 relative overflow-y-auto max-h-[90vh]">
-      <!-- Close button inside panel (top-right corner) -->
-      <button (click)="showForm = false" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-semibold">
+<div *ngIf="isLoading" class="loading-spinner">
+  <!-- Add a spinner here, for example: -->
+  <div class="spinner">Loading...</div>
+</div>
+<div *ngIf="showAddForm" class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-lg w-full max-w-3xl p-6 relative overflow-y-auto max-h-[90vh]">
+    <!-- Close Button -->
+    <button (click)="toggleForm()" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-semibold">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <h2 class="text-2xl font-semibold mb-4 text-center">Ajouter un service</h2>
+
+
+    <form (ngSubmit)="addService()" #serviceForm="ngForm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+        <div>
+          <label for="nom" class="block text-sm font-medium text-gray-700">
+            Nom <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="nom"
+            type="text"
+            [(ngModel)]="newService.nom"
+            name="nom"
+            class="mt-2 p-3 border border-gray-300 rounded-md w-full"
+            required
+            #nom="ngModel"
+          />
+
+          <div *ngIf="nom.invalid && nom.touched" class="text-red-500 text-sm">
+            Le nom est requis.
+          </div>
+          <div *ngIf="serviceTaken" class="text-red-500 text-sm mt-1">
+            {{ errorMessage }}
+          </div>
+        </div>
+
+
+        <div>
+          <label for="image" class="block text-sm font-medium text-gray-700">
+            Image
+          </label>
+          <input
+            id="image"
+            type="file"
+            (change)="onImageSelect($event)"
+            class="mt-2 p-3 border border-gray-300 rounded-md w-full"
+          />
+
+          <div *ngIf="imageError" class="text-red-500 text-sm mt-1">
+            {{ imageError }}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mb-4">
+        <label for="description" class="block text-sm font-medium text-gray-700">
+          Description
+        </label>
+        <textarea
+          id="description"
+          [(ngModel)]="newService.description"
+          name="description"
+          class="mt-2 p-3 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          rows="4"
+          placeholder="Enter the service description here"
+        ></textarea>
+      </div>
+
+      <div class="flex justify-end space-x-4">
+        <button type="reset" class="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">
+          <i class="fas fa-undo"></i> Réinitialiser
+        </button>
+
+        <button type="submit" [disabled]="serviceForm.invalid" class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600">
+          <i class="fas fa-save"></i> Enregistrer
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<div *ngIf="showEditForm" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
+  <div class="bg-white rounded-lg w-full max-w-lg p-6 shadow-lg">
+    <div class="flex justify-between items-center mb-4">
+      <button (click)="toggleForm()" class="text-gray-500 hover:text-gray-700">
         <i class="fas fa-times"></i>
       </button>
-
-      <h2 class="text-2xl font-semibold mb-4 text-center">Ajouter un service</h2>
-
-      <form (ngSubmit)="addService()" #serviceForm="ngForm">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <!-- Nom Field -->
-          <div>
-            <label for="nom" class="block text-sm font-medium text-gray-700">
-              Nom <span class="text-red-500">*</span>
-            </label>
-            <input
-              id="nom"
-              type="text"
-              [(ngModel)]="newService.nom"
-              name="nom"
-              class="mt-2 p-3 border border-gray-300 rounded-md w-full"
-              required
-              #nom="ngModel"
-            />
-            <!-- Validation Message for Nom -->
-            <div *ngIf="nom.invalid && nom.touched" class="text-red-500 text-sm">
-              Le nom est requis.
-            </div>
-          </div>
-
-          <!-- Image Field -->
-          <div>
-            <label for="image" class="block text-sm font-medium text-gray-700">
-              Image <span class="text-red-500">*</span>
-            </label>
-            <input
-              id="image"
-              type="file"
-              (change)="onImageSelect($event)"
-              class="mt-2 p-3 border border-gray-300 rounded-md w-full"
-              required
-            />
-            <!-- Image Error Message -->
-            <div *ngIf="imageError" class="text-red-500 text-sm mt-1">
-              {{ imageError }}
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Description Field -->
-        <div class="mb-4">
-          <label for="description" class="block text-sm font-medium text-gray-700">
-            Description
-          </label>
-          <textarea
-            id="description"
-            [(ngModel)]="newService.description"
-            name="description"
-            class="mt-2 p-3 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            rows="4"
-            placeholder="Enter the service description here"
-          ></textarea>
-        </div>
-
-
-        <!-- Action Buttons -->
-        <div class="flex justify-end space-x-4">
-          <button type="button" (click)="showForm = false" class="text-gray-500 hover:text-gray-700 text-sm">
-            Annuler
-          </button>
-          <button
-            type="submit"
-            [disabled]="serviceForm.invalid"
-            class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
-          >
-            <i class="fas fa-save"></i> Enregistrer
-          </button>
-        </div>
-      </form>
     </div>
+
+    <div *ngIf="selectedService" class="space-y-4">
+      <input type="text" [(ngModel)]="selectedService.nom"
+             placeholder="Nom du service"
+             class="w-full px-3 py-2 border rounded-lg">
+
+      <div *ngIf="selectedService.nom.invalid && selectedService.nom.touched" class="text-red-500 text-sm">
+        Le nom est requis.
+      </div>
+      <div *ngIf="serviceTaken" class="text-red-500 text-sm mt-1">
+        {{ errorMessage }}
+      </div>
+
+      <textarea [(ngModel)]="selectedService.description"
+                placeholder="Description"
+                class="w-full px-3 py-2 border rounded-lg"></textarea>
+
+      <input type="file" (change)="onImageSelect($event)" class="mb-3">
+      <p *ngIf="imageError" class="text-red-500">{{ imageError }}</p>
+    </div>
+
+    <div class="flex justify-between items-center mt-4 space-x-4">
+      <button type="reset" class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-yellow-600 transition flex items-center space-x-2">
+        <i class="fas fa-undo text-sm"></i> <!-- Réduit la taille de l'icône -->
+        <span>Réinitialiser</span>
+      </button>
+
+      <button *ngIf="selectedService"
+              (click)="!imageError ? updateService() : null"
+              class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition flex items-center justify-center">
+        <i class="fas fa-save"></i> Mettre à jour
+      </button>
+
+    </div>
+
+
   </div>
+</div>
+
+
+<div class="container mx-auto p-8">
+
+  <!-- Success Notification -->
+  <div *ngIf="showEditSuccessMessage" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+    <i class="fas fa-check-circle text-2xl"></i>
+    <span class="font-semibold">Service modifié avec succès !</span>
+  </div>
+
+  <div *ngIf="showAddSuccessMessage" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+    <i class="fas fa-check-circle text-2xl"></i>
+    <span class="font-semibold">Service ajouté avec succès !</span>
+  </div>
+
 
   <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6">
     <h2 class="text-2xl font-bold text-gray-700">Gestion des Services</h2>
@@ -100,7 +161,7 @@
       </div>
 
       <div class="flex space-x-4">
-        <button class="text-blue-600 hover:text-blue-700 transition duration-200" (click)="showForm = !showForm">
+        <button class="text-blue-600 hover:text-blue-700 transition duration-200" (click)="showAddForm = !showAddForm">
           <i class="fas fa-plus fa-lg"></i> <!-- Add Icon -->
         </button>
       </div>
@@ -127,6 +188,10 @@
           class="w-full bg-green-700 text-white px-4 py-2 rounded-lg mt-4 font-medium shadow-md hover:bg-green-900 transition-all duration-300 transform hover:-translate-y-1"
           [routerLink]="['/equipements', service.id]">
           Voir les équipements
+        </button>
+        <button class="w-full bg-yellow-500 text-white px-4 py-2 rounded-lg mt-2 font-medium shadow-md hover:bg-yellow-600"
+                (click)="editService(service)">
+          Modifier
         </button>
       </div>
     </div>

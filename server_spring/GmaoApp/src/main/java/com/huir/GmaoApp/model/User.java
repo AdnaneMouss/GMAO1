@@ -1,12 +1,11 @@
 package com.huir.GmaoApp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
@@ -45,8 +44,8 @@ public class User {
     @Column(nullable = false)
     @NotBlank(message = "Le mot de passe est obligatoire")
     @Pattern(
-        regexp = "^(?=.*[!@#$%^&*(),.?\":{}|<>]).*$",
-        message = "Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*(),.?\":{}|<>)"
+            regexp = "^(?=.*[!@#$%^&*(),.?\":{}|<>]).*$",
+            message = "Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*(),.?\":{}|<>)"
     )
     private String password;
 
@@ -67,7 +66,19 @@ public class User {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime dateInscription = LocalDateTime.now();
-    
-    
 
+    @JsonIgnore
+    @JsonManagedReference("user-creePar")
+    @OneToMany(mappedBy = "creePar", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MaintenanceCorrective> maintenancesCreees;
+
+    @JsonIgnore
+    @JsonManagedReference("user-affecteA")
+    @OneToMany(mappedBy = "affecteA", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MaintenanceCorrective> maintenancesAssignees;
+
+    @JsonIgnore
+    @JsonManagedReference("user-intervention")
+    @OneToMany(mappedBy = "technicien", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Intervention> interventions;
 }
