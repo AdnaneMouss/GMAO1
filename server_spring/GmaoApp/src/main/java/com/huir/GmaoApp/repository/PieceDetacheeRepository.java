@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface PieceDetacheeRepository extends JpaRepository<PieceDetachee, Long> {
   
 	PieceDetachee findByNom(String nom);
+
+    boolean existsByReference(String reference);
 }

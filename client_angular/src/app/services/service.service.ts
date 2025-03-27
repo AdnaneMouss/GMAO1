@@ -19,33 +19,35 @@ export class ServiceService {
     return this.http.get<Service>(`${this.apiUrl}/${serviceId}`);
   }
 
-  deleteService(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
-
-  createServiceWithImage(serviceData: { nom: string, description: string }, file: File): Observable<any> {
+  createServiceWithImage(serviceData: { nom: string, description?: string }, file?: File): Observable<any> {
     const formData = new FormData();
-    formData.append('file', file);
+
+    // Append 'nom' (required)
     formData.append('nom', serviceData.nom);
-    formData.append('description', serviceData.description);
+
+    // Append 'description' only if it exists
+    if (serviceData.description) {
+      formData.append('description', serviceData.description);
+    }
+
+    // Append the file only if it is provided
+    if (file) {
+      formData.append('file', file);
+    }
 
     return this.http.post<any>(this.apiUrl, formData);
   }
 
-  /** New Method for Updating a Service */
-  updateService(id: number, serviceDTO: { nom: string, description: string }, imageFile: File): Observable<any> {
+  // New method to update service
+  updateService(serviceId: number, serviceData: { nom: string, description: string }, imageFile?: File): Observable<any> {
     const formData = new FormData();
+    formData.append('nom', serviceData.nom);
+    formData.append('description', serviceData.description);
 
-    // Append the service fields to the FormData object
-    formData.append('nom', serviceDTO.nom);
-    formData.append('description', serviceDTO.description);
-
-    // If there is an image file, append it to the FormData object
     if (imageFile) {
-      formData.append('imageFile', imageFile, imageFile.name);
+      formData.append('imageFile', imageFile); // Only append image if it's provided
     }
 
-    // Perform the PUT request to the backend
-    return this.http.put<Service>(`${this.apiUrl}/${id}`, formData);
+    return this.http.put<any>(`${this.apiUrl}/${serviceId}`, formData);
   }
 }

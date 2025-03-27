@@ -72,12 +72,7 @@ public class EquipementDTO {
         this.responsableMaintenanceNom = equipement.getResponsableMaintenance() != null
                 ? equipement.getResponsableMaintenance().getNom()
                 : null;
-
-        // Map the list of ordresTravail and piecesDetachees
-        this.ordresTravail = equipement.getOrdresTravail() != null ? equipement.getOrdresTravail().stream()
-                .map(ordre -> ordre.getDescription()) // assuming OrdreTravail has a "description" field
-                .collect(Collectors.toList()) : Collections.emptyList();
-
+        
         this.piecesDetachees = equipement.getPiecesDetachees() != null ? equipement.getPiecesDetachees().stream()
                 .map(piece -> piece.getNom()) // assuming PieceDetachee has a "nom" field
                 .collect(Collectors.toList()) : Collections.emptyList();

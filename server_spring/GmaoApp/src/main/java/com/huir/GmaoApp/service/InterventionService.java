@@ -1,5 +1,6 @@
 package com.huir.GmaoApp.service;
 
+import com.huir.GmaoApp.dto.InterventionDTO;
 import com.huir.GmaoApp.model.Intervention;
 import com.huir.GmaoApp.model.User;
 import com.huir.GmaoApp.repository.InterventionRepository;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class InterventionService {
@@ -25,9 +27,15 @@ public class InterventionService {
         return interventionRepository.findById(id);
     }
 
-    // Get all interventions by technician
-    public List<Intervention> findInterventionsByTechnician(User technicien) {
-        return interventionRepository.findByTechnicien(technicien);
+
+    public List<InterventionDTO> getInterventionsByTechnicien(Long technicienId) {
+        return interventionRepository.findByTechnicienId(technicienId).stream()
+                .map(InterventionDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public Intervention save(Intervention intervention) {
+        return interventionRepository.save(intervention);
     }
 
     // Get all interventions

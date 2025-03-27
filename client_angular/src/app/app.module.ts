@@ -39,11 +39,12 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import {ListeEquipementsComponent} from "./components/Equipements/liste-equipements/liste-equipements.component";
 import { DetailsEquipementsPiecesComponent } from './components/Equipements/details-equipements-pieces/details-equipements-pieces.component';
 import { EquipementsParCategorieComponent } from './components/Equipements/equipements-par-categorie/equipements-par-categorie.component';
-import { DetailsStockComponent } from './components/Stocks/details-stock/details-stock.component';
 import { DetailsMaintenanceComponent } from './components/Maintenances/details-maintenance/details-maintenance.component';
 import {TypesEquipementsComponent} from "./components/Equipements/types-equipements/types-equipements.component";
 import { BatimentsListeComponent } from './components/batiments/batiments-liste/batiments-liste.component';
 import { EquipementFormComponent } from './equipement-form/equipement-form.component';
+import {ToastrModule} from "ngx-toastr";
+
 
 @NgModule({
   declarations: [
@@ -66,7 +67,6 @@ import { EquipementFormComponent } from './equipement-form/equipement-form.compo
     DashboardComponent,
     DetailsEquipementsPiecesComponent,
     EquipementsParCategorieComponent,
-    DetailsStockComponent,
     DetailsMaintenanceComponent,
     TypesEquipementsComponent,
     BatimentsListeComponent,
@@ -74,6 +74,7 @@ import { EquipementFormComponent } from './equipement-form/equipement-form.compo
   ],
   imports: [
     AppRoutingModule,
+    ToastrModule.forRoot(),
     ListeEquipementsComponent,
     LoginComponent,
     BrowserModule,

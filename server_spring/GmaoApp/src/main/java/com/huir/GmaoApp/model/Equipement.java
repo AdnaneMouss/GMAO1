@@ -58,11 +58,6 @@ public class Equipement {
     @JsonBackReference
     private User responsableMaintenance;
 
-    // Relation avec les ordres de travail (interventions de maintenance)
-    @OneToMany(mappedBy = "equipement", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<OrdreTravail> ordresTravail;
-
     // Relation avec les pièces détachées associées à l’équipement
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -87,6 +82,10 @@ public class Equipement {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "batiment_id")
     private Batiment batiment;
-    
-    
+
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "equipement", fetch = FetchType.LAZY)
+    private List<MaintenanceCorrective> maintenanceCorrectives;
+
 }
