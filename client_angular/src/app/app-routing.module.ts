@@ -51,6 +51,7 @@ import {
 import {TypesEquipementsComponent} from "./components/Equipements/types-equipements/types-equipements.component";
 import {BatimentsListeComponent} from "./components/batiments/batiments-liste/batiments-liste.component";
 import {EquipementFormComponent} from "./equipement-form/equipement-form.component";
+import { MaintenanceCalendarComponent } from './components/Maintenances/maintenance-calendar/maintenance-calendar.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -78,6 +79,7 @@ const routes: Routes = [
   { path: 'interventions/liste', component: InterventionsPrecedentesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
   { path: 'rapports/coutMaintenance', component: CoutMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'rapports/statistiques', component: StatistiquesInterventionsComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
+  { path: 'maintenances/calendar', component: MaintenanceCalendarComponent , canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'parametres', component: ParametresGenerauxComponent},
   { path: '**', redirectTo: '/login' }
 ];

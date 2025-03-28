@@ -192,6 +192,12 @@
               <i class="fas fa-history text-sm"></i>
               <span *ngIf="!isSidebarCollapsed">Historique des maintenances</span>
             </a>
+            <a [ngClass]="{'bg-green-800 text-white': isActive('/maintenances/calendar')}"
+            routerLink="/maintenances/calendar"
+            class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
+            <i class="fas fa-calendar-alt text-sm"></i>
+           <span *ngIf="!isSidebarCollapsed">calendrier des maintenances</span>
+         </a>
           </ng-container>
         </div>
       </div>

@@ -21,11 +21,11 @@ export class DashboardComponent implements OnInit {
     const maintenanceChart = new Chart('maintenanceChart', {
       type: 'pie',
       data: {
-        labels: ['Préventive', 'Corrective', 'Urgente'],
+        labels: ['Préventive', 'Corrective'],
         datasets: [{
           label: 'Nombre d\'interventions',
-          data: [300, 150, 50],
-          backgroundColor: ['#36a2eb', '#ff6384', '#ffce56'],
+          data: [300, 150],
+          backgroundColor: ['#36a2eb', '#ff6384'],
         }]
       }
     });

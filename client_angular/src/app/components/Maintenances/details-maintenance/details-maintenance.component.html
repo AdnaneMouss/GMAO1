@@ -38,32 +38,9 @@
 
         <div class="col-md-9">
           <div class="row">
-            <!-- Affichage du fichier sélectionné -->
-            <div class="col-md-6 mb-4" *ngIf="!isEditMode">
-              <div class="card shadow-sm border-0 h-100">
-                <div class="card-body d-flex align-items-center bg-white">
-                  <i class="bi bi-paperclip fs-3 me-3" style="color: #006400;"></i>
-                  <div>
-                    <h5 class="card-title">Fichier Téléchargé</h5>
-                    <p class="card-text" *ngIf="selectedFileName">{{ selectedFileName }}</p>
-                    <p class="card-text text-muted" *ngIf="!selectedFileName">Aucun fichier sélectionné</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+         
 
-            <!-- Mode édition : Upload du fichier -->
-            <div class="col-md-6 mb-4" *ngIf="isEditMode">
-              <div class="card shadow-sm border-0 h-100">
-                <div class="card-body d-flex align-items-center bg-white">
-                  <i class="bi bi-paperclip fs-3 me-3" style="color: #006400;"></i>
-                  <div>
-                    <h5 class="card-title">Télécharger un fichier</h5>
-                    <input type="file" id="file" (change)="onFileSelected($event)" class="form-control">
-                  </div>
-                </div>
-              </div>
-            </div>
+       
 
             <!-- Commentaires Display -->
             <div class="col-md-6 mb-4" *ngIf="!isEditMode">
@@ -293,7 +270,62 @@
               </div>
             </div>
           </div>
+ <!-- jours Display -->
+ <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+  <div class="card shadow-sm border-0 h-100">
+    <div class="card-body d-flex align-items-center bg-white">
+      <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+      <div>
+        <h5 class="card-title">jours selectionee</h5>
+        <p class="card-text">{{ maintenance.selectedjours }}</p>
+      </div>
+    </div>
+  </div>
+</div>
 
+
+
+
+<!-- jours Edit -->
+<div class="col-md-6 mb-4" *ngIf="isEditMode">
+  <div class="card shadow-sm border-0 h-100">
+    <div class="card-body d-flex align-items-center bg-white">
+      <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+      <div>
+        <h5 class="card-title">jours selectionne</h5>
+        <input type="text" class="form-control" [(ngModel)]="maintenance.selectedjours" required>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- mois  Display -->
+<div class="col-md-6 mb-4" *ngIf="!isEditMode">
+  <div class="card shadow-sm border-0 h-100">
+    <div class="card-body d-flex align-items-center bg-white">
+      <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+      <div>
+        <h5 class="card-title"> Mois selectionee</h5>
+        <p class="card-text">{{ maintenance.selectedmois }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- mois  Edit -->
+<div class="col-md-6 mb-4" *ngIf="isEditMode">
+  <div class="card shadow-sm border-0 h-100">
+    <div class="card-body d-flex align-items-center bg-white">
+      <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+      <div>
+        <h5 class="card-title">Mois selectionne</h5>
+        <input type="text" class="form-control" [(ngModel)]="maintenance.selectedmois" required>
+      </div>
+    </div>
+  </div>
+</div>
 
              <!-- user Display --> 
              <div class="col-md-6 mb-4" *ngIf="!isEditMode">

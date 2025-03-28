@@ -1,0 +1,17 @@
+<div class="maintenance-calendar-container">
+  <h2>Calendrier des Maintenances</h2>
+  
+  <div class="calendar-legend">
+    <h3>Légende</h3>
+    <div class="legend-items">
+      <div class="legend-item" *ngFor="let item of legendItems">
+        <span class="legend-color" [style.background-color]="item.color"></span>
+        <span class="legend-label">{{item.label}}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="calendar-wrapper">
+    <full-calendar [options]="calendarOptions"></full-calendar>
+  </div>
+</div>

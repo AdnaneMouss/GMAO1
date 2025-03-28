@@ -5,3 +5,4 @@ import com.huir.GmaoApp.model.Notification;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 }
+ 

@@ -1,0 +1,64 @@
+.calendar-container {
+  padding: 20px;
+}
+
+.legend {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-color {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Style des boutons colorés */
+.status-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid;
+  margin: 2px auto;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.status-dot:hover {
+  transform: scale(1.1);
+}
+
+/* Ajustements du calendrier */
+.calendar-day-cell {
+  min-height: 80px !important;
+}
+
+.fc-daygrid-event {
+  background: transparent !important;
+  border: none !important;
+}
+
+.fc-daygrid-day-events {
+  min-height: auto;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fc-daygrid-day-frame {
+  padding: 2px;
+}
+
+.fc-daygrid-event-harness {
+  margin: 3px 0 !important;
+}

@@ -59,7 +59,6 @@
     </div>
     <div *ngFor="let notif of notification" class="notification-item">
       <div class="notification-message">{{notif.message}}</div>
-      <button [routerLink]="['/maintenances/preventives', notif.id]">Voir</button>
     </div>
   </div>
 
@@ -355,71 +354,71 @@
 
 
           <!-- Type de maintenance -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-              <i class="fas fa-cogs text-blue-500 mr-2"></i> Type de maintenance
-            </label>
-            <select
-              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-              [(ngModel)]="maintenanceType"
-              name="maintenanceType"
-              required
-            >
-              <option value="frequence">Fréquence</option>
-              <option value="indicateur">Indicateur</option>
-            </select>
-          </div>
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+    <i class="fas fa-cogs text-blue-500 mr-2"></i> Type de maintenance
+  </label>
+  <select
+    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+    [(ngModel)]="maintenanceType"
+    name="maintenanceType"
+    required
+  >
+    <option value="frequence" selected>Fréquence</option>
+    <option value="indicateur">Indicateur</option>
+  </select>
+</div>
 
-          <!-- Indicateurs (si type est 'indicateur') -->
-          <div *ngIf="maintenanceType === 'indicateur'" class="col-span-2">
-            <button
-              (click)="addIndicateur()"
-              class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200 flex items-center"
-            >
-              <i class="fas fa-plus-circle mr-2"></i> Ajouter un indicateur
-            </button>
-            <div *ngFor="let indicateur of newMaintenance.indicateurs; let i = index" class="mt-4">
-              <div class="flex items-center gap-4">
-                <input
-                  [(ngModel)]="indicateur.nom"
-                  name="nom{{i}}"
-                  placeholder="Nom de l'indicateur"
-                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                />
-                <input
-                  [(ngModel)]="indicateur.valeur"
-                  name="valeur{{i}}"
-                  placeholder="Valeur de l'indicateur"
-                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                />
-                <button
-                  (click)="removeIndicateur(i)"
-                  class="text-red-500 hover:text-red-600 flex items-center"
-                >
-                  <i class="fas fa-trash mr-2"></i> Supprimer
-                </button>
-              </div>
-            </div>
-          </div>
+<!-- Indicateurs (si type est 'indicateur') -->
+<div *ngIf="maintenanceType === 'indicateur'" class="col-span-2">
+  <button
+    (click)="addIndicateur()"
+    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200 flex items-center"
+  >
+    <i class="fas fa-plus-circle mr-2"></i> Ajouter un indicateur
+  </button>
+  <div *ngFor="let indicateur of newMaintenance.indicateurs; let i = index" class="mt-4">
+    <div class="flex items-center gap-4">
+      <input
+        [(ngModel)]="indicateur.nom"
+        name="nom{{i}}"
+        placeholder="Nom de l'indicateur"
+        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+      />
+      <input
+        [(ngModel)]="indicateur.valeur"
+        name="valeur{{i}}"
+        placeholder="Valeur de l'indicateur"
+        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+      />
+      <button
+        (click)="removeIndicateur(i)"
+        class="text-red-500 hover:text-red-600 flex items-center"
+      >
+        <i class="fas fa-trash mr-2"></i> Supprimer
+      </button>
+    </div>
+  </div>
+</div>
 
-          <!-- Répétition -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-              <i class="fas fa-sync-alt text-blue-500 mr-2"></i> Fréquence
-            </label>
-            <select
-              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-              [(ngModel)]="newMaintenance.repetitiontype"
-              name="repetitiontype"
-              required
-            >
-              <option value="Ne_pas_repeter">Ne pas répéter</option>
-              <option value="TOUS_LES_JOURS">Tous les jours</option>
-              <option value="TOUS_LES_SEMAINES">Toutes les semaines</option>
-              <option value="MENSUEL">Mensuel</option>
-              <option value="ANNUEL">Annuel</option>
-            </select>
-          </div>
+<!-- Répétition (masqué si type est 'indicateur') -->
+<div *ngIf="maintenanceType !== 'indicateur'">
+  <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+    <i class="fas fa-sync-alt text-blue-500 mr-2"></i> Fréquence
+  </label>
+  <select
+    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+    [(ngModel)]="newMaintenance.repetitiontype"
+    name="repetitiontype"
+    required
+  >
+    <option value="Ne_pas_repeter">Ne pas répéter</option>
+    <option value="TOUS_LES_JOURS">Tous les jours</option>
+    <option value="TOUS_LES_SEMAINES">Toutes les semaines</option>
+    <option value="MENSUEL">Mensuel</option>
+    <option value="ANNUEL">Annuel</option>
+  </select>
+</div>
 
           <!-- Dates de répétition (si répétition activée) -->
           <div *ngIf="newMaintenance.repetitiontype !== 'Ne_pas_repeter'" class="col-span-2 grid grid-cols-2 gap-4">
@@ -448,24 +447,25 @@
           </div>
 
           <!-- Jours de la semaine (si répétition hebdomadaire) -->
+          <!-- Jours de la semaine (si répétition hebdomadaire) -->
           <div *ngIf="newMaintenance.repetitiontype === 'TOUS_LES_SEMAINES'" class="col-span-2 mt-4">
             <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-calendar-week text-blue-500 mr-2"></i> Jours de la semaine
             </label>
             <div class="flex flex-wrap gap-4">
-              <div *ngFor="let jour of joursSemaine; let i = index" class="flex items-center">
-                <input
-                  type="checkbox"
-                  [id]="'jour' + i"
-                  [value]="jour"
-                  (change)="toggleJourSelection(jour, $event)"
-                  [checked]="newMaintenance.selectedjours?.includes(jour)"
-                  class="mr-2"
-                />
-                <label [for]="'jour' + i" class="text-sm text-gray-700">{{ jour }}</label>
+              <div *ngFor="let day of getDays()">
+                <input type="checkbox" 
+                       [id]="day" 
+                       [checked]="selectedDays[day]" 
+                       (change)="toggleDay(day)">
+                <label [for]="day">{{day}}</label>
               </div>
             </div>
           </div>
+          
+          <!-- Ajoute un bouton pour voir si selectedjours est bien mis à jour -->
+         
+          
 
           <!-- Mois de l'année (si répétition mensuelle) -->
           <div *ngIf="newMaintenance.repetitiontype === 'MENSUEL'" class="col-span-2 mt-4">
@@ -479,7 +479,7 @@
                   [id]="'mois' + i"
                   [value]="mois"
                   (change)="toggleMoisSelection(mois, $event)"
-                  [checked]="newMaintenance.selectedmois?.includes(mois)"
+                  [checked]="newMaintenance.selectedmois.includes(mois)"
                   class="mr-2"
                 />
                 <label [for]="'mois' + i" class="text-sm text-gray-700">{{ mois }}</label>
