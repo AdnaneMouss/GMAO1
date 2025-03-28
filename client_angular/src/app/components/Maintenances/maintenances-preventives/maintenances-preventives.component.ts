@@ -60,6 +60,8 @@ export class MaintenancesPreventivesComponent implements OnInit {
 private checkInterval: Subscription | undefined;
 showNotificationsPanel: boolean = false;
 
+generatedDates: Date[] = [];
+
 
 
  
@@ -76,6 +78,7 @@ showNotifications: boolean = false;
     S: false,
     D: false,
   };
+
   getDays(): string[] {
     return Object.keys(this.selectedDays);
   }
@@ -100,6 +103,12 @@ showNotifications: boolean = false;
   }
   toggleDay(day: string): void {
     this.selectedDays[day] = !this.selectedDays[day];
+    this.updateSelectedJours();
+  }
+
+  updateSelectedJours(): void {
+    this.newMaintenance.selectedjours = Object.keys(this.selectedDays)
+      .filter(day => this.selectedDays[day]);
   }
   joursSemaine: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
   moisAnnee: string[] = [
@@ -115,6 +124,8 @@ showNotifications: boolean = false;
   closeForm() {
     this.selectedForm= null; // Ferme le formulaire
   }
+
+  
 
    
 
@@ -289,6 +300,86 @@ showNotifications: boolean = false;
       console.log("No priorite selected, showing all maintenances:", this.filteredMaintenace);
     }
   }
+  calculateRepetitionDates(startDate: Date, endDate: Date, repetitionType: string, selectedDays: string[]): Date[] {
+    let dates: Date[] = [];
+    
+    if (!startDate || !endDate) return dates;
+  
+    // Cas sans répétition
+    if (repetitionType === 'Ne_pas_repeter') {
+      dates.push(new Date(startDate));
+      return dates;
+    }
+  
+    // Cas répétition hebdomadaire avec jours spécifiques
+    if (repetitionType === 'TOUS_LES_SEMAINES' && selectedDays && selectedDays.length > 0) {
+      return this.calculateWeeklyDatesWithSelectedDays(startDate, endDate, selectedDays);
+    }
+  
+    // Autres cas de répétition
+    let currentDate = new Date(startDate);
+    dates.push(new Date(currentDate));
+  
+    while (currentDate < endDate) {
+      switch (repetitionType) {
+        case 'TOUS_LES_JOURS':
+          currentDate.setDate(currentDate.getDate() + 1);
+          break;
+        case 'TOUS_LES_SEMAINES':
+          currentDate.setDate(currentDate.getDate() + 7);
+          break;
+        case 'MENSUEL':
+          currentDate.setMonth(currentDate.getMonth() + 1);
+          break;
+        case 'ANNUEL':
+          currentDate.setFullYear(currentDate.getFullYear() + 1);
+          break;
+      }
+  
+      if (currentDate <= endDate) {
+        dates.push(new Date(currentDate));
+      }
+    }
+  
+    return dates;
+  }
+  
+  calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDays: string[]): Date[] {
+    const dates: Date[] = [];
+    const currentDate = new Date(startDate);
+    const end = new Date(endDate);
+  
+    // Mapping des jours sélectionnés vers les numéros JS (0=Dimanche, 1=Lundi...)
+    const dayMap: {[key: string]: number} = {
+      'D': 0, // Dimanche
+      'L': 1, // Lundi
+      'M': 2, // Mardi
+      'MER': 3, // Mercredi
+      'J': 4, // Jeudi
+      'V': 5, // Vendredi
+      'S': 6  // Samedi
+    };
+  
+    const targetDays = selectedDays.map(day => dayMap[day]).filter(d => d !== undefined);
+  
+    // Trouver le prochain jour sélectionné après startDate
+    while (currentDate <= end) {
+      const currentDay = currentDate.getDay();
+      
+      if (targetDays.includes(currentDay)) {
+        dates.push(new Date(currentDate));
+      }
+  
+      // Passer au jour suivant
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  
+    return dates;
+  }
+  
+
+
+
   
   
   
@@ -328,7 +419,6 @@ showNotifications: boolean = false;
     // Faire une vérification immédiate au démarrage
     this.checkUpcomingMaintenances();
   }
-
   checkUpcomingMaintenances(): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -356,7 +446,8 @@ showNotifications: boolean = false;
           const repetitionDates = this.calculateRepetitionDates(
             new Date(maintenance.startDaterep),
             new Date(maintenance.endDaterep),
-            maintenance.repetitiontype
+            maintenance.repetitiontype,
+            maintenance.selectedjours
           );
   
           repetitionDates.forEach(date => {
@@ -368,19 +459,11 @@ showNotifications: boolean = false;
               );
             }
           });
-        }
+        }   
       });
     });
   }
   
-  // private addNotification(id: number, message: string): void {
-    // Éviter les doublons
-    //if (!this.notification.some(n => n.id === id)) {
-      //this.notification.push({id, message});
-      //this.notificationCount++;
-      //this.showToastNotification(message);
-    //}
-  //}
   private addNotification(id: number, message: string): void {
     if (!this.notification.some(n => n.id === id)) {
       const newNotification = { id, message };
@@ -397,33 +480,7 @@ showNotifications: boolean = false;
   }
   
   
-  calculateRepetitionDates(startDate: Date, endDate: Date, repetitionType: string): Date[] {
-    const dates: Date[] = [];
-    let currentDate = new Date(startDate);
-  
-    while (currentDate <= endDate) {
-      dates.push(new Date(currentDate));
-  
-      switch (repetitionType) {
-        case 'TOUS_LES_JOURS':
-          currentDate.setDate(currentDate.getDate() + 1);
-          break;
-        case 'TOUS_LES_SEMAINES':
-          currentDate.setDate(currentDate.getDate() + 7);
-          break;
-        case 'MENSUEL':
-          currentDate.setMonth(currentDate.getMonth() + 1);
-          break;
-        case 'ANNUEL':
-          currentDate.setFullYear(currentDate.getFullYear() + 1);
-          break;
-        default:
-          return dates; // Ne pas répéter
-      }
-    }
-  
-    return dates;
-  }
+ 
   showToastNotification(message: string): void {
     this.toastr.info(message, 'Nouvelle maintenance', {
       timeOut: 5000,
@@ -496,16 +553,7 @@ showNotifications: boolean = false;
     });
   }
 
-
   
-
-
-
-  
-
-
-
-
 
   // Méthode pour calculer la durée de l'intervention
   calculerDureeIntervention(): void {
@@ -513,9 +561,7 @@ showNotifications: boolean = false;
       const startDate = new Date(this.newMaintenance.dateDebutPrevue);
       const endDate = new Date(this.newMaintenance.dateFinPrevue);
       
-      // Calcul de la différence en jours
-     // const timeDiff = endDate.getTime() - startDate.getTime();
-      //this.newMaintenance.dureeIntervention = timeDiff / (1000 * 3600 * 24); // Convertir en jours
+      
     }
   }
 
@@ -525,12 +571,21 @@ showNotifications: boolean = false;
       const startDaterep = new Date(this.newMaintenance.startDaterep);
       const endDaterep = new Date(this.newMaintenance.endDaterep);
       const repetitiontype = this.newMaintenance.repetitiontype;
+      const selectedjours = this.newMaintenance.selectedjours || []; // S'assure que ce n'est pas undefined
+  
+      console.log("Envoi des données :", {
+        startDaterep,
+        endDaterep,
+        repetitiontype,
+        selectedjours
+      });
+  
       
-      // Calcul de la différence en jours
-     // const timeDiff = endDate.getTime() - startDate.getTime();
-      //this.newMaintenance.dureeIntervention = timeDiff / (1000 * 3600 * 24); // Convertir en jours
+      
+      
     }
   }
+  
    
   
   
@@ -1010,18 +1065,25 @@ showForm(formId: string): void {
 }
 
 
-toggleJourSelection(jour: string, event: Event) {
-  const checkbox = event.target as HTMLInputElement; // Assure que c'est bien une case à cocher
+toggleJourSelection(jour: string, event: Event): void {
+  const checkbox = event.target as HTMLInputElement;
+  
+  // Vérifie si `selectedjours` existe, sinon l'initialise
   if (!this.newMaintenance.selectedjours) {
-    this.newMaintenance.selectedjours = []; // Initialise si c'est null
+    this.newMaintenance.selectedjours = [];
   }
 
   if (checkbox.checked) {
-    this.newMaintenance.selectedjours.push(jour);
+    if (!this.newMaintenance.selectedjours.includes(jour)) {
+      this.newMaintenance.selectedjours.push(jour);
+    }
   } else {
     this.newMaintenance.selectedjours = this.newMaintenance.selectedjours.filter(j => j !== jour);
   }
+
+  console.log("Jours sélectionnés après modification :", this.newMaintenance.selectedjours);
 }
+
 
 
 toggleMoisSelection(mois: string, event: Event) {
@@ -1060,25 +1122,13 @@ showNotification(message: string): void {
     progressBar: true // Barre de progression
   });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
+
+
+
+ 
+
+
 
 
 

@@ -358,92 +358,164 @@ public class Maintenance {
 	//public void setDaterepetition(Date daterepetition) {
 		//this.daterepetition = daterepetition;
 	//}
-	 public void calculateRepetitionDates() {
-	        if (startDaterep == null || endDaterep == null || repetitiontype == null) {
-	            this.nextRepetitionDates = null; // Si les données sont manquantes
-	            return;
-	        }
-
-	        List<Date> repetitionDates = new ArrayList<>();
-	        Calendar calendar = Calendar.getInstance();
-	        calendar.setTime(startDaterep);
-
-	        // Ajouter la première date de répétition
-	        repetitionDates.add(calendar.getTime());
-
-	        // Calculer les dates de répétition
-	        while (calendar.getTime().before(endDaterep)) {
-	            switch (repetitiontype) {
-	                case TOUS_LES_JOURS:
-	                    calendar.add(Calendar.DAY_OF_MONTH, 1);
-	                    break;
-	                case TOUS_LES_SEMAINES:
-	                    calendar.add(Calendar.WEEK_OF_YEAR, 1);
-	                    break;
-	                case MENSUEL:
-	                    calendar.add(Calendar.MONTH, 1);
-	                    break;
-	                case ANNUEL:
-	                    calendar.add(Calendar.YEAR, 1);
-	                    break;
-	                case Ne_pas_repeter:
-	                default:
-	                    this.nextRepetitionDates = repetitionDates;
-	                    return;
-	            }
-
-	            if (!calendar.getTime().after(endDaterep)) {
-	                repetitionDates.add(calendar.getTime());
-	            }
-	        }
-
-	        this.nextRepetitionDates = repetitionDates;
+	
+	public void calculateRepetitionDates() {
+	    if (startDaterep == null || endDaterep == null || repetitiontype == null) {
+	        this.nextRepetitionDates = null; // Si les données sont manquantes
+	        return;
 	    }
-	 
+
+	    List<Date> repetitionDates = new ArrayList<>();
+	    Calendar calendar = Calendar.getInstance();
+	    calendar.setTime(startDaterep);
+
+	    // Ajouter la première date de répétition
+	    repetitionDates.add(calendar.getTime());
+
+	    // Calculer les dates de répétition
+	    while (calendar.getTime().before(endDaterep)) {
+	        switch (repetitiontype) {
+	            case TOUS_LES_JOURS:
+	                calendar.add(Calendar.DAY_OF_MONTH, 1);
+	                break;
+	            case TOUS_LES_SEMAINES:
+	                if (selectedjours != null && !selectedjours.isEmpty()) {
+	                    // Gestion des jours sélectionnés
+	                    String[] joursSelectionnes = selectedjours.split(",");
+	                    Calendar tempCalendar = (Calendar) calendar.clone();
+	                    
+	                    for (String jour : joursSelectionnes) {
+	                        int dayOfWeek = convertDayToCalendarConstant(jour.trim());
+	                        tempCalendar.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+	                        
+	                        // Si le jour calculé est après le jour actuel et avant endDate
+	                        if (tempCalendar.getTime().after(calendar.getTime()) && 
+	                            !tempCalendar.getTime().after(endDaterep)) {
+	                            repetitionDates.add(tempCalendar.getTime());
+	                        }
+	                    }
+	                    
+	                    // Passer à la semaine suivante
+	                    calendar.add(Calendar.WEEK_OF_YEAR, 1);
+	                    calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY); // Commencer par le lundi
+	                } else {
+	                    // Comportement par défaut (toutes les semaines le même jour)
+	                    calendar.add(Calendar.WEEK_OF_YEAR, 1);
+	                }
+	                break;
+	            case MENSUEL:
+	                calendar.add(Calendar.MONTH, 1);
+	                break;
+	            case ANNUEL:
+	                calendar.add(Calendar.YEAR, 1);
+	                break;
+	            case Ne_pas_repeter:
+	            default:
+	                this.nextRepetitionDates = repetitionDates;
+	                return;
+	        }
+
+	        if (repetitiontype != repetitiontype.TOUS_LES_SEMAINES && 
+	            !calendar.getTime().after(endDaterep)) {
+	            repetitionDates.add(calendar.getTime());
+	        }
+	    }
+
+	    this.nextRepetitionDates = repetitionDates;
+	}
+
+	// Méthode utilitaire pour convertir le jour en constante Calendar
+	private int convertDayToCalendarConstant(String day) {
+	    switch (day.toUpperCase()) {
+	        case "LUNDI": return Calendar.MONDAY;
+	        case "MARDI": return Calendar.TUESDAY;
+	        case "MERCREDI": return Calendar.WEDNESDAY;
+	        case "JEUDI": return Calendar.THURSDAY;
+	        case "VENDREDI": return Calendar.FRIDAY;
+	        case "SAMEDI": return Calendar.SATURDAY;
+	        case "DIMANCHE": return Calendar.SUNDAY;
+	        default: return Calendar.MONDAY; // Valeur par défaut
+	    }
+	}
 	 
 	 ///////////HHHADDII///////////////
 	 
-	 public Date getRepetition() {
-	        if (startDaterep == null || endDaterep == null || repetitiontype == null) {
-	            return null; // Si les données sont manquantes
-	        }
-
-	        // Si la répétition est désactivée, retourner null
-	        if (repetitiontype == repetitiontype.Ne_pas_repeter) {
-	            return null;
-	        }
-
-	        // Créer une instance de Calendar pour manipuler les dates
-	        Calendar calendar = Calendar.getInstance();
-	        calendar.setTime(startDaterep);
-
-	        // Calculer la prochaine date en fonction du type de répétition
-	        switch (repetitiontype) {
-	            case TOUS_LES_JOURS:
-	                calendar.add(Calendar.DAY_OF_MONTH, 1); // Ajouter 1 jour
-	                break;
-	            case TOUS_LES_SEMAINES:
-	                calendar.add(Calendar.WEEK_OF_YEAR, 1); // Ajouter 1 semaine
-	                break;
-	            case MENSUEL:
-	                calendar.add(Calendar.MONTH, 1); // Ajouter 1 mois
-	                break;
-	            case ANNUEL:
-	                calendar.add(Calendar.YEAR, 1); // Ajouter 1 an
-	                break;
-	            default:
-	                return null; // Cas par défaut (Ne_pas_repeter déjà géré)
-	        }
-
-	        // Vérifier que la date calculée ne dépasse pas endDaterep
-	        Date nextDate = calendar.getTime();
-	        if (nextDate.after(endDaterep)) {
-	            return null; // Si la date dépasse endDaterep, retourner null
-	        }
-
-	        return nextDate; // Retourner la prochaine date de maintenance
+	public Date getRepetition() {
+	    if (startDaterep == null || endDaterep == null || repetitiontype == null) {
+	        return null; // Si les données sont manquantes
 	    }
-	
+
+	    // Si la répétition est désactivée, retourner null
+	    if (repetitiontype == repetitiontype.Ne_pas_repeter) {
+	        return null;
+	    }
+
+	    // Créer une instance de Calendar pour manipuler les dates
+	    Calendar calendar = Calendar.getInstance();
+	    calendar.setTime(startDaterep);
+
+	    // Calculer la prochaine date en fonction du type de répétition
+	    switch (repetitiontype) {
+	        case TOUS_LES_JOURS:
+	            calendar.add(Calendar.DAY_OF_MONTH, 1); // Ajouter 1 jour
+	            break;
+	        case TOUS_LES_SEMAINES:
+	            if (selectedjours != null && !selectedjours.isEmpty()) {
+	                // Trouver le prochain jour sélectionné dans la semaine
+	                Date nextDate = findNextSelectedDay(calendar);
+	                if (nextDate != null) {
+	                    return nextDate;
+	                }
+	                // Si aucun jour valide trouvé dans cette semaine, passer à la semaine suivante
+	                calendar.add(Calendar.WEEK_OF_YEAR, 1);
+	                calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+	                nextDate = findNextSelectedDay(calendar);
+	                return (nextDate != null && !nextDate.after(endDaterep)) ? nextDate : null;
+	            } else {
+	                // Comportement par défaut (toutes les semaines le même jour)
+	                calendar.add(Calendar.WEEK_OF_YEAR, 1);
+	            }
+	            break;
+	        case MENSUEL:
+	            calendar.add(Calendar.MONTH, 1); // Ajouter 1 mois
+	            break;
+	        case ANNUEL:
+	            calendar.add(Calendar.YEAR, 1); // Ajouter 1 an
+	            break;
+	        default:
+	            return null; // Cas par défaut (Ne_pas_repeter déjà géré)
+	    }
+
+	    // Vérifier que la date calculée ne dépasse pas endDaterep
+	    Date nextDate = calendar.getTime();
+	    if (nextDate.after(endDaterep)) {
+	        return null; // Si la date dépasse endDaterep, retourner null
+	    }
+
+	    return nextDate; // Retourner la prochaine date de maintenance
+	}
+
+	// Méthode helper pour trouver le prochain jour sélectionné
+	private Date findNextSelectedDay(Calendar calendar) {
+	    String[] joursSelectionnes = selectedjours.split(",");
+	    Calendar tempCalendar = (Calendar) calendar.clone();
+	    Date currentDate = calendar.getTime();
+	    
+	    for (String jour : joursSelectionnes) {
+	        int dayOfWeek = convertDayToCalendarConstant(jour.trim());
+	        tempCalendar.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+	        
+	        // Si le jour calculé est après la date actuelle
+	        if (tempCalendar.getTime().after(currentDate) && 
+	            !tempCalendar.getTime().after(endDaterep)) {
+	            return tempCalendar.getTime();
+	        }
+	    }
+	    return null;
+	}
+
+	// Méthode utilitaire pour convertir le jour en constante Calendar (identique à la précédente)
+		
 	 //////////////////////////
 	
 	

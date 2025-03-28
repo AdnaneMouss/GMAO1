@@ -46,6 +46,14 @@ import { BatimentsListeComponent } from './components/batiments/batiments-liste/
 import { EquipementFormComponent } from './equipement-form/equipement-form.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ToastrModule } from 'ngx-toastr';
+import { MaintenanceCalendarComponent } from './components/Maintenances/maintenance-calendar/maintenance-calendar.component';
+import { FullCalendarModule } from '@fullcalendar/angular';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+
+
+
 
 @NgModule({
   declarations: [
@@ -73,12 +81,14 @@ import { ToastrModule } from 'ngx-toastr';
     TypesEquipementsComponent,
     BatimentsListeComponent,
     EquipementFormComponent,
+    MaintenanceCalendarComponent,
   ],
   imports: [
     AppRoutingModule,
     ListeEquipementsComponent,
     LoginComponent,
     MatSnackBarModule,
+    FullCalendarModule,
  
    
    
