@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {Router, RouterLink} from "@angular/router";
 import {AuthService} from "../../../services/auth.service";
 import {NgClass, NgIf} from "@angular/common";
+import {environment} from "../../../../environments/environment";
 
 @Component({
   selector: 'app-panneau-navigation',
@@ -52,6 +53,10 @@ export class PanneauNavigationComponent implements OnInit{
     };
 
     return accessControl[route]?.includes(role) || false;
+  }
+
+  getImageUrl(imagePath: string | undefined): string {
+    return `${environment.apiUrl}${imagePath}`;
   }
 
   toggleSubmenu(menu: string) {
