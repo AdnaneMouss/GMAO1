@@ -55,6 +55,8 @@ import {
 } from "./components/Maintenances/maintenances-correctives/maintenances-correctives.component";
 import { UserRapportComponent } from './components/Rapports/user-rapport/user-rapport.component';
 
+
+
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },

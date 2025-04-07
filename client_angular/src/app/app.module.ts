@@ -48,6 +48,7 @@ import { EquipementFormComponent } from './equipement-form/equipement-form.compo
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ToastrModule } from 'ngx-toastr';
 
+<<<<<<< HEAD
 import { MaintenanceCalendarComponent } from './components/Maintenances/maintenance-calendar/maintenance-calendar.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -55,6 +56,8 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { UserRapportComponent } from './components/Rapports/user-rapport/user-rapport.component';
 
+=======
+>>>>>>> 56e4f900fee9d383279aac9e0b0120aea28b922c
 @NgModule({
   declarations: [
     AppComponent,
@@ -80,8 +83,12 @@ import { UserRapportComponent } from './components/Rapports/user-rapport/user-ra
     TypesEquipementsComponent,
     BatimentsListeComponent,
     EquipementFormComponent,
+<<<<<<< HEAD
     MaintenanceCalendarComponent,
     UserRapportComponent,
+=======
+
+>>>>>>> 56e4f900fee9d383279aac9e0b0120aea28b922c
   ],
   imports: [
     AppRoutingModule,
@@ -89,9 +96,12 @@ import { UserRapportComponent } from './components/Rapports/user-rapport/user-ra
     ListeEquipementsComponent,
     LoginComponent,
     MatSnackBarModule,
+<<<<<<< HEAD
     FullCalendarModule,
  
   
+=======
+>>>>>>> 56e4f900fee9d383279aac9e0b0120aea28b922c
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,

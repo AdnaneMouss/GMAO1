@@ -160,12 +160,6 @@ export class ListeUtilisateursComponent implements OnInit {
       return;
     }
 
-    // Check if the image file is selected and valid
-    if (!this.selectedFile) {
-      this.errorMessage = 'Veuillez sélectionner une image.';
-      return;
-    }
-
     // Check for image file errors
     if (this.imageError) {
       this.errorMessage = this.imageError; // Display image error message
