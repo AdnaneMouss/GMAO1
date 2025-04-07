@@ -51,6 +51,8 @@ import {
   MaintenancesCorrectivesComponent
 } from "./components/Maintenances/maintenances-correctives/maintenances-correctives.component";
 
+
+
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },

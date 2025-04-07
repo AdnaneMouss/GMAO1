@@ -47,6 +47,7 @@ import { EquipementFormComponent } from './equipement-form/equipement-form.compo
 
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ToastrModule } from 'ngx-toastr';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -72,6 +73,7 @@ import { ToastrModule } from 'ngx-toastr';
     TypesEquipementsComponent,
     BatimentsListeComponent,
     EquipementFormComponent,
+
   ],
   imports: [
     AppRoutingModule,
@@ -79,9 +81,6 @@ import { ToastrModule } from 'ngx-toastr';
     ListeEquipementsComponent,
     LoginComponent,
     MatSnackBarModule,
-
-
-
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,
