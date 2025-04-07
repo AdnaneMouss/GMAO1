@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-=======
+
 <div class="flex h-screen bg-gray-100">
   <!-- Sidebar Navbar -->
   <div class="fixed top-0 left-0 flex flex-col w-65 bg-white text-green-900 shadow-lg transition-all ease-in-out duration-300"
@@ -207,24 +206,29 @@
       <!-- Separator -->
       <div *ngIf="user?.role === 'ADMIN' || user?.role === 'RESPONSABLE'" class="border-t border-gray-200 my-2"></div>
 
-      <!-- Reports with Submenu -->
-      <div *ngIf="user?.role === 'ADMIN' || user?.role ==='RESPONSABLE'" class="w-full">
-        <a class="flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-green-700 hover:text-white transition-all ease-in-out duration-300"
-           (click)="toggleSubmenu('reports')">
-          <i class="fas fa-chart-line text-xl"></i>
-          <span *ngIf="!isSidebarCollapsed">Rapports</span>
-        </a>
-        <div *ngIf="isSubmenuOpen('reports')" class="ml-4 space-y-2">
-          <a routerLink="/rapports/statistiques" class="flex items-center space-x-4 py-2 px-4 rounded-md hover:bg-green-700 hover:text-white">
-            <i class="fas fa-chart-pie text-sm"></i>
-            <span *ngIf="!isSidebarCollapsed">Statistiques des interventions</span>
-          </a>
-          <a routerLink="/rapports/coutMaintenance" class="flex items-center space-x-4 py-2 px-4 rounded-md hover:bg-green-700 hover:text-white">
-            <i class="fas fa-chart-pie text-sm"></i>
-            <span *ngIf="!isSidebarCollapsed">Coût des maintenances</span>
-          </a>
-        </div>
-      </div>
+         <!-- Reports with Submenu -->
+         <div *ngIf="user?.role === 'ADMIN' || user?.role ==='RESPONSABLE'">
+            <a class="flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-green-700 hover:text-white transition-all ease-in-out duration-300"
+               (click)="toggleSubmenu('reports')">
+              <i class="fas fa-chart-line text-xl"></i>
+              <span *ngIf="!isSidebarCollapsed">Rapports</span>
+            </a>
+            <div *ngIf="isSubmenuOpen('reports')" class="ml-4 space-y-2">
+              <a routerLink="/rapports/statistiques" class="flex items-center space-x-4 py-2 px-4 rounded-md hover:bg-green-700 hover:text-white">
+                <i class="fas fa-chart-pie text-sm"></i>
+                <span *ngIf="!isSidebarCollapsed">Rapports maintenances</span>
+              </a>
+              <a routerLink="/rapports/coutMaintenance" class="flex items-center space-x-4 py-2 px-4 rounded-md hover:bg-green-700 hover:text-white">
+                <i class="fas fa-chart-pie text-sm"></i>
+                <span *ngIf="!isSidebarCollapsed">Rapport Equipements</span>
+              </a>
+  
+              <a routerLink="/rapports/Utiliateurs" class="flex items-center space-x-4 py-2 px-4 rounded-md hover:bg-green-700 hover:text-white">
+                <i class="fas fa-chart-pie text-sm"></i>
+                <span *ngIf="!isSidebarCollapsed">Rapport Utilisateurs</span>
+              </a>
+            </div>
+          </div>
       <!-- Separator -->
       <div *ngIf="user?.role === 'ADMIN' || user?.role === 'RESPONSABLE'" class="border-t border-gray-200 my-2"></div>
 
@@ -537,6 +541,13 @@
               <i class="fas fa-history text-sm"></i>
               <span *ngIf="!isSidebarCollapsed">Historique des maintenances</span>
             </a>
+            
+            <a [ngClass]="{'bg-green-800 text-white': isActive('/maintenances/calendar')}"
+            routerLink="/maintenances/calendar"
+            class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
+            <i class="fas fa-calendar-alt text-sm"></i> 
+           <span *ngIf="!isSidebarCollapsed">calendrier des maintenances</span>
+         </a>
           </ng-container>
         </div>
       </div>
@@ -648,4 +659,3 @@
     </div>
   </div>
 </div>
->>>>>>> 11e0519e5d441699ef0850b4f55e04b7b66334df
