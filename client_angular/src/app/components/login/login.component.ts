@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import {Router, RouterLink} from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import {FormsModule} from "@angular/forms";
-import {NgIf} from "@angular/common";  // Adjust the import path based on your project structure
+import { FormsModule } from "@angular/forms";
+import { NgIf } from "@angular/common";
 
 @Component({
   selector: 'app-login',
@@ -10,8 +10,7 @@ import {NgIf} from "@angular/common";  // Adjust the import path based on your p
   standalone: true,
   imports: [
     FormsModule,
-    NgIf,
-    RouterLink
+    NgIf
   ],
   styleUrls: ['./login.component.css']
 })
@@ -19,33 +18,47 @@ export class LoginComponent {
   email: string = '';
   password: string = '';
   errorMessage: string = '';
+  loading: boolean = false; // Added loading state
 
   constructor(private loginService: AuthService, private router: Router) {}
 
-  onLogin($event: SubmitEvent) {
-    console.log('Attempting login...'); // Debug log
+  onLogin(event: SubmitEvent) {
+    event.preventDefault();
+    this.errorMessage = '';  // Clear previous errors
+    this.loading = true;  // Start loading
+
     this.loginService.login(this.email, this.password).subscribe({
       next: (response: any) => {
-        console.log('Response received from API:', response); // Log response
+        this.loading = false;  // Stop loading
+
+        if (!response.actif) {
+          this.errorMessage = "Votre compte est désactivé. Veuillez contacter l'administrateur.";
+          return;
+        }
+
         localStorage.setItem('user', JSON.stringify(response));
-        alert(response.role);
-        if(response.role=="ADMIN"){
-          this.router.navigate(['/utilisateurs/liste']);
-        }
-        else if(response.role=="TECHNICIEN"){
-          this.router.navigate(['/interventions/taches']);
-        }
-        else if(response.role=="RESPONSABLE"){
-          this.router.navigate(['/equipements/list']);
+
+        switch (response.role) {
+          case "ADMIN":
+            this.router.navigate(['/utilisateurs/liste']);
+            break;
+          case "TECHNICIEN":
+            this.router.navigate(['/interventions/taches']);
+            break;
+          case "RESPONSABLE":
+            this.router.navigate(['/equipements/list']);
+            break;
+          default:
+            this.errorMessage = "Rôle non reconnu.";
         }
       },
 
       error: (error) => {
-        console.error('Error occurred during login:', error); // Log error
-        this.errorMessage = 'Invalid credentials, please try again.';
+        this.loading = false;  // Stop loading on error
+        console.error('Login error:', error);
+        this.errorMessage = 'Identifiants incorrects, veuillez réessayer.';
       }
     });
   }
-
 
 }

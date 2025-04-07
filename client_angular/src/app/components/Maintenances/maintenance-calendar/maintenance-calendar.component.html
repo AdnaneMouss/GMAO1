@@ -1,6 +1,12 @@
 <div class="maintenance-calendar-container">
-  <h2>Calendrier des Maintenances</h2>
-  
+  <div class="header-section">
+    <h2>Calendrier des Maintenances</h2>
+    <button (click)="exportToHTML()" class="export-btn">
+      <i class="fas fa-file-export"></i> Exporter
+    </button>
+  </div>
+
+  <!-- Légende -->
   <div class="calendar-legend">
     <h3>Légende</h3>
     <div class="legend-items">
@@ -11,6 +17,7 @@
     </div>
   </div>
 
+  <!-- Calendrier -->
   <div class="calendar-wrapper">
     <full-calendar [options]="calendarOptions"></full-calendar>
   </div>

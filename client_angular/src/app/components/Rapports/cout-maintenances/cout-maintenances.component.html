@@ -1,1 +1,89 @@
-<p>cout-maintenances works!</p>
+<!-- rapport-equipements.component.html -->
+<div class="container mx-auto p-8 bg-white rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Rapport des Équipements</h2>
+  
+    <!-- Cartes de Synthèse  -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-green-50 p-6 rounded-lg shadow">
+       <h3 class="text-lg font-semibold text-gray-700">Total Équipements</h3>
+        <p class="text-3xl font-bold text-green-600">{{ stats.totalEquipements }}</p>
+      </div>
+      <div class="bg-orange-50 p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold text-gray-700">Équipements en Panne</h3>
+        <p class="text-3xl font-bold text-orange-600">{{ stats.equipementsEnPanne }}</p>
+      </div>
+      <div class="bg-blue-50 p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold text-gray-700">Coût Total (€)</h3>
+        <p class="text-3xl font-bold text-blue-600">{{ stats.coutTotal | number:'1.2-2' }}</p>
+      </div>
+    </div>
+  
+    <div style="height: 400px; max-width: 700px; margin: auto;">
+      <canvas #statutChart></canvas>
+    </div>
+    
+    
+ <!-- Tableau des Équipements Critiques -->
+<!-- Tableau des Équipements Critiques -->
+<!-- Tableau des Équipements Critiques -->
+<div class="mb-6">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-xl font-semibold">Équipements Critiques</h3>
+    <div class="text-sm text-gray-500">
+      Total: {{ equipements.length }} équipements
+    </div>
+  </div>
+  
+  <div class="overflow-x-auto shadow rounded-lg">
+    <table class="min-w-full bg-white">
+      <thead class="bg-gray-800 text-white">
+        <tr>
+          <th class="py-3 px-4 text-left">Nom</th>
+          <th class="py-3 px-4 text-left">Numéro de Série</th>
+          <th class="py-3 px-4 text-left">Statut</th>
+          <th class="py-3 px-4 text-left">Coût</th>
+          <th class="py-3 px-4 text-left">Dernière Maintenance</th>
+          <th class="py-3 px-4 text-left">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let eq of equipements" class="border-b hover:bg-gray-50">
+          <td class="py-3 px-4">{{ eq.nom || 'N/A' }}</td>
+          <td class="py-3 px-4">{{ eq.numeroSerie || 'N/A' }}</td>
+          <td class="py-3 px-4">
+            <span [ngClass]="{
+              'bg-green-100 text-green-800': eq.statut === 'Actif',
+              'bg-orange-100 text-orange-800': eq.statut === 'En panne',
+              'bg-red-100 text-red-800': eq.statut === 'Hors service',
+              'bg-blue-100 text-blue-800': eq.statut === 'En maintenance',
+              'bg-gray-100 text-gray-800': !eq.statut
+            }" class="px-3 py-1 rounded-full text-xs font-medium">
+              {{ eq.statut || 'Statut inconnu' }}
+            </span>
+          </td>
+          <td class="py-3 px-4">
+            {{ eq.coutAchat ? (eq.coutAchat | currency:'DH':'symbol':'1.2-2') : 'N/A' }}
+          </td>
+          <td class="py-3 px-4">
+            {{ eq.dateDerniereMaintenance ? (eq.dateDerniereMaintenance | date:'dd/MM/yyyy') : 'N/A' }}
+          </td>
+          <td class="py-3 px-4">
+            <button (click)="exportEquipmentPDF(eq)" 
+                    class="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-50">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+    <!-- Bouton d'Export 
+    <button (click)="exportToPDF()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+      Exporter en PDF
+    </button>
+    -->
+        
+  </div>

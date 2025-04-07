@@ -33,4 +33,55 @@ public class AttributEquipements {
 
     public AttributEquipements(AttributEquipements attributEquipements) {
     }
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getNom() {
+		return nom;
+	}
+
+	public void setNom(String nom) {
+		this.nom = nom;
+	}
+
+	public Boolean getObligatoire() {
+		return obligatoire;
+	}
+
+	public void setObligatoire(Boolean obligatoire) {
+		this.obligatoire = obligatoire;
+	}
+
+	public Boolean getActif() {
+		return actif;
+	}
+
+	public void setActif(Boolean actif) {
+		this.actif = actif;
+	}
+
+	public AttributEquipementType getAttributEquipementType() {
+		return attributEquipementType;
+	}
+
+	public void setAttributEquipementType(AttributEquipementType attributEquipementType) {
+		this.attributEquipementType = attributEquipementType;
+	}
+
+	public TypesEquipements getTypeEquipement() {
+		return typeEquipement;
+	}
+
+	public void setTypeEquipement(TypesEquipements typeEquipement) {
+		this.typeEquipement = typeEquipement;
+	}
+    
+    
+    
 }

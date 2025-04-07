@@ -50,7 +50,7 @@ public class EventService {
 	            event.setStartDate(eventDetails.getStartDate());
 	            event.setEndDate(eventDetails.getEndDate());
 	            event.setRepetitionType(eventDetails.getRepetitionType());
-	            event.setSelectedDays(eventDetails.getSelectedDays()); 
+	        //    event.setSelectedDays(eventDetails.getSelectedDays()); 
 	            event.setSelectedMonth(eventDetails.getSelectedMonth());
 	            return eventRepository.save(event);
 	        }

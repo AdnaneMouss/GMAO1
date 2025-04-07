@@ -124,12 +124,10 @@ public class MaintenanceController {
     
     @PostMapping("/next-dates")
     public NextRepetitionDatesResponse getNextRepetitionDates(@RequestBody MaintenanceDTO maintenanceDTO) {
-        List<Date> nextDates = maintenanceService.calculateRepetitionDates(
-            maintenanceDTO.getStartDaterep(),
-            maintenanceDTO.getEndDaterep(),
-            maintenanceDTO.getRepetitiontype(),
-            maintenanceDTO.getSelectedjours() // Utilisation directe de selectedjours
-        );
+        // Appel de la méthode dans le service pour obtenir toutes les dates de répétition
+        List<Date> nextDates = maintenanceService.getRepetitionDates(maintenanceDTO.getStartDaterep(), maintenanceDTO.getEndDaterep(), maintenanceDTO.getRepetitiontype());
+
+        // Retourner l'objet avec la liste des dates de répétition
         return new NextRepetitionDatesResponse(nextDates);
     }
 

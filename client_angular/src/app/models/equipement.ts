@@ -35,5 +35,8 @@ export interface Equipement {
   batiment: Batiment;
   attributsValeurs: AttributEquipementValeur[];
   [key: string]: any;
+  valeurSuivi: 0,
+  labelSuivi:'',
+
 
 }

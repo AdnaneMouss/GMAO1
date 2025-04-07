@@ -230,6 +230,8 @@ export class ListeEquipementsComponent implements OnInit {
       frequenceMaintenance: '',
       historiquePannes: '',
       coutAchat: '',
+      valeurSuivi:0,
+      labelSuivi:'',
       typeEquipement: {
         id: 0,
         type: '',

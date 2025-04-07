@@ -18,7 +18,7 @@
         <i class="fas fa-tachometer-alt text-xl"></i>
         <span *ngIf="!isSidebarCollapsed">Dashboard</span>
       </a>
-      <div class="border-t border-gray-200 my-2"></div> <!-- Separator -->
+      <div *ngIf="user?.role === 'ADMIN'" class="border-t border-gray-200 my-2"></div> <!-- Separator -->
 
       <!-- Gestion des utilisateurs avec sous-menu -->
       <div *ngIf="user?.role === 'ADMIN'" class="w-full">
@@ -27,7 +27,7 @@
                 (click)="toggleSubmenu('users')">
           <div class="flex items-center space-x-3">
             <i class="fas fa-users text-xl"></i>
-            <span *ngIf="!isSidebarCollapsed" class="font-medium">Utilisateurs</span>
+            <span *ngIf="!isSidebarCollapsed" class="font-medium">Gestion des utilisateurs</span>
           </div>
           <i class="fas" [ngClass]="{'fa-chevron-down': !isSubmenuOpen('users'), 'fa-chevron-up': isSubmenuOpen('users')}"></i>
         </button>
@@ -49,9 +49,9 @@
         </div>
       </div>
 
-      <div class="border-t border-gray-200 my-2"></div> <!-- Separator -->
+      <div *ngIf="user?.role === 'ADMIN' || user?.role === 'RESPONSABLE'" class="border-t border-gray-200 my-2"></div> <!-- Separator -->
 
-      <!-- Equipment Management with Submenu -->
+
       <!-- Gestion des équipements avec sous-menu -->
       <div *ngIf="user?.role === 'ADMIN' || user?.role === 'RESPONSABLE'" class="w-full">
         <!-- Bouton principal du menu -->
@@ -66,17 +66,17 @@
 
         <!-- Sous-menu -->
         <div *ngIf="isSubmenuOpen('equipements')" class="ml-6 mt-2 space-y-2 border-l-2 border-gray-300 pl-3">
-          <a [ngClass]="{'bg-green-800 text-white': isActive('/equipements/liste')}"
-             routerLink="/equipements/liste"
-             class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
-            <i class="fas fa-list text-sm"></i>
-            <span *ngIf="!isSidebarCollapsed">Liste des équipements</span>
-          </a>
           <a [ngClass]="{'bg-green-800 text-white': isActive('/equipements/type_equipements')}"
              routerLink="/equipements/type_equipements"
              class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
             <i class="fas fa-tags text-sm"></i>
             <span *ngIf="!isSidebarCollapsed">Types d'équipements</span>
+          </a>
+          <a [ngClass]="{'bg-green-800 text-white': isActive('/equipements/liste')}"
+             routerLink="/equipements/liste"
+             class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
+            <i class="fas fa-list text-sm"></i>
+            <span *ngIf="!isSidebarCollapsed">Liste des équipements</span>
           </a>
           <a *ngIf="user?.role === 'ADMIN'" [ngClass]="{'bg-green-800 text-white': isActive('/equipements/categories')}"
              routerLink="/equipements/categories"
@@ -88,7 +88,7 @@
       </div>
 
 
-      <div class="border-t border-gray-200 my-2"></div> <!-- Separator -->
+      <div *ngIf="user?.role === 'ADMIN'" class="border-t border-gray-200 my-2"></div> <!-- Separator -->
 
       <!-- Batiment Management with Submenu -->
       <div *ngIf="user?.role === 'ADMIN'" class="w-full">
@@ -114,11 +114,11 @@
         </div>
       </div>
 
-      <div class="border-t border-gray-200 my-2"></div> <!-- Separator -->
+      <div *ngIf="user?.role === 'ADMIN' || user?.role === 'RESPONSABLE'" class="border-t border-gray-200 my-2"></div> <!-- Separator -->
 
 
       <!-- Gestion des stocks avec sous-menu -->
-      <div class="w-full">
+      <div *ngIf="user?.role === 'ADMIN' || user?.role === 'RESPONSABLE'" class="w-full">
         <!-- Bouton principal du menu -->
         <button class="flex items-center justify-between w-full py-3 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300"
                 (click)="toggleSubmenu('stock')">
@@ -147,7 +147,7 @@
             <span *ngIf="!isSidebarCollapsed">Suivi et alertes</span>
           </a>
 
-          <a *ngIf="user?.role === 'RESPONSABLE' || user?.role === 'TECHNICIEN'"
+          <a *ngIf="user?.role === 'RESPONSABLE'"
              [ngClass]="{'bg-green-800 text-white': isActive('/stock/demande')}"
              routerLink="/stock/demande"
              class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
@@ -195,7 +195,7 @@
             <a [ngClass]="{'bg-green-800 text-white': isActive('/maintenances/calendar')}"
             routerLink="/maintenances/calendar"
             class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
-            <i class="fas fa-calendar-alt text-sm"></i>
+            <i class="fas fa-calendar-alt text-sm"></i> 
            <span *ngIf="!isSidebarCollapsed">calendrier des maintenances</span>
          </a>
           </ng-container>
@@ -205,24 +205,36 @@
 
 
       <div *ngIf="user?.role === 'TECHNICIEN'">
-          <a class="flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-green-700 hover:text-white transition-all ease-in-out duration-300"
-             (click)="toggleSubmenu('interventions')">
+        <button class="flex items-center justify-between w-full py-3 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300"
+                (click)="toggleSubmenu('interventions')">
+          <div class="flex items-center space-x-3">
             <i class="fas fa-tools text-xl"></i>
-            <span *ngIf="!isSidebarCollapsed">Interventions</span>
-          </a>
-          <div *ngIf="isSubmenuOpen('maintenance')" class="ml-4 space-y-2">
-            <a [ngClass]="{'bg-green-800 text-white': isActive('/interventions/taches')}"  *ngIf="user?.role === 'TECHNICIEN'" routerLink="/interventions/taches" class="flex items-center space-x-4 py-2 px-4 rounded-md hover:bg-green-700 hover:text-white">
-              <i class="fas fa-calendar-check text-sm"></i>
-              <span *ngIf="!isSidebarCollapsed">Tâches affectées</span>
-            </a>
-            <a [ngClass]="{'bg-green-800 text-white': isActive('/interventions/liste')}"  *ngIf="user?.role === 'TECHNICIEN'" routerLink="/interventions/taches" class="flex items-center space-x-4 py-2 px-4 rounded-md hover:bg-green-700 hover:text-white">
-              <i class="fas fa-calendar-check text-sm"></i>
-              <span *ngIf="!isSidebarCollapsed">Liste de mes interventions</span>
-            </a>
+            <span *ngIf="!isSidebarCollapsed" class="font-medium">Interventions</span>
           </div>
-
+          <i class="fas" [ngClass]="{'fa-chevron-down': !isSubmenuOpen('interventions'), 'fa-chevron-up': isSubmenuOpen('maintenance')}"></i>
+        </button>
+        <div *ngIf="isSubmenuOpen('interventions')" class="ml-6 mt-2 space-y-2 border-l-2 border-gray-300 pl-3">
+          <ng-container *ngIf="user?.role === 'TECHNICIEN' || user?.role === 'ADMIN'">
+            <a [ngClass]="{'bg-green-800 text-white': isActive('/interventions/taches')}"
+               routerLink="/interventions/taches"
+               class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
+              <i class="fas fa-calendar-check text-sm"></i>
+              <span *ngIf="!isSidebarCollapsed">Liste des interventions</span>
+            </a>
+            <a [ngClass]="{'bg-green-800 text-white': isActive('/interventions/liste')}"
+               routerLink="/interventions/liste"
+               class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
+              <i class="fas fa-wrench text-sm"></i>
+              <span *ngIf="!isSidebarCollapsed">Historique des interventions</span>
+            </a>
+          </ng-container>
         </div>
-        <div class="border-t border-gray-200 my-2"></div> <!-- Separator -->
+        </div>
+
+
+
+
+        <div  *ngIf="user?.role === 'ADMIN' || user?.role ==='RESPONSABLE'" class="border-t border-gray-200 my-2"></div> <!-- Separator -->
 
         <!-- Reports with Submenu -->
         <div *ngIf="user?.role === 'ADMIN' || user?.role ==='RESPONSABLE'">
@@ -234,11 +246,16 @@
           <div *ngIf="isSubmenuOpen('reports')" class="ml-4 space-y-2">
             <a routerLink="/rapports/statistiques" class="flex items-center space-x-4 py-2 px-4 rounded-md hover:bg-green-700 hover:text-white">
               <i class="fas fa-chart-pie text-sm"></i>
-              <span *ngIf="!isSidebarCollapsed">Statistiques des interventions</span>
+              <span *ngIf="!isSidebarCollapsed">Rapports maintenances</span>
             </a>
             <a routerLink="/rapports/coutMaintenance" class="flex items-center space-x-4 py-2 px-4 rounded-md hover:bg-green-700 hover:text-white">
               <i class="fas fa-chart-pie text-sm"></i>
-              <span *ngIf="!isSidebarCollapsed">Coût des maintenances</span>
+              <span *ngIf="!isSidebarCollapsed">Rapport Equipements</span>
+            </a>
+
+            <a routerLink="/rapports/Utiliateurs" class="flex items-center space-x-4 py-2 px-4 rounded-md hover:bg-green-700 hover:text-white">
+              <i class="fas fa-chart-pie text-sm"></i>
+              <span *ngIf="!isSidebarCollapsed">Rapport Utilisateurd</span>
             </a>
           </div>
         </div>
@@ -259,7 +276,7 @@
           <div class="flex items-center space-x-4" *ngIf="!isSidebarCollapsed">
             <img src="https://i.imgur.com/8nsPi8z.png" alt="User Avatar" class="w-10 h-10 rounded-full">
             <div class="flex flex-col">
-              <span class="text-sm font-semibold">{{ user?.nom }}</span>
+              <span class="text-sm font-semibold">{{ user?.username }}</span>
             </div>
           </div>
 

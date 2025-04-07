@@ -1,13 +1,13 @@
 package com.huir.GmaoApp.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "users", uniqueConstraints = {
@@ -45,8 +45,8 @@ public class User {
     @Column(nullable = false)
     @NotBlank(message = "Le mot de passe est obligatoire")
     @Pattern(
-        regexp = "^(?=.*[!@#$%^&*(),.?\":{}|<>]).*$",
-        message = "Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*(),.?\":{}|<>)"
+            regexp = "^(?=.*[!@#$%^&*(),.?\":{}|<>]).*$",
+            message = "Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*(),.?\":{}|<>)"
     )
     private String password;
 
@@ -67,7 +67,28 @@ public class User {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime dateInscription = LocalDateTime.now();
-    
-    
 
+    // Relation avec les maintenances créées par l'utilisateur
+    @JsonIgnore // Empêche la sérialisation de cette relation
+    @JsonManagedReference("user-creePar")
+    @OneToMany(mappedBy = "creePar", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MaintenanceCorrective> maintenancesCreees;
+
+    // Relation avec les maintenances assignées à l'utilisateur
+    @JsonIgnore // Empêche la sérialisation de cette relation
+    @JsonManagedReference("user-affecteA")
+    @OneToMany(mappedBy = "affecteA", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MaintenanceCorrective> maintenancesAssignees;
+
+    // Relation avec les équipements sous la responsabilité de l'utilisateur (maintenance)
+    @JsonIgnore // Empêche la sérialisation pour éviter les boucles infinies
+    @JsonManagedReference
+    @OneToMany(mappedBy = "responsableMaintenance", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Equipement> equipementsSousResponsabilite;
+    
+    @JsonIgnore // Empêche la sérialisation pour éviter les boucles infinies
+    @JsonManagedReference("user-intervention")
+    @OneToMany(mappedBy = "technicien", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Intervention> interventions;
+    
 }

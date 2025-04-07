@@ -1,6 +1,7 @@
 package com.huir.GmaoApp.service;
 
 import com.huir.GmaoApp.dto.UserDTO;
+import com.huir.GmaoApp.model.Services;
 import com.huir.GmaoApp.model.User;
 import com.huir.GmaoApp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,10 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -28,40 +31,8 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    @Transactional
-    public void addUser(UserDTO utilisateurDTO, MultipartFile file) {
-        try {
-            // Generate a unique filename using UUID
-            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-            // Define the upload path (here we store files under the 'uploads' directory in the project root)
-            Path filePath = Paths.get("uploads", fileName);
-            // Create the necessary directories if they do not exist
-            Files.createDirectories(filePath.getParent());
-            // Write the file to disk
-            Files.write(filePath, file.getBytes());
-
-            // Set the image URL or file path for the user
-            String imageUrl = fileName;  // You can use a relative URL or the filename
-            utilisateurDTO.setImage(imageUrl);  // Store the image filename in your DTO
-
-            // Convert DTO to entity
-            User utilisateur = new User();
-            utilisateur.setNom(utilisateurDTO.getNom());
-            utilisateur.setEmail(utilisateurDTO.getEmail());
-            utilisateur.setPassword(utilisateurDTO.getPassword());
-            utilisateur.setImage(utilisateurDTO.getImage());  // Set the image path
-            utilisateur.setGsm(utilisateurDTO.getGsm());
-            utilisateur.setRole(utilisateurDTO.getRole());
-            utilisateur.setUsername(utilisateurDTO.getUsername());
-            utilisateur.setCivilite(utilisateurDTO.getCivilite());
-            utilisateur.setDateInscription(LocalDateTime.now());
-
-            // Save user to the database
-            userRepository.save(utilisateur);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Image upload failed", e);
-        }
+    public User addUser(User user) {
+        return userRepository.save(user);
     }
 
     // Find a user by ID
@@ -93,20 +64,46 @@ public class UserService {
         userRepository.deleteById(id);
     }
     @Transactional
-    public UserDTO updateUser(Long id, UserDTO userDTO) {
+    public UserDTO updateUser(Long id, MultipartFile imageFile, UserDTO userDTO) {
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
+
             // Update user fields
             user.setNom(userDTO.getNom());
             user.setEmail(userDTO.getEmail());
             user.setGsm(userDTO.getGsm());
-            user.setImage(userDTO.getImage());
             user.setRole(userDTO.getRole());
             user.setActif(userDTO.isActif());
             user.setUsername(userDTO.getUsername());
             user.setCivilite(userDTO.getCivilite());
             user.setDateInscription(LocalDateTime.now());
+
+            // If a new image is uploaded, handle it
+            if (imageFile != null && !imageFile.isEmpty()) {
+                try {
+                    // Delete the old image (if exists)
+                    if (user.getImage() != null) {
+                        File oldImage = new File("uploads/" + user.getImage());
+                        if (oldImage.exists()) {
+                            oldImage.delete();
+                        }
+                    }
+
+                    // Generate a unique image filename
+                    String filename = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+                    Path imagePath = Paths.get("uploads/" + filename);
+
+                    // Save the new image
+                    Files.copy(imageFile.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
+
+                    // Update entity with new image path
+                    user.setImage(filename);
+                } catch (IOException e) {
+                    throw new RuntimeException("Error while saving image", e);
+                }
+            }
+
             // Save updated user entity
             userRepository.save(user);
             return new UserDTO(user);
@@ -114,4 +111,19 @@ public class UserService {
             return null; // User not found
         }
     }
+
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+
+    public boolean existsByPhone(String gsm) {
+        return userRepository.existsByGsm(gsm);
+    }
+
+
 }

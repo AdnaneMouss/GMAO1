@@ -31,4 +31,39 @@ public class EtageDTO {
                 .collect(Collectors.toList())
                 : null;
     }
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public int getNum() {
+		return num;
+	}
+
+	public void setNum(int num) {
+		this.num = num;
+	}
+
+	public Batiment getBatiment() {
+		return batiment;
+	}
+
+	public void setBatiment(Batiment batiment) {
+		this.batiment = batiment;
+	}
+
+	public List<SalleDTO> getSalles() {
+		return salles;
+	}
+
+	public void setSalles(List<SalleDTO> salles) {
+		this.salles = salles;
+	}
+    
+    
+    
 }

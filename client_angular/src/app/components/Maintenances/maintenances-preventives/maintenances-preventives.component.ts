@@ -56,6 +56,7 @@ export class MaintenancesPreventivesComponent implements OnInit {
   notificationMessage: string = ''; // Variable pour stocker le message de notification
   notificationCount: number = 0;
   notification: {id: number, message: string}[] = [];
+  
 
 private checkInterval: Subscription | undefined;
 showNotificationsPanel: boolean = false;
@@ -70,14 +71,16 @@ notifications: string[] = [];
 showNotifications: boolean = false;
 
   selectedDays: { [key: string]: boolean } = {
-    L: false,
-    M: false,
-    MER: false,
-    J: false,
-    V: false,
-    S: false,
-    D: false,
+    LUNDI: false,
+    MARDI: false,
+    MERCREDI: false,
+    JEUDI: false,
+    VENDREDI: false,
+    SAMEDI: false,
+    DIMANCHE: false,
   };
+ 
+ 
 
   getDays(): string[] {
     return Object.keys(this.selectedDays);
@@ -124,20 +127,6 @@ showNotifications: boolean = false;
   closeForm() {
     this.selectedForm= null; // Ferme le formulaire
   }
-
-  
-
-   
-
-  
-
-
-
-  
-    
-
-  
-
   newMaintenance: maintenance = {
     equipement: {
       id: 0,
@@ -163,6 +152,8 @@ showNotifications: boolean = false;
       salle: {} as Salle,
       etage: {} as Etage,
       batiment: {} as Batiment,
+      valeurSuivi: 0,
+      labelSuivi: '',
       attributsValeurs: []
     },
     batiment: {
@@ -184,6 +175,22 @@ showNotifications: boolean = false;
       role: 'ADMIN',
       actif: true,
       dateInscription: '',
+      Intervention: {
+        id: 0,
+        technicienId: 0,
+        typeIntervention: 'PREVENTIVE',
+        description: '',
+        duree: 0,
+        maintenanceId: 0,
+        maintenanceStatut: 'EN_ATTENTE',
+        maintenancePriorite: 'NORMALE',
+        dateCommencement: undefined,
+        dateCloture: undefined,
+        dateCreation: undefined,
+        equipementMaintenu: '',
+        remarques: '',
+        photos: []
+      }
     },
     id: 0,
     dureeIntervention: 0,
@@ -201,8 +208,10 @@ showNotifications: boolean = false;
     startDaterep: new Date(''),
     selectedjours: [],
     selectedmois: [],
-    repetition:0,
+    repetition: 0,
+    seuil: 0,
     endDaterep: new Date(''),
+    equipementId: 0,
 
 
     indicateurs: [],
@@ -211,8 +220,25 @@ showNotifications: boolean = false;
     repetitionType: 'TOUS_LES_SEMAINES',
     startDate: new Date(''),
     endDate: new Date(''),
-    RepetitionType: RepetitionType.NE_SE_REPETE_PAS
+    RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
+    message: ''
   };
+
+
+  
+
+   
+
+  
+
+
+
+  
+    
+
+  
+
+
 
 
 
@@ -302,87 +328,90 @@ showNotifications: boolean = false;
   }
   calculateRepetitionDates(startDate: Date, endDate: Date, repetitionType: string, selectedDays: string[]): Date[] {
     let dates: Date[] = [];
-    
+
     if (!startDate || !endDate) return dates;
-  
+
     // Cas sans répétition
     if (repetitionType === 'Ne_pas_repeter') {
-      dates.push(new Date(startDate));
-      return dates;
+        dates.push(new Date(startDate));
+        return dates;
     }
-  
+
     // Cas répétition hebdomadaire avec jours spécifiques
     if (repetitionType === 'TOUS_LES_SEMAINES' && selectedDays && selectedDays.length > 0) {
-      return this.calculateWeeklyDatesWithSelectedDays(startDate, endDate, selectedDays);
+        return this.calculateWeeklyDatesWithSelectedDays(startDate, endDate, selectedDays);
     }
-  
+
     // Autres cas de répétition
     let currentDate = new Date(startDate);
     dates.push(new Date(currentDate));
-  
+
     while (currentDate < endDate) {
-      switch (repetitionType) {
-        case 'TOUS_LES_JOURS':
-          currentDate.setDate(currentDate.getDate() + 1);
-          break;
-        case 'TOUS_LES_SEMAINES':
-          currentDate.setDate(currentDate.getDate() + 7);
-          break;
-        case 'MENSUEL':
-          currentDate.setMonth(currentDate.getMonth() + 1);
-          break;
-        case 'ANNUEL':
-          currentDate.setFullYear(currentDate.getFullYear() + 1);
-          break;
-      }
-  
-      if (currentDate <= endDate) {
-        dates.push(new Date(currentDate));
-      }
+        switch (repetitionType) {
+            case 'TOUS_LES_JOURS':
+                currentDate.setDate(currentDate.getDate() + 1);
+                break;
+            case 'TOUS_LES_SEMAINES':
+                currentDate.setDate(currentDate.getDate() + 7);
+                break;
+            case 'MENSUEL':
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                break;
+            case 'ANNUEL':
+                currentDate.setFullYear(currentDate.getFullYear() + 1);
+                break;
+        }
+
+        if (currentDate <= endDate) {
+            dates.push(new Date(currentDate));
+        }
     }
-  
+
     return dates;
-  }
-  
-  calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDays: string[]): Date[] {
+}
+
+calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDays: string[]): Date[] {
     const dates: Date[] = [];
-    const currentDate = new Date(startDate);
+    let currentDate = new Date(startDate);
     const end = new Date(endDate);
-  
-    // Mapping des jours sélectionnés vers les numéros JS (0=Dimanche, 1=Lundi...)
-    const dayMap: {[key: string]: number} = {
-      'D': 0, // Dimanche
-      'L': 1, // Lundi
-      'M': 2, // Mardi
-      'MER': 3, // Mercredi
-      'J': 4, // Jeudi
-      'V': 5, // Vendredi
-      'S': 6  // Samedi
+
+    // Mapping des jours sélectionnés vers les numéros JS (0=Dimanche, 1=Lundi, ..., 6=Samedi)
+    const dayMap: { [key: string]: number } = {
+        'D': 0,  // Dimanche
+        'L': 1,  // Lundi
+        'M': 2,  // Mardi
+        'MER': 3, // Mercredi
+        'J': 4,  // Jeudi
+        'V': 5,  // Vendredi
+        'S': 6   // Samedi
     };
-  
-    const targetDays = selectedDays.map(day => dayMap[day]).filter(d => d !== undefined);
-  
-    // Trouver le prochain jour sélectionné après startDate
-    while (currentDate <= end) {
-      const currentDay = currentDate.getDay();
-      
-      if (targetDays.includes(currentDay)) {
-        dates.push(new Date(currentDate));
-      }
-  
-      // Passer au jour suivant
-      currentDate.setDate(currentDate.getDate() + 1);
+
+    const targetDays: number[] = selectedDays.map(day => dayMap[day]).filter(d => d !== undefined);
+
+    // Vérifier que targetDays n'est pas vide pour éviter une boucle infinie
+    if (targetDays.length === 0) {
+        console.warn('Aucun jour valide sélectionné pour la répétition hebdomadaire.');
+        return dates;
     }
-  
+
+    // Parcourir chaque jour jusqu'à la date de fin
+    while (currentDate <= end) {
+        if (targetDays.includes(currentDate.getDay())) {
+            dates.push(new Date(currentDate));
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
     return dates;
-  }
+}
+
   
 
 
 
-  
-  
-  
+
+
+
   
 
   ngOnInit(): void {
@@ -407,7 +436,7 @@ showNotifications: boolean = false;
     });
 
     this.checkMaintenanceStartDate();
-    
+ 
       
   }
 
@@ -548,7 +577,7 @@ showNotifications: boolean = false;
         console.log("users chargés :", this.users); 
       },
       error: (err) => {
-        console.error("Erreur lors du chargement des users", err);
+        console.error("Erreur lor s du chargement des users", err);
       }
     });
   }
@@ -564,6 +593,13 @@ showNotifications: boolean = false;
       
     }
   }
+
+   calculer(seuil: number, valeurSuivi: number): string {
+    return valeurSuivi >= seuil
+      ? "🔧 Attention ! La valeur suivie a atteint le seuil."
+      : "✅ La valeur suivie est encore en dessous du seuil.";
+  }
+  
 
   //Méthode pour calculer la REPETITION de l'intervention
   calculerRepetition(): void {
@@ -639,27 +675,50 @@ showNotifications: boolean = false;
         console.log('Maintenance details:', this.newMaintenance);
 
         // Vérifier les dates de répétition après récupération des données
+        
+                
         if (this.newMaintenance.startDaterep && this.newMaintenance.endDaterep) {
           const repetitionDates: Date[] = [];
           let currentDate = new Date(this.newMaintenance.startDaterep);
           let endDaterep = new Date(this.newMaintenance.endDaterep);
-
+          let selectedjours: number[] = (this.newMaintenance.selectedjours || []).map(Number); // Assurer que c'est bien un tableau de nombres
+        
           while (currentDate <= endDaterep) {
-            repetitionDates.push(new Date(currentDate));
-
+            // Vérifier si la date doit être ajoutée pour une répétition hebdomadaire avec jours spécifiques
+            if (
+              this.newMaintenance.repetitiontype !== 'TOUS_LES_SEMAINES' || 
+              selectedjours.includes(currentDate.getDay())
+            ) {
+              repetitionDates.push(new Date(currentDate));
+            }
+        
             switch (this.newMaintenance.repetitiontype) {
               case 'TOUS_LES_JOURS':
                 currentDate.setDate(currentDate.getDate() + 1);
                 break;
+        
               case 'TOUS_LES_SEMAINES':
-                currentDate.setDate(currentDate.getDate() + 7);
+                if (selectedjours.length > 0) {
+                  let nextDayFound = false;
+                  while (!nextDayFound) {
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    if (selectedjours.includes(currentDate.getDay())) {
+                      nextDayFound = true;
+                    }
+                  }
+                } else {
+                  currentDate.setDate(currentDate.getDate() + 7);
+                }
                 break;
+        
               case 'MENSUEL':
                 currentDate.setMonth(currentDate.getMonth() + 1);
                 break;
+        
               case 'ANNUEL':
                 currentDate.setFullYear(currentDate.getFullYear() + 1);
                 break;
+        
               default:
                 break;
             }
@@ -830,48 +889,45 @@ enregistrerSelection() {
   this.joursSelectionnes = Object.keys(this.selectedDays).filter(day => this.selectedDays[day]);
 }
 
-
-  
-      
-
-
- 
-
 resetForm() {
-  this.newMaintenance = {
-    id: 0,
-   dureeIntervention: 0,
-    dateDebutPrevue: new Date(''), // Initialisé en tant qu'objet Date
-    dateFinPrevue: new Date(''), // Initialisé en tant qu'objet Date
-    dateProchainemaintenance: new Date(''),
-    commentaires: '',
-    documentPath :null,
-    statut: 'EN_ATTENTE',
-    priorite: 'NORMALE',
-    repetitiontype:'Ne_pas_repeter',
-    frequence:'',
-    action:'VERIFICATION_PERFORMANCES',
-    autreAction: '',
-    startDaterep: new Date(''), 
-    endDaterep: new Date(''), 
-    indicateurs: [],
-    selectedmois: [],
-    selectedjours: [],
-    selectedDays: {} , // Exemple : { "LUNDI": true, "MARDI": false }
-    selectedMonth: {} ,  // Exemple : { "JANVIER": true, "FÉVRIER": false }
-    repetitionType:'TOUS_LES_SEMAINES' ,
-    startDate: new Date(''),
-    endDate: new Date(''),
-    repetition:0,
-    RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
-   
 
-
-  
- 
-    equipement: {  // Reset the Equipement object to its initial state
+    this.newMaintenance = {
+      id: 0,
+     dureeIntervention: 0,
+      dateDebutPrevue: new Date(''), // Initialisé en tant qu'objet Date
+      dateFinPrevue: new Date(''), // Initialisé en tant qu'objet Date
+      dateProchainemaintenance: new Date(''),
+      commentaires: '',
+      documentPath :null,
+      statut: 'EN_ATTENTE',
+      priorite: 'NORMALE',
+      repetitiontype:'Ne_pas_repeter',
+      frequence:'',
+      action:'VERIFICATION_PERFORMANCES',
+      autreAction: '',
+      startDaterep: new Date(''), 
+      endDaterep: new Date(''), 
+      indicateurs: [],
+      selectedmois: [],
+      selectedjours: [],
+      selectedDays: {} , // Exemple : { "LUNDI": true, "MARDI": false }
+      selectedMonth: {} ,  // Exemple : { "JANVIER": true, "FÉVRIER": false }
+      repetitionType:'TOUS_LES_SEMAINES' ,
+      startDate: new Date(''),
+      endDate: new Date(''),
+      repetition:0,
+      seuil:0,
+      message:'',
+      RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
+      equipementId:  0,
      
-        id:0,
+     
+  
+  
+    
+   
+      equipement: {
+        id: 0,
         image: '',
         nom: '',
         description: '',
@@ -888,39 +944,60 @@ resetForm() {
         historiquePannes: '',
         coutAchat: '',
         serviceNom: '',
-        typeEquipement: { id: undefined, type: '', image: '', attributs: [] },  // Initial empty type
+        typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Initial empty type
         service: {} as Service,
         piecesDetachees: [],
         salle: {} as Salle,
         etage: {} as Etage,
         batiment: {} as Batiment,
-        attributsValeurs: []
-      
-    },
-    user: {  
-      id: 0,
-      nom: '',
-      civilite: 'M', 
-      email: '',
-      username: '',
-      password: '',
-      gsm: '',
-      image: '',  
-      role: 'ADMIN', 
-      actif: true,  
-      dateInscription: '',  
-    },
-    batiment :{
-      
-      id: 0,
-      numBatiment: 0,
-      intitule: '',
-      etages:[],
-      
+        attributsValeurs: [],
+        valeurSuivi: 0,
+        labelSuivi: ''
+      },
+      user: {  
+        id: 0,
+        nom: '',
+        civilite: 'M', 
+        email: '',
+        username: '',
+        password: '',
+        gsm: '',
+        image: '',  
+        role: 'ADMIN', 
+        actif: true,  
+        dateInscription: '',  
 
-  },
+        Intervention: {
+          id: 0,
+          technicienId: 0,
+          typeIntervention: 'PREVENTIVE',
+          description: '',
+          duree: 0,
+          maintenanceId: 0,
+          maintenanceStatut: 'EN_ATTENTE',
+          maintenancePriorite: 'NORMALE',
+          dateCommencement: undefined,
+          dateCloture: undefined,
+          dateCreation: undefined,
+          equipementMaintenu: '',
+          remarques: '',
+          photos: []
+        }
+      },
+      batiment :{
+        
+        id: 0,
+        numBatiment: 0,
+        intitule: '',
+        etages:[],
+        
+  
+    },
+
     
-  };
+      
+    };
+  
 }
 
 

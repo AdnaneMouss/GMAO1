@@ -43,6 +43,8 @@ export class EquipementFormComponent implements OnInit {
     salle: {} as Salle,
     etage: {} as Etage,
     batiment: {} as Batiment,
+    valeurSuivi:0,
+    labelSuivi:'',
     attributsValeurs: []
   };
 

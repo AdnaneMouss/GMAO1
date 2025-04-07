@@ -4,6 +4,7 @@ import { User } from '../../../models/user';
 import * as XLSX from 'xlsx';
 //@ts-ignore
 import { saveAs } from 'file-saver';
+import {environment} from "../../../../environments/environment";
 @Component({
   selector: 'app-liste-utilisateurs',
   templateUrl: './liste-utilisateurs.component.html',
@@ -18,6 +19,9 @@ export class ListeUtilisateursComponent implements OnInit {
   errorMessage: string = '';
   isSearchOpen = false;
   searchTerm = '';
+  userAdded: boolean = false;
+  userUpdated: boolean = false;
+  successMessage: string = '';
   filteredUsers = [...this.users];
   imageError: string | null = null;
 
@@ -32,25 +36,42 @@ export class ListeUtilisateursComponent implements OnInit {
     email: '',
     password: '',
     role: 'ADMIN',
-    image: ''
+    image: '',
+    Intervention: {
+      id: 0,
+      technicienId: 0,
+      typeIntervention: 'PREVENTIVE',
+      description: '',
+      duree: 0,
+      maintenanceId: 0,
+      maintenanceStatut: 'EN_ATTENTE',
+      maintenancePriorite: 'NORMALE',
+      dateCommencement: undefined,
+      dateCloture: undefined,
+      dateCreation: undefined,
+      equipementMaintenu: '',
+      remarques: '',
+      photos: []
+    }
   };
   passwordVisible = false;
-  showPanel = false; // Controls the panel visibility
-  searchVisible: boolean = false;
+  showAddPanel = false; // Controls the panel visibility
   usernameTaken = false;
-  gsmError = false;
-  emailError = false;
-  passwordError = false;
+  gsmInvalid = false;
+  gsmTakenError = false;
+  emailInvalid = false;
+  emailTakenError = false;
+  passwordInvalid = false;
   existingUsernames: string[] = [];
   selectedUser: User | null = null; // Store selected user details
-  showPanel2: boolean = false;
+  showEditPanel: boolean = false;
   isEditing: boolean = false;
-  selectedFile: File | null = null; // To store the selected file for upload
+  selectedFile: File | null = null;
   viewDetails(userId: number): void {
     this.userService.getUserById(userId).subscribe({
       next: (user) => {
         this.selectedUser = { ...user }; // Clone the object to prevent unwanted changes
-        this.showPanel2 = true;
+        this.showEditPanel = true;
         this.isEditing = false; // Ensure it's in view mode by default
       },
       error: (err) => {
@@ -64,26 +85,15 @@ export class ListeUtilisateursComponent implements OnInit {
     this.isEditing = true;
   }
 
-// Method to update user details
-  updateUser(): void {
-    if (this.selectedUser) {
-      this.userService.updateUser(this.selectedUser.id, this.selectedUser).subscribe({
-        next: (updatedUser) => {
-          this.selectedUser = updatedUser;
-          this.isEditing = false; // Switch back to view mode
-          alert('User updated successfully!');
-        },
-        error: (err) => {
-          console.error('Error updating user:', err);
-          alert('Failed to update user.');
-        }
-      });
-    }
-  }
+
+
+
+
 
 // Method to close the panel
   closePanel(): void {
-    this.showPanel2 = false;
+    this.showEditPanel = false;
+    this.resetNewUser();
   }
   constructor(private userService: UserService) {
   }
@@ -110,46 +120,229 @@ export class ListeUtilisateursComponent implements OnInit {
   }
 
 
-  onImageSelect(event: any): void {
-    this.selectedFile = event.target.files[0];
-    if (this.selectedFile && !this.selectedFile.type.startsWith('image/')) {
-      this.imageError = 'Please select a valid image file.';
-      this.selectedFile = null;
-    } else {
-      this.imageError = null;
+
+
+  getImageUrl(imagePath: string | undefined): string {
+    return `${environment.apiUrl}${imagePath}`;
+  }
+
+  onFileChange(event: any): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+
+      // Vérifier le type de fichier (optionnel)
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(file.type)) {
+        this.imageError = "Seuls les fichiers JPG, JPEG et PNG sont acceptés.";
+        this.selectedFile = null;
+        return;
+      }
+
+      // Vérifier la taille (ex: max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        this.imageError = "La taille de l'image ne doit pas dépasser 5MB.";
+        this.selectedFile = null;
+        return;
+      }
+
+      this.imageError = null; // Aucune erreur
+      this.selectedFile = file;
     }
   }
 
-  checkUsernameTaken(username: string): boolean {
-    // Add logic to check if the username is already taken, you can make a request to the backend if necessary
-    return false; // Simulate that the username is available
-  }
-
-  // Method to validate the form and create user
   addUser(): void {
-    // Form validation
-    this.usernameTaken = this.checkUsernameTaken(this.newUser.username);
-    this.gsmError = !/^\d{10}$/.test(this.newUser.gsm);
-    this.emailError = !this.newUser.email.endsWith('@huir.ma');
-    this.passwordError = !/[!@#$%^&*(),.?":{}|<>]/.test(this.newUser.password);
+    this.errorMessage = '';
 
-    // If any validation fails, stop the form submission
-    if (this.usernameTaken || this.gsmError || this.emailError || this.passwordError || !this.selectedFile) {
-      this.errorMessage = 'Please fix the errors before submitting the form.';
+    // Check if the email is invalid
+    if (this.emailInvalid) {
       return;
     }
 
-    // Call the service to create the user and upload the image
-    this.userService.createUser(this.newUser, this.selectedFile).subscribe({
-      next: () => {
-        alert('User added successfully.');
+    // Check if the image file is selected and valid
+    if (!this.selectedFile) {
+      this.errorMessage = 'Veuillez sélectionner une image.';
+      return;
+    }
+
+    // Check for image file errors
+    if (this.imageError) {
+      this.errorMessage = this.imageError; // Display image error message
+      return;
+    }
+
+    // Prepare the user data
+    const userData: any = {
+      nom: this.newUser.nom,
+      email: this.newUser.email,
+      username: this.newUser.username,
+      password: this.newUser.password,
+      gsm: this.newUser.gsm,
+      civilite: this.newUser.civilite,
+      role: this.newUser.role
+    };
+
+    // If a file is selected, include it in the request
+    const fileToSend = this.selectedFile === null ? undefined : this.selectedFile;
+
+    if (fileToSend) {
+      userData.file = fileToSend;
+    } else {
+      userData.file = undefined; // You can choose to set it to undefined or omit it, depending on backend requirements
+    }
+
+    this.userService.createUserWithImage(userData, fileToSend).subscribe(
+      (response) => {
+        console.log('Utilisateur ajouté avec succès:', response);
+        this.users.push(response);
+        this.resetNewUser();
+        this.userAdded = true;
+        this.showAddPanel = false;
+        this.successMessage = 'Utilisateur ajouté avec succès';
+
+        // Hide the success message after 3 seconds
+        setTimeout(() => {
+          this.userAdded = false;
+        }, 3000);
       },
-      error: (err) => {
-        this.errorMessage = 'Failed to add user. Please try again.';
-        console.error(err);
+      (error) => {
+        console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
+
+        // Handle different types of errors
+        if (error.status === 409 && error.error) {
+          const field = error.error.field;
+          const message = error.error.message;
+
+          if (field === 'username') {
+            this.usernameTaken = true;
+            this.errorMessage = message;
+          } else if (field === 'email') {
+            this.emailTakenError = true;
+            this.errorMessage = message;
+          } else if (field === 'gsm') {
+            this.gsmTakenError = true;
+            this.errorMessage = message;
+          }
+        } else {
+          this.errorMessage = 'Une erreur s\'est produite lors de l\'ajout de l\'utilisateur.';
+        }
       }
-    });
+    );
   }
+
+
+  updateUser(): void {
+    // Check if the selected user exists and is properly selected
+    if (!this.selectedUser || this.selectedUser.id === undefined) {
+      this.errorMessage = 'Aucun utilisateur sélectionné pour la mise à jour!';
+      return;
+    }
+
+    // Check for missing required fields
+    if (!this.selectedUser.nom || !this.selectedUser.email || !this.selectedUser.username) {
+      this.errorMessage = 'Les champs nom, email et nom d\'utilisateur sont obligatoires';
+      return;
+    }
+
+    // Check if a file has been selected (if required for the update)
+    const fileToSend = this.selectedFile === null ? undefined : this.selectedFile;
+
+    // Check for image file errors
+    if (this.imageError) {
+      this.errorMessage = this.imageError; // Display image error message
+      return;
+    }
+
+    this.userService.updateUser(
+      this.selectedUser.id,
+      this.selectedUser,
+      fileToSend
+    ).subscribe(
+      (updatedUser) => {
+        // Find and update the user in the users list
+        const index = this.users.findIndex(user => user.id === updatedUser.id);
+        if (index !== -1) {
+          this.users[index] = updatedUser;
+        }
+
+        this.resetNewUser();
+        this.fetchUsers();
+        this.userUpdated = true;
+        this.showEditPanel = false;
+        this.successMessage = 'Utilisateur modifié avec succès';
+
+        // Hide the success message after 3 seconds
+        setTimeout(() => {
+          this.userUpdated = false;
+        }, 3000);
+      },
+      (error) => {
+        // Handle specific error cases
+        if (error.status === 409 && error.error) {
+          // Check for conflict errors (username, email, etc.)
+          const field = error.error.field;
+          const message = error.error.message;
+
+          if (field === 'username') {
+            this.usernameTaken = true;
+            this.errorMessage = message;
+          } else if (field === 'email') {
+            this.emailTakenError = true;
+            this.errorMessage = message;
+          } else if (field === 'gsm') {
+            this.gsmTakenError = true;
+            this.errorMessage = message;
+          } else {
+            this.errorMessage = message || 'Un conflit est survenu lors de la mise à jour.';
+          }
+        } else if (error.status === 400) {
+          // Handle bad request error (possibly due to invalid data)
+          this.errorMessage = 'Des données invalides ont été envoyées. Veuillez vérifier et réessayer.';
+        } else if (error.status === 404) {
+          // Handle not found error (user not found)
+          this.errorMessage = 'Utilisateur non trouvé.';
+        } else {
+          // Generic error fallback
+          this.errorMessage = 'Échec de la mise à jour de l\'utilisateur.';
+        }
+      }
+    );
+  }
+
+  validateEmail(email: string) {
+    if (!email.endsWith('@huir.ma')) {
+      this.emailInvalid = true;
+      this.errorMessage = "L'email doit se terminer par @huir.ma.";
+    }
+    else {
+      this.emailInvalid = false;
+    }
+  }
+
+
+  validateGSM(gsm: string) {
+    const gsmRegex = /^(06|07)\d{8}$/;
+    if (!gsmRegex.test(gsm.trim())) {
+      this.gsmInvalid = true;
+      this.errorMessage = "Le numéro doit commencer par 06 ou 07 et contenir 10 chiffres.";
+    }
+    else {
+      this.gsmInvalid = false;
+    }
+  }
+
+  validatePassword(password: string) {
+
+    const passwordRegex = /^(?=.*[0-9])(?=.*[\W_]).{6,}$/;
+    if (!passwordRegex.test(password)) {
+      this.passwordInvalid = true;
+      this.errorMessage = "Le mot de passe doit contenir 6 caractères, dont un caractère spécial et un chiffre.";
+    } else {
+      this.passwordInvalid = false;
+    }
+  }
+
 
   resetNewUser(): void {
     this.newUser = {
@@ -163,8 +356,31 @@ export class ListeUtilisateursComponent implements OnInit {
       email: '',
       password: '',
       role: 'ADMIN',
-      image: ''
+      image: '',
+      Intervention: {
+        id: 0,
+        technicienId: 0,
+        typeIntervention: 'PREVENTIVE',
+        description: '',
+        duree: 0,
+        maintenanceId: 0,
+        maintenanceStatut: 'EN_ATTENTE',
+        maintenancePriorite: 'NORMALE',
+        dateCommencement: undefined,
+        dateCloture: undefined,
+        dateCreation: undefined,
+        equipementMaintenu: '',
+        remarques: '',
+        photos: []
+      }
     };
+    this.emailInvalid = false;
+    this.gsmInvalid = false;
+    this.passwordInvalid = false;
+    this.emailTakenError = false;
+    this.usernameTaken = false;
+    this.imageError='';
+    this.gsmTakenError = false;
   }
 
   togglePasswordVisibility(): void {
@@ -176,22 +392,8 @@ export class ListeUtilisateursComponent implements OnInit {
   }
 
   togglePanel(): void {
-    this.showPanel = !this.showPanel; // Toggle the panel visibility
-  }
-
-  deleteUser(id: number): void {
-    if (confirm(`Are you sure you want to delete the user with ID ${id}?`)) {
-      this.userService.deleteUser(id).subscribe({
-        next: () => {
-          this.fetchUsers();
-          alert('User deleted successfully.');
-        },
-        error: (err) => {
-          console.error('Error deleting user:', err);
-          this.errorMessage = 'Failed to delete user';
-        }
-      });
-    }
+    this.showAddPanel = !this.showAddPanel;
+    this.resetNewUser();
   }
 
   filterByType(): void {
@@ -208,10 +410,6 @@ export class ListeUtilisateursComponent implements OnInit {
       ? a.nom.localeCompare(b.nom)
       : b.nom.localeCompare(a.nom)
     );
-  }
-
-  toggleSearch() {
-    this.isSearchOpen = !this.isSearchOpen;
   }
 
   filterUsers() {

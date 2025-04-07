@@ -73,6 +73,8 @@ public class EquipementService {
                 .garantie(equipementDTO.getGarantie())
                 .frequenceMaintenance(equipementDTO.getFrequenceMaintenance())
                 .coutAchat(equipementDTO.getCoutAchat())
+                .labelSuivi(equipementDTO.getLabelSuivi())
+                .valeurSuivi(equipementDTO.getValeurSuivi())
                 .build();
 
         // Set typeEquipement using DTO field
@@ -173,8 +175,12 @@ public class EquipementService {
             equipement.setHistoriquePannes(equipementDTO.getHistoriquePannes());
             equipement.setCoutAchat(equipementDTO.getCoutAchat());
             equipement.setImage(equipementDTO.getImage());
+            
+            equipement.setLabelSuivi(equipementDTO.getLabelSuivi());
+            equipement.setValeurSuivi(equipementDTO.getValeurSuivi());
+            
 
-            // Update the service and responsable maintenance if present
+            // Update the service and responsable maintenance 
             if (!equipementDTO.getServiceNom().isEmpty()) {
                 Services service = serviceRepository.findByNom(equipementDTO.getServiceNom());
                 if (service == null) {

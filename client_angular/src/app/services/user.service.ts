@@ -19,31 +19,59 @@ export class UserService {
     return this.http.get<User>(`${this.apiUrl}/${id}`);
   }
 
-  createUser(user: User, file: File): Observable<User> {
+  createUserWithImage(userData: { nom: string, email?: string, username?: string, password?: string, gsm?: string, civilite?: string, role?: string }, file?: File): Observable<any> {
     const formData = new FormData();
 
-    // Append the user data to the FormData object
-    formData.append('nom', user.nom);
-    formData.append('email', user.email);
-    formData.append('password', user.password);
-    formData.append('gsm', user.gsm);
-    formData.append('role', user.role);
-    formData.append('username', user.username);
-    formData.append('civilite', user.civilite);
+    // Append 'file' if provided
+    if (file) {
+      formData.append('file', file);
+    }
 
-    // Append the file (image) to the FormData object
-    formData.append('file', file, file.name); // 'file' is the key expected by the backend
+    // Append 'nom' (required)
+    formData.append('nom', userData.nom);
 
-    // Send the request with the form data
-    return this.http.post<User>(`${this.apiUrl}/add`, formData);
+    // Append optional fields only if they exist
+    if (userData.email) {
+      formData.append('email', userData.email);
+    }
+    if (userData.username) {
+      formData.append('username', userData.username);
+    }
+    if (userData.password) {
+      formData.append('password', userData.password);
+    }
+    if (userData.gsm) {
+      formData.append('gsm', userData.gsm);
+    }
+    if (userData.civilite) {
+      formData.append('civilite', userData.civilite);
+    }
+    if (userData.role) {
+      formData.append('role', userData.role);
+    }
+
+    // Send the form data in a POST request
+    return this.http.post<any>(this.apiUrl, formData);
   }
 
 
-  updateUser(id: number, user: User): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/${id}`, user);
+  updateUser(userId: number, userData: { nom: string, email: string, gsm: string, role: string, username: string, civilite: string, actif: boolean }, imageFile?: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('nom', userData.nom);
+    formData.append('email', userData.email);
+    formData.append('gsm', userData.gsm);
+    formData.append('role', userData.role);
+    formData.append('username', userData.username);
+    formData.append('civilite', userData.civilite);
+    formData.append('actif', userData.actif.toString());  // Convert boolean to string for the form data
+
+    if (imageFile) {
+      formData.append('imageFile', imageFile); // Only append image if it's provided
+    }
+
+    return this.http.put<any>(`${this.apiUrl}/${userId}`, formData);
   }
 
-  deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
+
+
 }

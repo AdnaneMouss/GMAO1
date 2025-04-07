@@ -2,38 +2,105 @@
   <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6">
     <h2 class="text-2xl font-bold text-gray-700">Gestion des Types d'équipements</h2>
     <p class="text-gray-500 text-sm">Recherchez, triez et gérez facilement tous les types d'équipements.</p>
+    <div *ngIf="typeUpdated" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+      <i class="fas fa-check-circle text-2xl"></i>
+      <span class="font-semibold">Type d'équipement modifié avec succès !</span>
+    </div>
 
-    <!-- Formulaire d'ajout -->
-    <div *ngIf="showTypeForm" class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
+    <div *ngIf="typeAdded" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+      <i class="fas fa-check-circle text-2xl"></i>
+      <span class="font-semibold">Type d'équipement ajouté avec succès !</span>
+    </div>
+
+    <div *ngIf="attributeAdded" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+      <i class="fas fa-check-circle text-2xl"></i>
+      <span class="font-semibold">Attribut ajouté avec succès !</span>
+    </div>
+
+    <div *ngIf="attributeUpdated" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+      <i class="fas fa-check-circle text-2xl"></i>
+      <span class="font-semibold">Attribut modifié avec succès !</span>
+    </div>
+
+
+    <!-- Formulaire de modification -->
+    <div *ngIf="showEditTypeForm && selectedType.id !== 0" class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
       <div class="bg-white rounded-lg w-full max-w-3xl p-6 relative overflow-y-auto max-h-[90vh]">
-        <!-- Close button inside panel (top-right corner) -->
-        <button (click)="showTypeForm = false" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-semibold">
+        <!-- Close button -->
+        <button (click)="toggleForm()" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-semibold">
           <i class="fas fa-times"></i>
         </button>
 
-        <h2 class="text-2xl font-semibold mb-4 text-center">Ajouter un service</h2>
+        <h2 class="text-2xl font-semibold mb-4 text-center">Modifier un type d'équipement</h2>
 
-        <form (ngSubmit)="addNewType()" #serviceForm="ngForm">
+        <form (ngSubmit)="updateType()" #editForm="ngForm" enctype="multipart/form-data">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Equipment name input -->
+            <div>
+              <label for="edit-nom" class="block text-sm font-medium text-gray-700">Nom <span class="text-red-500">*</span></label>
+              <input id="edit-nom" type="text" [(ngModel)]="selectedType.type" name="editNom" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #editNom="ngModel">
+              <div *ngIf="editNom.invalid && editNom.touched" class="text-red-500 text-sm">Le nom du type est requis.</div>
+              <div *ngIf="typeTaken" class="text-red-500 text-sm mt-1">
+                {{ errorMessage }}
+              </div>
+            </div>
+
+            <!-- Image input -->
+            <div>
+              <label for="edit-image" class="block text-sm font-medium text-gray-700">Image</label>
+              <input id="edit-image" type="file" (change)="onFileSelected($event)" class="mt-2 p-3 border border-gray-300 rounded-md w-full">
+              <p *ngIf="imageError" class="text-red-500">{{ imageError }}</p>
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-4">
+            <button type="reset" class="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">
+              <i class="fas fa-undo"></i> Réinitialiser
+            </button>
+
+            <button type="submit" [disabled]="editForm.invalid" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">
+              <i class="fas fa-save"></i> Mettre à jour
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Formulaire d'ajout -->
+    <div *ngIf="showAddTypeForm" class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
+      <div class="bg-white rounded-lg w-full max-w-3xl p-6 relative overflow-y-auto max-h-[90vh]">
+        <!-- Close button inside panel (top-right corner) -->
+        <button (click)="toggleForm()" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-semibold">
+          <i class="fas fa-times"></i>
+        </button>
+
+        <h2 class="text-2xl font-semibold mb-4 text-center">Ajouter un type d'équipement</h2>
+
+        <form (ngSubmit)="addNewType()" #serviceForm="ngForm" enctype="multipart/form-data">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label for="nom" class="block text-sm font-medium text-gray-700">Nom <span class="text-red-500">*</span></label>
               <input id="nom" type="text" [(ngModel)]="newType.type" name="nom" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #nom="ngModel">
               <div *ngIf="nom.invalid && nom.touched" class="text-red-500 text-sm">Le type est requis.</div>
-              <!-- Error message for already taken service name -->
-              <div *ngIf="errorMessage" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
+              <div *ngIf="typeTaken" class="text-red-500 text-sm mt-1">
+                {{errorMessage}}
+              </div>
             </div>
 
             <div>
-              <label for="image" class="block text-sm font-medium text-gray-700">URL de l'image</label>
-              <input id="image" type="text" [(ngModel)]="newType.image" name="image" class="mt-2 p-3 border border-gray-300 rounded-md w-full">
+              <label for="image" class="block text-sm font-medium text-gray-700">Image</label>
+              <input id="image" type="file" (change)="onFileSelected($event)" class="mt-2 p-3 border border-gray-300 rounded-md w-full">
+              <p *ngIf="imageError" class="text-red-500">{{ imageError }}</p>
             </div>
+
           </div>
           <div class="flex justify-end space-x-4">
-            <button type="button" (click)="showTypeForm = false" class="text-gray-500 hover:text-gray-700 text-sm">Annuler</button>
-            <button type="submit" [disabled]="serviceForm.invalid" class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600">
+            <button type="reset" class="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">
+              <i class="fas fa-undo"></i> Réinitialiser
+            </button>
+  <button type="submit" [disabled]="serviceForm.invalid" class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600">
               <i class="fas fa-save"></i> Enregistrer
             </button>
-
           </div>
         </form>
       </div>
@@ -53,7 +120,7 @@
         </div>
       </div>
       <div class="flex space-x-4">
-        <button class="text-blue-600 hover:text-blue-700 transition duration-200" (click)="showTypeForm = !showTypeForm">
+        <button class="text-blue-600 hover:text-blue-700 transition duration-200" (click)="showAddTypeForm = !showAddTypeForm">
           <i class="fas fa-plus fa-lg"></i> <!-- Add Icon -->
         </button>
         <button class="text-green-600 hover:text-green-700 transition duration-200" (click)="exportExcel()">
@@ -72,7 +139,7 @@
 
         <!-- Equipment Image -->
         <div class="relative w-full h-40 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100">
-          <img [src]="type.image" alt="Service Image" class="w-auto h-28 object-cover transition-transform duration-300 hover:scale-110">
+          <img [src]="getImageUrl(type.image)" alt="Service Image" class="w-auto h-28 object-cover transition-transform duration-300 hover:scale-110">
         </div>
 
         <!-- Equipment Name -->
@@ -84,6 +151,10 @@
           (click)="type.id ? getAttributes(type.id) : null">
           Voir attributs
         </button>
+        <button class="w-full bg-yellow-500 text-white px-4 py-2 rounded-lg mt-2 font-medium shadow-md hover:bg-yellow-600"
+                (click)="editType(type)">
+          Modifier
+        </button>
       </div>
     </div>
   </div>
@@ -91,12 +162,12 @@
 
 <!-- Attributes Panel -->
 <div
-  *ngIf="selectedTypeEquipement && selectedTypeEquipement.id !== 0"
+  *ngIf="showAttributesPanel && !showEditTypeForm"
   class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
 
   <div class="bg-white p-8 rounded-lg w-96 shadow-lg transform transition-all duration-300 scale-95 hover:scale-100">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold">{{ selectedTypeEquipement.type }} - Attributs</h2>
+      <h2 class="text-xl font-semibold">{{ selectedType.type }} - Attributs</h2>
       <button
         (click)="closeAttributesPanel()"
         class="text-gray-500 hover:text-red-600 transition">
@@ -143,7 +214,7 @@
               required
               placeholder="Entrez le nom de l'attribut">
           </div>
-          <div *ngIf="errorMessage" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
+          <div *ngIf="attributTaken" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
 
           <div class="mb-4">
             <label for="attributeType" class="block text-sm font-medium text-gray-700">Type de l'attribut</label>
@@ -221,9 +292,8 @@
           required>
       </div>
 
-      <div *ngIf="errorMessage" class="mb-4 text-red-600 text-sm">
-        {{ errorMessage }}
-      </div>
+      <div *ngIf="attributTaken" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
+
 
       <div class="mb-4">
         <label for="editAttributeType" class="block text-sm font-medium text-gray-700">Type de l'attribut</label>

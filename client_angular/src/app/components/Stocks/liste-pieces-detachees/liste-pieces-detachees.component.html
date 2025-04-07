@@ -1,68 +1,123 @@
 
 <div class="container py-6">
-    <!-- Panneau d'ajout (popup) -->
+
+
+  <div *ngIf="showAddSuccessMessage" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+    <i class="fas fa-check-circle text-2xl"></i>
+    <span class="font-semibold">Service ajouté avec succès !</span>
+  </div>
+
+  <div *ngIf="showEditSuccessMessage" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+    <i class="fas fa-check-circle text-2xl"></i>
+    <span class="font-semibold">Service modifié avec succès !</span>
+  </div>
+
+
+
   <div *ngIf="showPanel" class="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
     <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
       <div class="flex justify-between items-center mb-4">
         <h4 class="text-xl font-semibold text-gray-800">Ajouter une Pièce</h4>
         <button class="text-lg font-bold text-red-500" (click)="togglePanel()">X</button>
       </div>
-      <form (ngSubmit)="addPiece()" class="overflow-y-auto max-h-[calc(100vh-10rem)]">
+      <form (ngSubmit)="addPiece()" #pieceForm="ngForm" class="overflow-y-auto max-h-[calc(100vh-10rem)]">
+        <!-- Nom -->
         <div class="mb-4">
-          <label class="block text-gray-700 font-medium mb-1">Nom</label>
+          <label class="block text-gray-700 font-medium mb-1">Nom <span class="text-red-500">*</span></label>
           <input type="text" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                 [(ngModel)]="newPiece.nom" name="nom" required>
+                 [(ngModel)]="newPiece.nom" name="nom" required #nom="ngModel">
+          <div *ngIf="nom.invalid && nom.touched" class="text-red-500 text-sm mt-2">
+            Le nom est requis.
+          </div>
         </div>
+
+        <!-- Description -->
         <div class="mb-4">
           <label class="block text-gray-700 font-medium mb-1">Description</label>
           <textarea class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
                     [(ngModel)]="newPiece.description" name="description" rows="3"></textarea>
         </div>
+
+        <!-- Référence -->
         <div class="mb-4">
-          <label class="block text-gray-700 font-medium mb-1">Référence</label>
+          <label class="block text-gray-700 font-medium mb-1">Référence <span class="text-red-500">*</span></label>
           <input type="text" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                 [(ngModel)]="newPiece.reference" name="reference" required>
-          <div *ngIf="referenceTaken" class="text-red-500 text-sm mt-2">
+                 [(ngModel)]="newPiece.reference" name="reference" required #reference="ngModel">
+          <div *ngIf="reference.invalid && reference.touched" class="text-red-500 text-sm mt-2">
+            La référence est requise.
+          </div>
+          <div *ngIf="referenceTaken" class="text-red-500 text-sm mt-1">
             La référence existe déjà !
           </div>
         </div>
+
+        <!-- Fournisseur -->
         <div class="mb-4">
-          <label class="block text-gray-700 font-medium mb-1">Fournisseur</label>
+          <label class="block text-gray-700 font-medium mb-1">Fournisseur <span class="text-red-500">*</span></label>
           <input type="text" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                 [(ngModel)]="newPiece.fournisseur" name="fournisseur" required>
+                 [(ngModel)]="newPiece.fournisseur" name="fournisseur" required #fournisseur="ngModel">
+          <div *ngIf="fournisseur.invalid && fournisseur.touched" class="text-red-500 text-sm mt-2">
+            Le fournisseur est requis.
+          </div>
         </div>
+
+        <!-- Coût Unitaire -->
         <div class="mb-4">
-          <label class="block text-gray-700 font-medium mb-1">Coût Unitaire</label>
+          <label class="block text-gray-700 font-medium mb-1">Coût Unitaire <span class="text-red-500">*</span></label>
           <input type="number" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                 [(ngModel)]="newPiece.coutUnitaire" name="coutUnitaire" required>
+                 [(ngModel)]="newPiece.coutUnitaire" name="coutUnitaire" required #coutUnitaire="ngModel">
+          <div *ngIf="coutUnitaire.invalid && coutUnitaire.touched" class="text-red-500 text-sm mt-2">
+            Le coût unitaire est requis.
+          </div>
         </div>
+
+        <!-- Quantité en Stock -->
         <div class="mb-4">
-          <label class="block text-gray-700 font-medium mb-1">Quantité en Stock</label>
+          <label class="block text-gray-700 font-medium mb-1">Quantité en Stock <span class="text-red-500">*</span></label>
           <input type="number" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                 [(ngModel)]="newPiece.quantiteStock" name="quantiteStock" required>
+                 [(ngModel)]="newPiece.quantiteStock" name="quantiteStock" required #quantiteStock="ngModel">
+          <div *ngIf="quantiteStock.invalid && quantiteStock.touched" class="text-red-500 text-sm mt-2">
+            La quantité en stock est requise.
+          </div>
         </div>
+
+        <!-- Quantité Minimale -->
         <div class="mb-4">
-          <label class="block text-gray-700 font-medium mb-1">Quantité Minimale</label>
+          <label class="block text-gray-700 font-medium mb-1">Quantité Minimale <span class="text-red-500">*</span></label>
           <input type="number" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                 [(ngModel)]="newPiece.quantiteMinimale" name="quantiteMinimale" required>
+                 [(ngModel)]="newPiece.quantiteMinimale" name="quantiteMinimale" required #quantiteMinimale="ngModel">
+          <div *ngIf="quantiteMinimale.invalid && quantiteMinimale.touched" class="text-red-500 text-sm mt-2">
+            La quantité minimale est requise.
+          </div>
         </div>
+
+        <!-- Date d'Achat -->
         <div class="mb-4">
-          <label class="block text-gray-700 font-medium mb-1">Date d'Achat</label>
+          <label class="block text-gray-700 font-medium mb-1">Date d'Achat <span class="text-red-500">*</span></label>
           <input type="date" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                 [(ngModel)]="newPiece.dateAchat" name="dateAchat" required>
+                 [(ngModel)]="newPiece.dateAchat" name="dateAchat" required #dateAchat="ngModel">
+          <div *ngIf="dateAchat.invalid && dateAchat.touched" class="text-red-500 text-sm mt-2">
+            La date d'achat est requise.
+          </div>
         </div>
+
+        <!-- Date de Péremption -->
         <div class="mb-4">
           <label class="block text-gray-700 font-medium mb-1">Date de Péremption</label>
           <input type="date" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
                  [(ngModel)]="newPiece.datePeremption" name="datePeremption">
         </div>
+
+        <!-- Image -->
         <div class="mb-4">
-          <label class="block text-gray-700 font-medium mb-1">Historique d'Utilisation</label>
-          <textarea class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    [(ngModel)]="newPiece.historiqueUtilisation" name="historiqueUtilisation" rows="3"></textarea>
+          <label class="block text-gray-700 font-medium mb-1">Image</label>
+          <input type="file" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                 (change)="onFileSelect($event)" name="imageFile">
         </div>
+
         <div class="flex justify-between">
-          <button type="submit" class="py-2 px-4 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600">
+          <button type="submit" class="py-2 px-4 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600"
+                  [disabled]="pieceForm.invalid">
             Ajouter
           </button>
         </div>
@@ -103,36 +158,113 @@
       <table class="min-w-full border-collapse rounded-lg overflow-hidden">
         <thead class="bg-green-700 text-white uppercase text-sm font-semibold">
         <tr>
-          <th class="px-6 py-4 text-left">Image</th>
-          <th class="px-6 py-4 text-left">Nom</th>
-          <th class="px-6 py-4 text-left">Référence</th>
-          <th class="px-6 py-4 text-left">Fournisseur</th>
-          <th class="px-6 py-4 text-left">Quantité</th>
-          <th class="px-6 py-4 text-left">Actions</th>
+          <th class="px-8 py-4 text-left w-1/8">Image</th>
+          <th class="px-8 py-4 text-left w-1/8">Nom</th>
+          <th class="px-8 py-4 text-left w-1/8">Référence</th>
+          <th class="px-8 py-4 text-left w-1/8">Fournisseur</th>
+          <th class="px-8 py-4 text-left w-1/8">Quantité</th>
+          <th class="px-16 py-4 text-left w-1/6">Date d'Achat</th> <!-- Increased width here -->
+          <th class="px-16 py-4 text-left w-1/6">Date de Péremption</th> <!-- Increased width here -->
+          <th class="px-8 py-4 text-left w-1/8">Cout Unitaire</th>
+          <th class="px-8 py-4 text-left w-1/8">Quantité Minimale</th>
+          <th class="px-8 py-4 text-left w-1/8">Actions</th>
         </tr>
         </thead>
         <tbody>
         <tr *ngFor="let piece of filteredPiecesDetachees"
             [ngClass]="{'bg-red-200': piece.quantiteStock === 0, 'bg-white': piece.quantiteStock > 0}"
             class="border-b hover:bg-gray-50 transition duration-200">
-          <td class="px-6 py-4 text-gray-700">
-            <img [src]="piece.image || 'https://via.placeholder.com/50'" class="w-12 h-12 rounded-full">
+          <td class="px-8 py-4 text-gray-700">
+            <img [src]="getImageUrl(piece.image)" class="w-12 h-12 rounded-full">
           </td>
-          <td class="px-6 py-4 text-gray-700">{{ piece.nom }}</td>
-          <td class="px-6 py-4 text-gray-500">{{ piece.reference }}</td>
-          <td class="px-6 py-4 text-gray-500">{{ piece.fournisseur }}</td>
-          <td class="px-6 py-4 text-gray-500">{{ piece.quantiteStock }} unités</td>
-          <td class="px-6 py-4 text-center space-x-2">
-            <button [routerLink]="['/detail', piece.id]"
-                    class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition duration-200">
-              🔍 Voir détails
+          <td class="px-8 py-4 text-gray-700">{{ piece.nom }}</td>
+          <td class="px-8 py-4 text-gray-500">{{ piece.reference }}</td>
+          <td class="px-8 py-4 text-gray-500">{{ piece.fournisseur }}</td>
+          <td class="px-8 py-4 text-gray-500">{{ piece.quantiteStock }} unités</td>
+          <td class="px-16 py-4 text-gray-500">{{ piece.dateAchat }}</td> <!-- Increased width here -->
+          <td class="px-16 py-4 text-gray-500">{{ piece.datePeremption }}</td> <!-- Increased width here -->
+          <td class="px-8 py-4 text-gray-500">{{ piece.coutUnitaire }} MAD</td>
+          <td class="px-8 py-4 text-gray-500">{{ piece.quantiteMinimale }}</td>
+          <td class="px-8 py-4 text-center space-x-2">
+            <button (click)="openEditPanel(piece)"
+                    class="px-4 py-2 text-sm font-semibold text-white bg-yellow-600 hover:bg-yellow-700 rounded-lg shadow-md transition duration-200">
+              ✏️ Modifier
             </button>
           </td>
         </tr>
-
         </tbody>
       </table>
     </div>
-  </div>
 
    </div>
+  <div *ngIf="selectedPiece && showEditPanel" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+    <div class="bg-white p-6 rounded-lg w-96 max-h-[80vh] overflow-y-auto">
+      <h2 class="text-xl font-semibold mb-4">Modifier la Pièce</h2>
+      <form (ngSubmit)="updatePiece()">
+        <div class="mb-4">
+          <label for="nom" class="block text-sm font-medium text-gray-700">Nom</label>
+          <input id="nom" [(ngModel)]="selectedPiece.nom" name="nom" required class="w-full p-2 border border-gray-300 rounded-md" />
+        </div>
+
+        <div class="mb-4">
+          <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+          <input id="description" [(ngModel)]="selectedPiece.description" name="description" required class="w-full p-2 border border-gray-300 rounded-md" />
+        </div>
+
+        <div class="mb-4">
+          <label for="reference" class="block text-sm font-medium text-gray-700">Référence</label>
+          <input id="reference" [(ngModel)]="selectedPiece.reference" name="reference" required class="w-full p-2 border border-gray-300 rounded-md" />
+        </div>
+
+        <div class="mb-4">
+          <label for="fournisseur" class="block text-sm font-medium text-gray-700">Fournisseur</label>
+          <input id="fournisseur" [(ngModel)]="selectedPiece.fournisseur" name="fournisseur" class="w-full p-2 border border-gray-300 rounded-md" />
+        </div>
+
+        <div class="mb-4">
+          <label for="coutUnitaire" class="block text-sm font-medium text-gray-700">Coût Unitaire</label>
+          <input id="coutUnitaire" [(ngModel)]="selectedPiece.coutUnitaire" name="coutUnitaire" type="number" class="w-full p-2 border border-gray-300 rounded-md" />
+        </div>
+
+        <div class="mb-4">
+          <label for="quantiteStock" class="block text-sm font-medium text-gray-700">Quantité en stock</label>
+          <input id="quantiteStock" [(ngModel)]="selectedPiece.quantiteStock" name="quantiteStock" type="number" class="w-full p-2 border border-gray-300 rounded-md" />
+        </div>
+
+        <div class="mb-4">
+          <label for="quantiteMinimale" class="block text-sm font-medium text-gray-700">Quantité Minimale</label>
+          <input id="quantiteMinimale" [(ngModel)]="selectedPiece.quantiteMinimale" name="quantiteMinimale" type="number" class="w-full p-2 border border-gray-300 rounded-md" />
+        </div>
+
+        <div class="mb-4">
+          <label for="dateAchat" class="block text-sm font-medium text-gray-700">Date d'Achat</label>
+          <input id="dateAchat" [(ngModel)]="selectedPiece.dateAchat" name="dateAchat" type="date" class="w-full p-2 border border-gray-300 rounded-md" />
+        </div>
+
+        <div class="mb-4">
+          <label for="datePeremption" class="block text-sm font-medium text-gray-700">Date de Péremption</label>
+          <input id="datePeremption" [(ngModel)]="selectedPiece.datePeremption" name="datePeremption" type="date" class="w-full p-2 border border-gray-300 rounded-md" />
+        </div>
+
+        <div class="mb-4">
+          <label for="imageFile" class="block text-sm font-medium text-gray-700">Image</label>
+          <input id="imageFile" type="file" (change)="onFileSelect($event)" class="w-full p-2 border border-gray-300 rounded-md" />
+        </div>
+
+        <div class="mb-4 flex justify-between items-center">
+          <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg">
+            Enregistrer
+          </button>
+          <button (click)="closeEditPanel()" class="px-4 py-2 text-sm font-semibold text-white bg-gray-600 hover:bg-gray-700 rounded-lg">
+            Annuler
+          </button>
+        </div>
+
+        <!-- Error and Success Message -->
+        <div *ngIf="errorMessage" class="text-red-600">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="text-green-600">{{ successMessage }}</div>
+      </form>
+    </div>
+  </div>
+
+</div>

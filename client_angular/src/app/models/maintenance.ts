@@ -6,6 +6,7 @@ import { RepetitionType } from "./RepetitionType";
 import { User } from "./user";
 
 export interface maintenance{
+ 
   id: number;
  dureeIntervention: number;
   dateDebutPrevue: Date;
@@ -41,6 +42,9 @@ export interface maintenance{
   nextRepetitionDates?: Date[];
   RepetitionType:RepetitionType;
   repetition:number;
+  seuil:number;
+  message:'',
+  equipementId: number;
 
   
 

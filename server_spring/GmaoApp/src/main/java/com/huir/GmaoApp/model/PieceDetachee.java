@@ -4,14 +4,14 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "pieces_detachees", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "reference"),
-        
+        @UniqueConstraint(columnNames = "reference")
 })
 @Getter
 @Setter
@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @AllArgsConstructor
 @Builder
 public class PieceDetachee {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,7 +31,7 @@ public class PieceDetachee {
     private String description;
 
     @Column(nullable = false, unique = true)
-    @NotBlank(message = "La reference ne peut pas être vide")
+    @NotBlank(message = "La référence ne peut pas être vide")
     private String reference;  // Référence spécifique de la pièce
 
     @Column(nullable = false)
@@ -42,29 +43,25 @@ public class PieceDetachee {
     @Column(nullable = false)
     private int quantiteStock;  // Quantité disponible en stock
 
-    @Column
-    private String image;  // Image
-
-
     @Column(nullable = false)
     private int quantiteMinimale;  // Quantité minimale à maintenir en stock
 
-    private String dateAchat;  // Date d'achat de la pièce détachée
+    private String image;  // Image (peut être un URL ou chemin de fichier)
 
-    private String datePeremption;  // Date de péremption pour certaines pièces (si applicable)
+    private LocalDate dateAchat;  // Date d'achat de la pièce détachée
 
-    private String historiqueUtilisation;  // Historique des utilisations de la pièce
+    private LocalDate datePeremption;  // Date de péremption pour certaines pièces (si applicable)
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> historiqueUtilisation;  // Liste des utilisations de la pièce
 
     @ManyToMany(mappedBy = "piecesDetachees", fetch = FetchType.EAGER)
     private List<Equipement> equipements;
-    @JsonIgnore
-    @ManyToMany
-    @JoinTable(
-            name = "intervention_pieces",
-            joinColumns = @JoinColumn(name = "piece_id"),
-            inverseJoinColumns = @JoinColumn(name = "intervention_id")
-    )
-    
-    private List<Intervention> interventions;
 
+    @Transient
+    public String getStatut() {
+        if (quantiteStock == 0) return "Rupture";
+        if (quantiteStock < quantiteMinimale) return "Stock bas";
+        return "Disponible";
+    }
 }

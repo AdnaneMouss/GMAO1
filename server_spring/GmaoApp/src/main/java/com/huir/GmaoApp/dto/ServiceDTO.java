@@ -25,11 +25,11 @@ public class ServiceDTO {
         this.nom = services.getNom();
         this.description = services.getDescription();
         this.image = services.getImage();
-        this.equipements = services.getEquipements() != null
-                ? services.getEquipements().stream()
-                .map(EquipementDTO::new)
-                .collect(Collectors.toList())
-                : null;
+       // this.equipements = services.getEquipements() != null
+         //       ? services.getEquipements().stream()
+           //     .map(EquipementDTO::new)
+             //   .collect(Collectors.toList())
+               // : null;
     }
 }
 
