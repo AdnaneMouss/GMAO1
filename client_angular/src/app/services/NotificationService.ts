@@ -13,4 +13,15 @@ export class NotificationService {
   addNotification(notification: { id: number; message: string }): Observable<any> {
     return this.http.post(this.apiUrl, notification);
   }
+
+
+
+ 
+ 
+
+  
+
+  markAsSeen(id: number): Observable<Notification> {
+    return this.http.patch<Notification>(`/api/notifications/${id}`, { seen: true });
+  }
 }

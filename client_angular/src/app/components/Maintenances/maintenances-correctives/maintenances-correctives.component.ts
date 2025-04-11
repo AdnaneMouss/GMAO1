@@ -58,7 +58,7 @@ export class MaintenancesCorrectivesComponent implements OnInit {
   technicianWorkloads: { [key: number]: number } = {};  // Object to store workloads by technician ID
 
 
-  // Form for adding new maintenance
+  // Form for adding new maintenance 
   newMaintenance: MaintenanceCorrective = {
     equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
     affecteANom: "", creeParNom: "",

@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { FullCalendarModule } from '@fullcalendar/angular';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -48,10 +47,14 @@ import { EquipementFormComponent } from './equipement-form/equipement-form.compo
 
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ToastrModule } from 'ngx-toastr';
-import {UserRapportComponent} from "./components/Rapports/user-rapport/user-rapport.component";
-import {
-  MaintenanceCalendarComponent
-} from "./components/Maintenances/maintenance-calendar/maintenance-calendar.component";
+
+
+import { MaintenanceCalendarComponent } from './components/Maintenances/maintenance-calendar/maintenance-calendar.component';
+import { FullCalendarModule } from '@fullcalendar/angular';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import { UserRapportComponent } from './components/Rapports/user-rapport/user-rapport.component';
 
 
 @NgModule({
@@ -79,6 +82,7 @@ import {
     TypesEquipementsComponent,
     BatimentsListeComponent,
     EquipementFormComponent,
+
     MaintenanceCalendarComponent,
     UserRapportComponent,
 
@@ -89,7 +93,11 @@ import {
     ListeEquipementsComponent,
     LoginComponent,
     MatSnackBarModule,
+
     FullCalendarModule,
+ 
+  
+
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,

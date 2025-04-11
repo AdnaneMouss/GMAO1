@@ -38,6 +38,9 @@
 
         <div class="col-md-9">
           <div class="row">
+
+
+      
          
 
        
@@ -54,6 +57,9 @@
                 </div>
               </div>
             </div>
+
+
+          
           
 
             
@@ -111,6 +117,10 @@
               </div>
             </div>
 
+
+
+             
+
             <!-- Priorité Display -->
             <div class="col-md-6 mb-4" *ngIf="!isEditMode">
               <div class="card shadow-sm border-0 h-100">
@@ -126,6 +136,9 @@
                 </div>
               </div>
             </div>
+
+
+             
 
             <!-- Priorité Edit -->
             <div class="col-md-6 mb-4" *ngIf="isEditMode">
@@ -270,62 +283,194 @@
               </div>
             </div>
           </div>
- <!-- jours Display -->
- <div class="col-md-6 mb-4" *ngIf="!isEditMode">
-  <div class="card shadow-sm border-0 h-100">
-    <div class="card-body d-flex align-items-center bg-white">
-      <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
-      <div>
-        <h5 class="card-title">jours selectionee</h5>
-        <p class="card-text">{{ maintenance.selectedjours }}</p>
-      </div>
-    </div>
-  </div>
-</div>
+            <!-- jours Display -->
+            <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar-day fs-3 me-3" style="color: #006400;"></i>
+                  <div>
+                    <h5 class="card-title">jours selectionee</h5>
+                    <p class="card-text">{{ maintenance.selectedjours }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- jours Edit -->
+          <div class="col-md-6 mb-4" *ngIf="isEditMode">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-calendar-day fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">jours selectionne</h5>
+                  <input type="text" class="form-control" [(ngModel)]="maintenance.selectedjours" required>
+                </div>
+              </div>
+            </div>
+          </div>
+  <!-- SEUIL  -->
+
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-speedometer2 fs-3 me-2" style="color: #006400;"></i> 
+                <div>
+                  <h5 class="card-title">Seuil </h5>
+                  <p class="card-text">{{ maintenance.seuil }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+          <!-- SEUIL Edit -->
+          <div class="col-md-6 mb-4" *ngIf="isEditMode">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-speedometer2 fs-3 me-2" style="color: #006400;"></i>  
+                <div>
+                  <h5 class="card-title">Seuil</h5>
+                  <input type="text" class="form-control" [(ngModel)]="maintenance.seuil" required>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+
+                        <!-- Valeur NonSeuil Display -->
+             <!-- Valeur NonSeuil Display -->
+
+           <!-- Sélection de l’attribut (objet entier) -->
+           <p class="text-sm text-gray-500 mt-2">
+            Type : {{ selectedAttribut?.attributEquipementType  }}
+          </p>
+          
+
+            
 
 
 
 
-<!-- jours Edit -->
-<div class="col-md-6 mb-4" *ngIf="isEditMode">
-  <div class="card shadow-sm border-0 h-100">
-    <div class="card-body d-flex align-items-center bg-white">
-      <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
-      <div>
-        <h5 class="card-title">jours selectionne</h5>
-        <input type="text" class="form-control" [(ngModel)]="maintenance.selectedjours" required>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- mois  Display -->
+
+          <!-- mois  Display -->
+          <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-calendar3-range fs-3 me-3" style="color: #006400;"></i>
+
+
+
+
+                <div>
+                  <h5 class="card-title"> Mois selectionee</h5>
+                  <p class="card-text">{{ maintenance.selectedmois }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+
+          <!-- mois  Edit -->
+          <div class="col-md-6 mb-4" *ngIf="isEditMode">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-calendar3-range fs-3 me-3" style="color: #006400;"></i>
+
+
+
+                <div>
+                  <h5 class="card-title">Mois selectionne</h5>
+                  <input type="text" class="form-control" [(ngModel)]="maintenance.selectedmois" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+      <!-- equipement num serie Display -->
 <div class="col-md-6 mb-4" *ngIf="!isEditMode">
   <div class="card shadow-sm border-0 h-100">
     <div class="card-body d-flex align-items-center bg-white">
-      <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+      <i class="bi bi-hdd fs-3 me-3" style="color: #006400;"></i>
       <div>
-        <h5 class="card-title"> Mois selectionee</h5>
-        <p class="card-text">{{ maintenance.selectedmois }}</p>
+        <h5 class="card-title">Équipement</h5>
+        <p class="card-text">{{ maintenance.equipementId }}</p>
       </div>
     </div>
   </div>
 </div>
 
-
-
-
-<!-- mois  Edit -->
+<!-- equipement num serie Display -->
 <div class="col-md-6 mb-4" *ngIf="isEditMode">
   <div class="card shadow-sm border-0 h-100">
     <div class="card-body d-flex align-items-center bg-white">
-      <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+      <i class="bi bi-hdd fs-3 me-3" style="color: #006400;"></i>
       <div>
-        <h5 class="card-title">Mois selectionne</h5>
-        <input type="text" class="form-control" [(ngModel)]="maintenance.selectedmois" required>
+        <h5 class="card-title">Équipement</h5>
+        <p class="card-text">{{ maintenance.equipementId }}</p>
       </div>
     </div>
   </div>
 </div>
+
+
+<!-- Label suivie Display 
+<div class="col-md-6 mb-4" *ngIf="!isEditMode">
+  <div class="card shadow-sm border-0 h-100">
+    <div class="card-body d-flex align-items-center bg-white">
+      <i class="bi bi-tag fs-3 me-3" style="color: #006400;"></i>
+      <div>
+        <h5 class="card-title">Label suivie</h5>
+        <p class="card-text">{{ maintenance.labelSuivi || 'Non spécifié' }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Valeur suivie Display 
+<div class="col-md-6 mb-4" *ngIf="!isEditMode">
+  <div class="card shadow-sm border-0 h-100">
+    <div class="card-body d-flex align-items-center bg-white">
+      <i class="bi bi-speedometer2 fs-3 me-3" style="color: #006400;"></i>
+      <div>
+        <h5 class="card-title">Valeur suivie</h5>
+        <p class="card-text">{{ maintenance.valeurSuivi || 'Non spécifié' }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+ -->
+
+
+
+          <!-- equipement num  serie  Edi  ajouter num  set    -->
+          <div class="col-md-6 mb-4" *ngIf="isEditMode">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-body d-flex align-items-center bg-white">
+                <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+                <div>
+                  <h5 class="card-title">equipement</h5>
+                  <input type="text" class="form-control" [(ngModel)]="maintenance.equipementId " required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+
+
+
+
+
+
+          <!-- Sélection de l’équipement -->
+
+
+
+
 
              <!-- user Display --> 
              <div class="col-md-6 mb-4" *ngIf="!isEditMode">
@@ -335,7 +480,7 @@
 
                   <div>
                     <h5 class="card-title">user maintenance</h5>
-                    <p class="card-text">{{ maintenance.user}}</p>
+                    <p class="card-text">{{ maintenance.user.id}}</p>
                   </div>
                 </div>
               </div>
@@ -376,30 +521,35 @@
             </div>
 
             <!-- Date de Péremption Edit -->
-            <div class="col-md-6 mb-4" *ngIf="isEditMode">
-              <div class="card shadow-sm border-0 h-100">
-                <div class="card-body d-flex align-items-center bg-white">
-                  <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
-                  <div>
-                    <h5 class="card-title">Date prochaine maintenance</h5>
-                    <input type="date" class="form-control" [(ngModel)]="maintenance.dateProchainemaintenance" required>
+                <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                  <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex align-items-center bg-white">
+                      <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                      <div>
+                        <h5 class="card-title">Date prochaine maintenance</h5>
+                        <input type="date" class="form-control" [(ngModel)]="maintenance.dateProchainemaintenance" required>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-             <!-- Durée Intervention Display -->
-             <div class="col-md-6 mb-4" *ngIf="!isEditMode">
-              <div class="card shadow-sm border-0 h-100">
-                <div class="card-body d-flex align-items-center bg-white">
-                  <i class="bi bi-stopwatch-fill fs-3 me-3" style="color: #00008B;"></i>
-                  <div>
-                    <h5 class="card-title">Durée maintenance en jours</h5>
-                    <p class="card-text">{{ maintenance.dureeIntervention }}</p>
+
+
+                  <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                    <div class="card shadow-sm border-0 h-100">
+                      <div class="card-body d-flex align-items-center bg-white">
+                        <i class="bi bi-stopwatch-fill fs-3 me-3" style="color: #00008B;"></i>
+                        <div>
+                          <h5 class="card-title">Durée maintenance en jours</h5>
+                          <p class="card-text">{{ maintenance.dureeIntervention }}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
+
+                
+
+            
 
                 <!-- Date de Péremption Display -->
                 <div class="col-md-6 mb-4" *ngIf="!isEditMode">
@@ -454,6 +604,9 @@
                   </div>
                 </div>
               </div>
+
+              
+              
   
               <!-- end -->
               <div class="col-md-6 mb-4" *ngIf="!isEditMode">
@@ -485,22 +638,47 @@
               </div>
             </div>
             
-            <!-- Repetition -->
-<div class="col-md-6 mb-4" *ngIf="!isEditMode">
-  <div class="card shadow-sm border-0 h-100">
-    <div class="card-body d-flex align-items-center bg-white">
-      <i class="bi bi-repeat fs-3 me-3" style="color: #00008B;"></i> <!-- Icône de répétition -->
-      <div>
-        <h5 class="card-title">Jours de Répétition</h5>
-        <ul class="list-unstyled">
-          <li *ngFor="let date of nextRepetitionDates">
-            {{ date | date:'dd/MM/yyyy' }}
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
+                          <!-- Repetition -->
+              <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-repeat fs-3 me-3" style="color: #00008B;"></i> <!-- Icône de répétition -->
+                    <div>
+                      <h5 class="card-title">Jours de Répétition</h5>
+                      <ul class="list-unstyled">
+                        <li *ngFor="let date of nextRepetitionDates">
+                          {{ date | date:'dd/MM/yyyy' }}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+              <div class="col-md-6 mb-4" *ngIf="!isEditMode && selectedAttribut">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-info-circle fs-3 me-3" style="color: #006400;"></i>
+                    <div>
+                      <h5 class="card-title mb-1">Détail de l'attribut sélectionné</h5>
+              
+                      <p class="card-text"><strong>Nom :</strong> {{ selectedAttribut.nom }}</p>
+                      <p class="card-text"><strong>Valeur :</strong> {{ selectedAttribut.valeur }}</p>
+                      <p class="card-text"><strong>Type :</strong> {{ selectedAttribut.attributEquipementType }}</p>
+              
+                      <div *ngIf="messageSeuil" class="mt-3 p-3 rounded-lg bg-yellow-100 text-yellow-900 border-l-4 border-yellow-500">
+                        {{ messageSeuil }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+
+
+           
+         
 
 
 
