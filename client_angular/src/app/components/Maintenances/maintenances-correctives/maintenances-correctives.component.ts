@@ -33,7 +33,7 @@ export class MaintenancesCorrectivesComponent implements OnInit {
   currentUser: User | null = null;  // To store the current logged-in user
 
 
-  // Form for adding new maintenance
+  // Form for adding new maintenance 
   newMaintenance: MaintenanceCorrective = {
     equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
     affecteANom: "", creeParNom: "",

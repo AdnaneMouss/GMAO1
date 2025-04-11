@@ -10,16 +10,17 @@ import { maintenance } from '../../../models/maintenance';
 export class HistoriqueMaintenancesComponent implements OnInit {
   maintenances: maintenance[] = []; // Liste complète des maintenances
   terminatedMaintenances: maintenance[] = []; // Liste des maintenances terminées
-  errorMessage: string = ''; // Message d'erreur
 
-  constructor(private maintenanceService: MaintenanceService) {}
+  errorMessage: string = '';
+  sortField: 'date' | 'priority' = 'date';
+  sortOrder: 'recent' | 'oldest' = 'recent';
 
   ngOnInit(): void {
-    this.loadMaintenances(); // Charger les maintenances au démarrage
+    this.loadMaintenances();
   }
-
-  // Charger toutes les maintenances
-  loadMaintenances(): void {
+  constructor(private maintenanceService: MaintenanceService) {}
+   // Charger toutes les maintenances
+   loadMaintenances(): void {
     this.maintenanceService.getAllMaintenances().subscribe({
       next: (data) => {
         this.maintenances = data;
@@ -36,4 +37,21 @@ export class HistoriqueMaintenancesComponent implements OnInit {
   filterTerminatedMaintenances(): void {
     this.terminatedMaintenances = this.maintenances.filter(m => m.statut === 'TERMINEE');
   }
+
+
+  // Tri par date
+  sortByDate(order: 'recent' | 'oldest'): void {
+    this.sortField = 'date';
+    this.sortOrder = order;
+    
+    this.terminatedMaintenances.sort((a, b) => {
+      const dateA = new Date(a.dateFinPrevue).getTime();
+      const dateB = new Date(b.dateFinPrevue).getTime();
+      
+      return order === 'recent' ? dateB - dateA : dateA - dateB;
+    });
+  }
+
+  // Tri par priorité (exemple supplémentaire)
+  
 }

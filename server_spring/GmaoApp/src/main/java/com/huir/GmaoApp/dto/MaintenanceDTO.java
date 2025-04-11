@@ -65,11 +65,15 @@ private List<String> selectedmois;
 private Date  daterepetition;
 
 private Long equipementId;  
+private String labelsuivie;
+private Double valeursuivie;
 
 ////HADI////
 private long repetition;
 
-private  double seuil;
+private int seuil; // et non pas "double"
+private  String nonSeuil;
+
 
 // Listes prédéfinies
 private List<String> availableDays = DaysOfWeek.DAYS; // Jours de la semaine
@@ -92,6 +96,8 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		         this.repetitiontype=maintenance.getRepetitiontype();
 		         this.startDaterep = maintenance.getStartDaterep();
 		         this.equipementId=maintenance.getEquipementId();
+		         this.valeursuivie=maintenance.getValeurSuivi();
+		         this.labelsuivie=maintenance.getLabelSuivi();
 		         
 
 		         this.endDaterep=maintenance.getEndDaterep();
@@ -99,6 +105,7 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		         this.selectedmois=maintenance.getSelectedmois();
 		         this.daterepetition = calculerDateRepetition(this.startDaterep,this.endDaterep,this.repetitiontype);
 		         this.seuil=maintenance.getSeuil();
+		         this.nonSeuil=maintenance.getNonSeuil();
 		      
 		        
 		         
@@ -125,10 +132,18 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		public Long getId() {
 			return id;
 		}
-		public double getSeuil() {
+		
+	
+		public String getNonSeuil() {
+			return nonSeuil;
+		}
+		public void setNonSeuil(String nonSeuil) {
+			this.nonSeuil = nonSeuil;
+		}
+		public int getSeuil() {
 			return seuil;
 		}
-		public void setSeuil(double seuil) {
+		public void setSeuil(int seuil) {
 			this.seuil = seuil;
 		}
 		public long getRepetition() {
@@ -398,9 +413,23 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		
 		
 		
+		
+		
 		///////////////////////////////////
 		
 		
+		public String getLabelsuivie() {
+			return labelsuivie;
+		}
+		public void setLabelsuivie(String labelsuivie) {
+			this.labelsuivie = labelsuivie;
+		}
+		public Double getValeursuivie() {
+			return valeursuivie;
+		}
+		public void setValeursuivie(Double valeursuivie) {
+			this.valeursuivie = valeursuivie;
+		}
 		public Date calculerDateRepetition(Date startDaterep, Date endDaterep, repetitiontype repetitiontype) {
 		        if (startDaterep == null || repetitiontype == null) {
 		            return null; // Pas de calcul si la date de début ou le type de répétition est manquant

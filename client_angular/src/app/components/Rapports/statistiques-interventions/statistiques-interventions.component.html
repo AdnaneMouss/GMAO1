@@ -1,177 +1,191 @@
-<!-- maintenance-report.component.html -->
 <div class="container mx-auto p-8">
-    <div class="bg-white rounded-xl shadow-lg p-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-6">
-        <i class="fas fa-tools mr-2 text-blue-600"></i> Rapport des Maintenances
-      </h1>
-  
-      <!-- Filtres -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <!-- Filtre par mois/année -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Période</label>
-          <div class="flex gap-2">
-            <select [(ngModel)]="selectedMonth" (change)="onFilterChange()"
-                    class="w-full p-2 border rounded-lg">
-              <option [ngValue]="null">Tous les mois</option>
-              <option *ngFor="let month of [1,2,3,4,5,6,7,8,9,10,11,12]; let i = index"
-                      [value]="month">
-                
-              </option>
-            </select>
-            <select [(ngModel)]="selectedYear" (change)="onFilterChange()"
-                    class="w-full p-2 border rounded-lg">
-              <option *ngFor="let year of [2023,2024,2025]" [value]="year">{{ year }}</option>
-            </select>
-          </div>
-        </div>
-  
-        <!-- Filtre par statut  filtred by stratus-->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-          <select [(ngModel)]="selectedStatut" (change)="onFilterChange()"
-                  class="w-full p-2 border rounded-lg">
-            <option value="">Tous les statuts</option>
-            <option value="EN_ATTENTE">En attente</option>
-            <option value="EN_COURS">En cours</option>
-            <option value="TERMINEE">Terminée</option>
-            <option value="ANNULEE">Annulée</option>
-          </select>
-        </div>
-  
-        <!-- Filtre par priorité -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Priorité</label>
-          <select [(ngModel)]="selectedPriorite" (change)="onFilterChange()"
-                  class="w-full p-2 border rounded-lg">
-            <option value="">Toutes priorités</option>
-            <option value="FAIBLE">Faible</option>
-            <option value="NORMALE">Normale</option>
-            <option value="URGENTE">Urgente</option>
-          </select>
-        </div>
-  
-        <!-- Filtre par type -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-          <select [(ngModel)]="selectedType" (change)="onFilterChange()"
-                  class="w-full p-2 border rounded-lg">
-            <option value="">Tous types</option>
-            <option value="PREVENTIVE">Préventive</option>
-            <option value="CORRECTIVE">Corrective</option>
-          </select>
-        </div>
-      </div>
-  
-      <!-- Cartes de statistiques -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-          <h3 class="text-sm font-semibold text-blue-800">Total Maintenances</h3>
-          <p class="text-2xl font-bold text-blue-600">{{ stats.totalMaintenances || 0 }}</p>
-        </div>
-        <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-          <h3 class="text-sm font-semibold text-green-800">Préventives</h3>
-          <p class="text-2xl font-bold text-green-600">{{ stats.maintenancesPreventives || 0 }}</p>
-        </div>
-        <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
-          <h3 class="text-sm font-semibold text-orange-800">Correctives</h3>
-          <p class="text-2xl font-bold text-orange-600">{{ stats.maintenancesCorrectives || 0 }}</p>
-        </div>
-        <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
-          <h3 class="text-sm font-semibold text-purple-800">Coût Total</h3>
-          <p class="text-2xl font-bold text-purple-600">{{ stats.coutTotal?.toFixed(2) || '0.00' }} €</p>
-        </div>
-      </div>
-  
-      <!-- Graphiques -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div class="bg-white p-4 rounded-lg shadow">
-          <h3 class="text-lg font-semibold mb-2">Répartition par Statut</h3>
-          <div class="h-64">
-            <canvas id="statutChart"></canvas>
-          </div>
-        </div>
-        <div class="bg-white p-4 rounded-lg shadow">
-          <h3 class="text-lg font-semibold mb-2">Répartition par Priorité</h3>
-          <div class="h-64">
-            <canvas id="prioriteChart"></canvas>
-          </div>
-        </div>
-      </div>
-  
-      <!-- Tableau des maintenances -->
-      <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
-        <div class="p-4 bg-gray-800 text-white">
-          <h3 class="text-lg font-semibold">Détails des Maintenances</h3>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="px-6 py-3 text-left">ID</th>
-                <th class="px-6 py-3 text-left">Équipement</th>
-                <th class="px-6 py-3 text-left">Type</th>
-                <th class="px-6 py-3 text-left">Date Début</th>
-                <th class="px-6 py-3 text-left">Statut</th>
-                <th class="px-6 py-3 text-left">Priorité</th>
-                <th class="px-6 py-3 text-left">Coût</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let m of maintenances" class="border-b hover:bg-gray-50">
-                <td class="px-6 py-4">{{ m.id }}</td>
-                <td class="px-6 py-4">{{ m.equipement?.nom || 'N/A' }}</td>
-                <td class="px-6 py-4">
-                  <span [ngClass]="{
-                    'bg-blue-100 text-blue-800': m.type === 'PREVENTIVE',
-                    'bg-orange-100 text-orange-800': m.type === 'CORRECTIVE'
-                  }" class="px-2 py-1 rounded-full text-xs">
-                    {{ m.type === 'PREVENTIVE' ? 'Préventive' : 'Corrective' }}
-                  </span>
-                </td>
-                <td class="px-6 py-4">{{ m.dateDebutPrevue | date:'dd/MM/yyyy' }}</td>
-                <td class="px-6 py-4">
-                  <span [ngClass]="{
-                    'bg-yellow-100 text-yellow-800': m.statut === 'EN_ATTENTE',
-                    'bg-blue-100 text-blue-800': m.statut === 'EN_COURS',
-                    'bg-green-100 text-green-800': m.statut === 'TERMINEE',
-                    'bg-red-100 text-red-800': m.statut === 'ANNULEE'
-                  }" class="px-2 py-1 rounded-full text-xs">
-                    {{ m.statut }}
-                  </span>
-                </td>
-                <td class="px-6 py-4">
-                  <span [ngClass]="{
-                    'bg-green-100 text-green-800': m.priorite === 'FAIBLE',
-                    'bg-yellow-100 text-yellow-800': m.priorite === 'NORMALE',
-                    'bg-red-100 text-red-800': m.priorite === 'URGENTE'
-                  }" class="px-2 py-1 rounded-full text-xs">
-                    {{ m.priorite }}
-                  </span>
-                </td>
-                <td class="px-6 py-4">{{ m.cout?.toFixed(2) || '0.00' }} €</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <!-- Pagination -->
-        <div class="px-6 py-4 bg-gray-50">
-          <div class="flex justify-between items-center">
-            <div class="text-sm text-gray-700">
-              Affichage de {{ currentPage * pageSize + 1 }} à 
-              {{ Math.min((currentPage + 1) * pageSize, totalItems) }} sur {{ totalItems }} éléments
-            </div>
-          
-          </div>
-        </div>
-      </div>
-  
-      <!-- Boutons d'export -->
-      <div class="flex justify-end">
-        <button (click)="exportToPDF()"
-                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center">
-          <i class="fas fa-file-pdf mr-2"></i> Exporter PDF
-        </button>
+  <div class="bg-white rounded-xl shadow-lg p-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">
+      <i class="fas fa-tools mr-2 text-blue-600"></i> Rapport des Maintenances
+    </h1>
+<!-- Filtres -->
+<div class="flex flex-wrap justify-start gap-4 mb-6">
+  <!-- Filtre par priorité -->
+  <div class="relative w-full md:w-auto">
+    <div class="relative">
+      <select [(ngModel)]="selectedPriorite" (change)="applyFilters()"
+              class="appearance-none w-full py-2 pl-10 pr-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out">
+        <option value="">Trier par priorité</option>
+        <option value="FAIBLE">FAIBLE</option>
+        <option value="URGENTE">URGENTE</option>
+        <option value="NORMALE">NORMALE</option>
+      </select>
+      <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <i class="fas fa-filter text-gray-500"></i>
       </div>
     </div>
   </div>
+
+  <!-- Filtre par statut -->
+  <div class="relative w-full md:w-auto">
+    <select [(ngModel)]="selectedStatus" (change)="applyFilters()"
+            class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out">
+      <option value="">Trier par Statut</option>
+      <option value="EN_ATTENTE" class="text-yellow-500">
+        <i class="fas fa-clock mr-2"></i> EN_ATTENTE
+      </option>
+      <option value="EN_COURS" class="text-blue-500">
+        <i class="fas fa-spinner mr-2"></i> EN_COURS
+      </option>
+      <option value="TERMINEE" class="text-green-500">
+        <i class="fas fa-check-circle mr-2"></i> TERMINEE
+      </option>
+      <option value="ANNULEE" class="text-red-500">
+        <i class="fas fa-times-circle mr-2"></i> ANNULEE
+      </option>
+    </select>
+    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+      <i class="fas fa-filter text-gray-500"></i>
+    </div>
+  </div>
+  
+</div>
+
+    <!-- Cartes de statistiques -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+        <h3 class="text-sm font-semibold text-blue-800">Total Maintenances</h3>
+        <p class="text-2xl font-bold text-blue-600">{{ stats.totalMaintenances || 0 }}</p>
+      </div>
+      <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+        <h3 class="text-sm font-semibold text-green-800">Préventives</h3>
+        <p class="text-2xl font-bold text-green-600">{{ stats.totalMaintenances || 0 }}</p>  
+      </div>
+      <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
+        <h3 class="text-sm font-semibold text-orange-800">Correctives</h3>
+        <p class="text-2xl font-bold text-orange-600">{{ stats.maintenancesPreventives || 0 }}</p>
+      </div>
+      <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+        <h3 class="text-sm font-semibold text-purple-800">Coût Total</h3>
+      
+      </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white p-4 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Répartition par Statut</h3>
+        <div class="h-64">
+          <canvas id="statutChart"></canvas>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Répartition par Priorité</h3>
+        <div class="h-64">
+          <canvas id="prioriteChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+   <!-- Tableau des maintenances -->
+<div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+  <div class="p-4 bg-gray-800 text-white flex justify-between items-center">
+    <h3 class="text-lg font-semibold">Détails des Maintenances</h3>
+    <span class="text-sm">
+      {{ filteredMaintenances.length }} entrée(s) trouvée(s)
+    </span>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-6 py-3">ID</th>
+          <th class="px-6 py-3 text-left cursor-pointer" (click)="sortTable('equipementId')">
+            Équipement <i class="fas fa-sort ml-1"></i>
+          </th>      
+          <th class="px-6 py-3 text-left cursor-pointer" (click)="sortTable('dateDebutPrevue')">
+            Date Début <i class="fas fa-sort ml-1"></i>
+          </th>
+          <th class="px-6 py-3 text-left cursor-pointer" (click)="sortTable('statut')">
+            Statut <i class="fas fa-sort ml-1"></i>
+          </th>
+          <th class="px-6 py-3 text-left cursor-pointer" (click)="sortTable('priorite')">
+            Priorité <i class="fas fa-sort ml-1"></i>
+          </th>
+          <th class="px-6 py-3 text-left cursor-pointer" (click)="sortTable('action')">
+            Action <i class="fas fa-sort ml-1"></i>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let maintenance of filteredMaintenances | slice: (currentPage * pageSize):(currentPage + 1) * pageSize; let i = index" 
+            class="hover:bg-blue-50 transition duration-200">
+          <td class="px-6 py-2">{{ maintenance.id }}</td>
+          <td class="px-6 py-2">{{ maintenance.equipementId }}</td>
+          <td class="px-6 py-2">{{ maintenance.dateDebutPrevue | date:'dd/MM/yyyy' }}</td>
+          <td class="px-6 py-2">
+            <span [ngClass]="{
+              'bg-yellow-100 text-yellow-800': maintenance.statut === 'EN_ATTENTE',
+              'bg-blue-100 text-blue-800': maintenance.statut === 'EN_COURS',
+              'bg-green-100 text-green-800': maintenance.statut === 'TERMINEE',
+              'bg-red-100 text-red-800': maintenance.statut === 'ANNULEE'
+            }" class="px-2 py-1 rounded-full text-xs">
+              {{ maintenance.statut }}
+            </span>
+          </td>
+          <td class="px-6 py-2">
+            <span [ngClass]="{
+              'bg-green-100 text-green-800': maintenance.priorite === 'FAIBLE',
+              'bg-red-100 text-red-800': maintenance.priorite === 'URGENTE',
+              'bg-yellow-100 text-yellow-800': maintenance.priorite === 'NORMALE'
+            }" class="px-2 py-1 rounded-full text-xs">
+              {{ maintenance.priorite }}
+            </span>
+          </td>
+          <td class="py-3 px-4">
+            <button (click)="exportMaintenancePDF(maintenance)" 
+                    class="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-red-50">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex justify-between items-center p-4 bg-gray-50">
+    <div>
+      <span class="text-sm text-gray-700">
+        Affichage de {{ (currentPage * pageSize) + 1 }} à 
+        {{ getMin(currentPage, pageSize, filteredMaintenances.length) }}
+        sur {{ filteredMaintenances.length }} entrées
+      </span>
+    </div>
+    <div>
+      <button (click)="prevPage()" [disabled]="currentPage === 0" 
+              class="px-4 py-2 mr-2 border rounded disabled:opacity-50">
+        <i class="fas fa-chevron-left mr-1"></i>Précédent
+      </button>
+      <button (click)="nextPage()" 
+              [disabled]="(currentPage + 1) * pageSize >= filteredMaintenances.length" 
+              class="px-4 py-2 border rounded disabled:opacity-50">
+        Suivant<i class="fas fa-chevron-right ml-1"></i>
+      </button>
+    </div>
+  </div>
+</div>
+    
+
+    <!-- Boutons d'export -->
+    <div class="flex justify-end gap-4">
+      <button (click)="exportToExcel()"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
+        <i class="fas fa-file-excel mr-2"></i> Exporter Excel
+      </button>
+      <button (click)="exportMaintenancePDF"
+              class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center">
+        <i class="fas fa-file-pdf mr-2"></i> Exporter PDF
+      </button>
+    </div>
+  </div>
+</div>

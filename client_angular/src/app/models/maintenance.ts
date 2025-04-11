@@ -1,7 +1,9 @@
 import { ActionMaintenance } from "./ActionMaintenance";
+import { AttributEquipementValeur } from "./attribut-equipement-valeur";
 import { Batiment } from "./batiment";
 import { Equipement } from "./equipement";
 import { Indicateur } from "./Indicateur";
+import { indice } from "./indice";
 import { RepetitionType } from "./RepetitionType";
 import { User } from "./user";
 
@@ -43,11 +45,13 @@ export interface maintenance{
   RepetitionType:RepetitionType;
   repetition:number;
   seuil:number;
+  NonSeuil : string;
   message:'',
-  equipementId: number;
+  type_maintenance?:string;
+  equipementId: number | null ;
 
   
-
+   
 
 
 
@@ -59,7 +63,12 @@ export interface maintenance{
   'TOUS_LES_SEMAINES' |  
   'MENSUEL' |            
   'ANNUEL';
- 
+
+  labelSuivi?: string;
+  valeurSuivi?: number;
+  
+attributsValeurs?: AttributEquipementValeur[];
+ indice?:indice;
 
 
 }  

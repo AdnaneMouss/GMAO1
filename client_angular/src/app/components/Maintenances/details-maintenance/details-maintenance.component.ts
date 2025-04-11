@@ -12,6 +12,8 @@ import { Etage } from '../../../models/etage';
 import { RepetitionType } from '../../../models/RepetitionType';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Equipement } from '../../../models/equipement';
+import { AttributEquipements } from '../../../models/attribut-equipement';
+import { EquipementService } from '../../../services/equipement.service';
 
 @Component({
   selector: 'app-details-maintenance',
@@ -29,6 +31,15 @@ export class DetailsMaintenanceComponent implements OnInit {
 
   maintenances: any[] = [];
   equipements: any[] = [];
+  selectedAttribut: any;
+  messageSeuil: string = '';
+  AttributEquipementValeur :any[]  =[];
+
+  selectedAttributs: AttributEquipements[] = [];
+ 
+ 
+ 
+ 
  
   
   maintenance: maintenance = {
@@ -120,10 +131,11 @@ export class DetailsMaintenanceComponent implements OnInit {
     repetitionType: 'TOUS_LES_JOURS',
     repetition: 0,
     seuil: 0,
-    equipementId:0,
+    equipementId: 0,
 
     RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
-    message: ''
+    message: '',
+    NonSeuil: ''
   };
   errorMessage: string = '';
   isEditMode: boolean = false;  // Mode édition
@@ -137,6 +149,7 @@ constructor(
     private maintenanceService: MaintenanceService,
     private serviceService: ServiceService,
     private userService: UserService,
+    private  equipementService :EquipementService,
     private route: ActivatedRoute,
     private router: Router , // To navigate after save
     private _snackBar: MatSnackBar
@@ -144,19 +157,66 @@ constructor(
   ) { }
 
 
+  
+  onEquipementChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const equipementId = Number(target.value);
+  
+    if (!equipementId) {
+      this.selectedAttributs = [];
+      return;
+    }
+  
+    this.equipementService.getAttributsByEquipementId(equipementId).subscribe({
+      next: (attributs) => {
+        // Filter attributes where type === 'number'
+        this.selectedAttributs = attributs.filter(attr => attr.attributEquipementType === 'NUMBER');
+        console.log("attributs:", this.selectedAttributs);
+      },
+      error: (error) => {
+        console.error('Erreur lors de la récupération des attributs', error);
+        this.selectedAttributs = [];
+      }
+    });
+  }
+  
+
+
   ngOnInit(): void {
     const maintenanceId = +this.route.snapshot.paramMap.get('id')!;  // Get equipment ID from route params
     this.fetchMaintenanceDetails(maintenanceId);  // Call to fetchMaintenanceDetails
     this.getAllServices();
+    
+   
     this.loadUsers();
     this.checkThreshold(); 
     console.log("Données equipement :", this.maintenance.equipement);
+    const seuil = this.maintenance.seuil;
+    const valeurAttribut = this.selectedAttribut.valeur;
+  
+    this.messageSeuil = this.verifierSeuilMaintenance(seuil,valeurAttribut);
+
     
    
     
     
    
   }
+
+
+
+  verifierSeuilMaintenance(seuil: number, valeurAttribut: number): string {
+    const difference = Math.abs(seuil - valeurAttribut);
+  
+    if (valeurAttribut >= seuil) {
+      return `⚠️ Maintenance doit être faite : la valeur a dépassé le seuil (${valeurAttribut} ≥ ${seuil})`;
+    } else if (difference <= 0.1 * seuil) {
+      return `ℹ️ Attention : la valeur est proche du seuil (${valeurAttribut} ≈ ${seuil})`;
+    } else {
+      return '';
+    }
+  }
+  
 
 
   
@@ -576,15 +636,27 @@ constructor(
       return;
     }
 
-    const valeur = this.maintenance.equipement.valeurSuivi || 0;
+    const valeur = this.maintenance.valeurSuivi || 0;
     const seuil = this.maintenance.seuil || 0;
 
     if (valeur >= seuil) {
-      this.message = `⚠️ Alerte : La valeur suivie (${valeur}) dépasse le seuil (${seuil})`;
-    } else {
-      this.message = `✅ Normal : Valeur suivie (${valeur}) sous le seuil (${seuil})`;
-    }
+      this.message = "⚠️ Alerte : La valeur suivie (" + valeur + ") dépasse le seuil (" + seuil + ")";
+  } else if (valeur >= seuil * 0.9) { // valeur proche du seuil (90%)
+      this.message = "🟡 Attention : La valeur suivie (" + valeur + ") est proche du seuil (" + seuil + ")";
+  } else {
+      this.message = "✅ Normal : Valeur suivie (" + valeur + ") sous le seuil (" + seuil + ")";
   }
+  
+  }
+
+
+  selectedEquipement: any;
+
+  onEquipementSelected() {
+    this.selectedEquipement = this.equipements.find(e => e.id === this.maintenance.equipementId);
+  }
+  
+
 
   
   

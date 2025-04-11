@@ -8,6 +8,7 @@ import { Etage } from "./etage";
 import { Batiment } from "./batiment";
 import { User } from "./user";
 import {AttributEquipementValeur} from "./attribut-equipement-valeur";
+import { AttributEquipements } from "./attribut-equipement";
 
 export interface Equipement {
   id: number;
@@ -34,9 +35,11 @@ export interface Equipement {
   etage: Etage;
   batiment: Batiment;
   attributsValeurs: AttributEquipementValeur[];
+
   [key: string]: any;
   valeurSuivi: 0,
   labelSuivi:'',
+
 
 
 }

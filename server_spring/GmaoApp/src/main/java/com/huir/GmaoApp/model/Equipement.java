@@ -3,6 +3,8 @@ package com.huir.GmaoApp.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.huir.GmaoApp.dto.MaintenanceDTO;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,9 +42,11 @@ public class Equipement {
     private String frequenceMaintenance;
     private String historiquePannes;
     private Double coutAchat;
+    
+  
 
-    private String labelSuivi;  // Label suivi
-    private double valeurSuivi; // Valeur suivie
+    private String labelSuivi;  // Indicateur
+    private double valeurSuivi; // Seuil
 
     // Relation avec TypesEquipements (Chaque équipement appartient à un type)
     @ManyToOne(fetch = FetchType.EAGER)

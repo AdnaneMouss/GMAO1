@@ -139,4 +139,86 @@
   line-height: 30px;
   color: white;
 }
+.export-pdf-button {
+  @apply bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200 flex items-center gap-2;
+}
 
+/* Style pour les événements du calendrier */
+.fc-event {
+  border: none !important;
+  background-color: transparent !important;
+}
+
+.fc-event-main-container {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.fc-event-main-container:hover {
+  opacity: 0.9;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendar-legend {
+  flex: 1;
+}
+
+.calendar-title {
+  flex: 1;
+  text-align: center;
+}
+
+.export-pdf-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.export-pdf-button:hover {
+  background-color: #303f9f;
+}
+
+.export-pdf-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Styles pour la légende */
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.legend-color {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  margin-right: 5px;
+  display: inline-block;
+}
+
+.fc-event-duration-bar {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
