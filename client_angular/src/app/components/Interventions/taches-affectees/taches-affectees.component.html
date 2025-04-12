@@ -3,7 +3,7 @@
     <h2 class="text-3xl font-semibold text-gray-800 mb-4">Tâches Affectées</h2>
     <p class="text-gray-600 mb-6">Consultez les tickets de maintenaces qui vous ont été attribués.</p>
     <div class="mb-4 flex space-x-4">
-    <input [(ngModel)]="filters.equipementNom" placeholder="Filtrer par équipement" class="px-4 py-2 border rounded">
+      <input [(ngModel)]="filters.equipementNom" placeholder="Filtrer par équipement" class="px-4 py-2 border rounded">
       <!-- Filter by Priorité (Dropdown) -->
       <select [(ngModel)]="filters.priorite" class="px-4 py-2 border rounded">
         <option value="">Filtrer par priorité</option>
@@ -140,28 +140,37 @@
       </div>
     </div>
 
-    <!-- Panel to add intervention details -->
+    <!-- Form to add intervention details -->
     <div *ngIf="showInterventionForm" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl p-6 w-1/3">
         <h3 class="text-xl font-semibold mb-4">Ajouter une intervention</h3>
-        <form (ngSubmit)="submitIntervention()">
+        <form #form="ngForm" (ngSubmit)="submitIntervention()" novalidate>
+
           <!-- Description -->
           <div class="mb-4">
-            <label for="interventionDescription" class="block text-sm font-medium text-gray-600">Description de l'intervention</label>
+            <label for="interventionDescription" class="block text-sm font-medium text-gray-600">
+              Description de l'intervention <span class="text-red-500">*</span>
+            </label>
             <textarea
               id="interventionDescription"
               [(ngModel)]="intervention.description"
               name="interventionDescription"
               required
+              #descRef="ngModel"
               rows="4"
               class="w-full p-2 border rounded mt-1"
               aria-describedby="descriptionHelp"></textarea>
             <small id="descriptionHelp" class="text-gray-500 text-xs">Décrivez l'intervention effectuée.</small>
+            <div *ngIf="descRef.invalid && descRef.touched" class="text-red-500 text-sm mt-1">
+              La description est obligatoire.
+            </div>
           </div>
 
-          <!-- Remarks -->
+          <!-- Remarques -->
           <div class="mb-4">
-            <label for="interventionRemarques" class="block text-sm font-medium text-gray-600">Remarques</label>
+            <label for="interventionRemarques" class="block text-sm font-medium text-gray-600">
+              Remarques
+            </label>
             <textarea
               id="interventionRemarques"
               [(ngModel)]="intervention.remarques"
@@ -172,13 +181,41 @@
             <small id="remarksHelp" class="text-gray-500 text-xs">Ajoutez des commentaires ou des informations supplémentaires.</small>
           </div>
 
+          <div class="mb-4">
+            <label for="piecesDetachees" class="block text-sm font-medium text-gray-600">
+              Pièce détachée utilisée <span class="text-red-500">*</span>
+            </label>
+            <select
+              id="piecesDetachees"
+              name="piecesDetachees"
+              [ngModel]="selectedPieces"
+              (ngModelChange)="onPiecesChange($event)"
+              required
+              multiple
+              #piecesRef="ngModel"
+              class="w-full p-2 border rounded mt-1"
+              aria-describedby="pieceDetacheeHelp"
+            >
+              <option *ngFor="let piece of piecesList" [ngValue]="piece.id">{{ piece.nom }}</option>
+            </select>
+            <small id="pieceDetacheeHelp" class="text-gray-500 text-xs">
+              Entrez la pièce détachée utilisée lors de l'intervention.
+            </small>
+            <div *ngIf="piecesRef.invalid && piecesRef.touched" class="text-red-500 text-sm mt-1">
+              Veuillez sélectionner au moins une pièce détachée.
+            </div>
+          </div>
+
           <!-- Photos -->
           <div class="mb-4">
-            <label for="photos" class="block text-sm font-medium text-gray-600">Ajouter des photos</label>
+            <label for="photos" class="block text-sm font-medium text-gray-600">
+              Ajouter des photos <span class="text-red-500">*</span>
+            </label>
             <input
               type="file"
               id="photos"
               name="photos"
+              required
               (change)="onFileChange($event)"
               class="w-full p-2 border rounded mt-1"
               multiple
@@ -192,7 +229,7 @@
             <button
               type="submit"
               class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              [disabled]="!intervention.description">
+              [disabled]="form.invalid">
               Ajouter l'intervention
             </button>
             <button

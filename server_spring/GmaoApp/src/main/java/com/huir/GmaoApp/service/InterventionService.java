@@ -2,6 +2,7 @@ package com.huir.GmaoApp.service;
 
 import com.huir.GmaoApp.dto.InterventionDTO;
 import com.huir.GmaoApp.model.Intervention;
+import com.huir.GmaoApp.model.PieceDetachee;
 import com.huir.GmaoApp.model.User;
 import com.huir.GmaoApp.repository.InterventionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,10 @@ public class InterventionService {
 
     public Intervention save(Intervention intervention) {
         return interventionRepository.save(intervention);
+    }
+
+    public List<PieceDetachee> getPiecesByInterventionId(Long interventionId) {
+        return interventionRepository.findPiecesByInterventionId(interventionId);
     }
 
     // Get all interventions

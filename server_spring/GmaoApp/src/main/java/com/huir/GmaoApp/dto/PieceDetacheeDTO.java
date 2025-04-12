@@ -22,10 +22,11 @@ public class PieceDetacheeDTO {
 	private int quantiteMinimale;
 	private LocalDate dateAchat;
 	private LocalDate datePeremption;
-	private List<String> historiqueUtilisation;
+	private List<String> historiqueUtilisation; // Or DTO if it's an object
 	private String image;
-	private String statut;  // Nouveau champ pour le statut de la pièce
+	private String statut;  // Ensure this is a string value or map enum to string
 
+	// Constructor to map PieceDetachee to PieceDetacheeDTO
 	public PieceDetacheeDTO(PieceDetachee pieceDetachee) {
 		this.id = pieceDetachee.getId();
 		this.nom = pieceDetachee.getNom();
@@ -39,6 +40,9 @@ public class PieceDetacheeDTO {
 		this.datePeremption = pieceDetachee.getDatePeremption();
 		this.historiqueUtilisation = pieceDetachee.getHistoriqueUtilisation();
 		this.image = pieceDetachee.getImage();
+
+
+
 		this.statut = pieceDetachee.getStatut();  // Utilise la méthode dynamique du modèle
 	}
 }

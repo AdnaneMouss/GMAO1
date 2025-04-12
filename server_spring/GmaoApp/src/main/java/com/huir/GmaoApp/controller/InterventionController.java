@@ -3,6 +3,7 @@ package com.huir.GmaoApp.controller;
 import com.huir.GmaoApp.dto.InterventionDTO;
 import com.huir.GmaoApp.model.*;
 import com.huir.GmaoApp.repository.MaintenanceCorrectiveRepository;
+import com.huir.GmaoApp.repository.PieceDetacheeRepository;
 import com.huir.GmaoApp.service.InterventionService;
 import com.huir.GmaoApp.service.MaintenanceCorrectiveService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,8 @@ public class InterventionController {
 
     @Autowired
     private MaintenanceCorrectiveRepository maintenanceCorrectiveRepository;
+    @Autowired
+    private PieceDetacheeRepository pieceDetacheeRepository;
 
     // Get all interventions
     @GetMapping
@@ -45,11 +48,12 @@ public class InterventionController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createIntervention(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("description") String description,
-            @RequestParam("remarques") String remarques,
+            @RequestParam(value = "file") MultipartFile file,
+            @RequestParam(value = "description") String description,
+            @RequestParam(value = "remarques", required = false) String remarques,
             @RequestParam("maintenanceId") Long maintenanceId,
-            @RequestParam("technicienId") Long technicienId) {
+            @RequestParam("technicienId") Long technicienId,
+            @RequestParam("piecesDetachees") List<Long> pieceDetacheesIds) {
 
         // Check if the maintenance record exists
         MaintenanceCorrective maintenance = maintenanceCorrectiveRepository.findById(maintenanceId)
@@ -84,6 +88,17 @@ public class InterventionController {
             // Set the photos for the intervention
             intervention.setPhotos(List.of(photo));
 
+            // Retrieve and associate the pieces détachées (spare parts)
+            List<PieceDetachee> pieceDetachees = pieceDetacheeRepository.findAllById(pieceDetacheesIds);  // Assuming you have a repository for PieceDetachee
+            intervention.setPiecesDetachees(pieceDetachees);  // Set the pieces détachées to the intervention
+
+            for (PieceDetachee piece : pieceDetachees) {
+                int newQuantity = piece.getQuantiteStock() - 1;
+                piece.setQuantiteStock(Math.max(0, newQuantity)); // To avoid negative quantities
+            }
+
+// Save the updated pieces if needed
+            pieceDetacheeRepository.saveAll(pieceDetachees);
             // Save the intervention entity
             Intervention savedIntervention = interventionService.save(intervention);
 
@@ -96,12 +111,12 @@ public class InterventionController {
         }
     }
 
-
-    @PostMapping
-    public ResponseEntity<Intervention> createIntervention(@RequestBody Intervention intervention) {
-        Intervention savedIntervention = interventionService.saveIntervention(intervention);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedIntervention);
+    @GetMapping("/{id}/pieces")
+    public ResponseEntity<List<PieceDetachee>> getPiecesByIntervention(@PathVariable Long id) {
+        List<PieceDetachee> pieces = interventionService.getPiecesByInterventionId(id);
+        return ResponseEntity.ok(pieces);
     }
+
 
     // Delete an intervention
     @DeleteMapping("/{id}")

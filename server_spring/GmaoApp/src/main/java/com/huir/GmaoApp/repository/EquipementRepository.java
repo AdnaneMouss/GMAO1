@@ -14,5 +14,9 @@ public interface EquipementRepository extends JpaRepository<Equipement, Long> {
     Equipement findById(long id);
 
     Optional<Equipement> findByNom(String equipementNom);
+    
+    Optional<Equipement> findTopByOrderByIdDesc();
+
+    List<Equipement> findBySalleId(Long salleId);
 }
 

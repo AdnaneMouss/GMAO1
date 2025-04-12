@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -101,10 +102,78 @@ public class MaintenanceCorrectiveService {
 
         return new MaintenanceCorrectiveDTO(maintenance);
     }
+
+    public MaintenanceCorrectiveDTO updateMaintenanceCorrective(Long maintenanceId, MaintenanceCorrectiveDTO dto) {
+        // Retrieve the existing MaintenanceCorrective by its ID
+        Optional<MaintenanceCorrective> existingMaintenanceOptional = maintenanceCorrectiveRepository.findById(maintenanceId);
+
+        if (!existingMaintenanceOptional.isPresent()) {
+            System.out.println("Erreur");
+        }
+
+        MaintenanceCorrective maintenance = existingMaintenanceOptional.get();
+
+        // Update the fields
+        maintenance.setTitre(dto.getTitre() != null ? dto.getTitre() : maintenance.getTitre());
+        maintenance.setDescription(dto.getDescription() != null ? dto.getDescription() : maintenance.getDescription());
+        maintenance.setStatut(dto.getStatut() != null ? Statut.valueOf(dto.getStatut()) : maintenance.getStatut());
+        maintenance.setPriorite(dto.getPriorite() != null ? Priorite.valueOf(dto.getPriorite()) : maintenance.getPriorite());
+
+        // Keep the original date if not provided
+        maintenance.setDateCreation(dto.getDateCreation() != null ? dto.getDateCreation() : maintenance.getDateCreation());
+
+        // Update the equipment if provided
+        if (dto.getEquipementNom() != null) {
+            Optional<Equipement> equipementOptional = equipementRepository.findByNom(dto.getEquipementNom());
+            equipementOptional.ifPresent(maintenance::setEquipement);
+        }
+
+        // Update the technician if provided
+        if (dto.getAffecteAId() != null) {
+            Optional<User> technicienOptional = userRepository.findById(dto.getAffecteAId());
+            technicienOptional.ifPresent(maintenance::setAffecteA);
+        }
+
+        // Update the creator if provided
+        if (dto.getCreeParId() != null) {
+            Optional<User> creatorOptional = userRepository.findById(dto.getCreeParId());
+            creatorOptional.ifPresent(maintenance::setCreePar);
+        }
+
+        // Save the updated maintenance corrective
+        maintenance = maintenanceCorrectiveRepository.save(maintenance);
+
+        // Optionally, send an email to the technician if assigned
+        if (maintenance.getAffecteA() != null && maintenance.getAffecteA().getEmail() != null) {
+            String subject = "Mise à jour de la maintenance corrective assignée";
+            String body = "Bonjour " + maintenance.getAffecteA().getNom() + ",\n\n"
+                    + "Une maintenance corrective a été mise à jour.\n\n"
+                    + "Titre: " + maintenance.getTitre() + "\n"
+                    + "Description: " + maintenance.getDescription() + "\n"
+                    + "Priorité: " + maintenance.getPriorite() + "\n\n"
+                    + "Merci de bien vouloir vérifier la mise à jour.\n\n"
+                    + "Cordialement,\nL'équipe GMAO";
+
+            emailService.sendEmail(maintenance.getAffecteA().getEmail(), subject, body);
+        }
+
+        // Return the updated MaintenanceCorrective as DTO
+        return new MaintenanceCorrectiveDTO(maintenance);
+    }
+
+
+
+
     // Récupérer une maintenance par ID
     public Optional<MaintenanceCorrective> getMaintenanceById(Long id) {
         return maintenanceCorrectiveRepository.findById(id);
     }
+
+    public int getTechnicianWorkload(Long technicianId) {
+        List<MaintenanceCorrective> assignedTasks = maintenanceCorrectiveRepository.findByAffecteAIdAndStatutNotIn(technicianId, Arrays.asList(Statut.TERMINEE, Statut.ANNULEE));
+        return assignedTasks.size();
+    }
+
 
     // Récupérer toutes les maintenances
     public List<MaintenanceCorrective> getAllMaintenances() {

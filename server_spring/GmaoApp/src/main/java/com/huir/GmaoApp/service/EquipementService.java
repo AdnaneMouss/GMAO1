@@ -42,6 +42,11 @@ public class EquipementService {
     @Autowired
     private AttributEquipementsRepository attributEquipementsRepository;
 
+
+    public List<Equipement> getEquipementsBySalle(Long salleId) {
+        return equipementRepository.findBySalleId(salleId);
+    }
+
     public Map<String, String> getAttributsByEquipement(Long equipementId) {
         Map<String, String> attributsValeurs = new HashMap<>();
 

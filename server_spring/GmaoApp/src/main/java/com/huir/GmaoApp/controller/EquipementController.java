@@ -26,6 +26,12 @@ public class EquipementController {
     private  EquipementRepository equipementRepository;
     // Get all equipment
 
+
+    @GetMapping("/bySalle/{salleId}")
+    public List<Equipement> getEquipementsBySalle(@PathVariable Long salleId) {
+        return equipementService.getEquipementsBySalle(salleId);
+    }
+
     @GetMapping
     public List<EquipementDTO> getAllEquipements() {
         return equipementService.findAllEquipements().stream()

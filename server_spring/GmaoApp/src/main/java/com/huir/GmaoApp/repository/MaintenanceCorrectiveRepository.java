@@ -1,6 +1,7 @@
 package com.huir.GmaoApp.repository;
 
 import com.huir.GmaoApp.model.MaintenanceCorrective;
+import com.huir.GmaoApp.model.Statut;
 import com.sun.tools.javac.Main;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,4 +12,5 @@ public interface MaintenanceCorrectiveRepository extends JpaRepository<Maintenan
 
 	List<MaintenanceCorrective> findByStatut(String statut);
 	List<MaintenanceCorrective> findByAffecteAId(Long affecteA);
+	List<MaintenanceCorrective> findByAffecteAIdAndStatutNotIn(Long technicianId, List<Statut> statuses);
 }

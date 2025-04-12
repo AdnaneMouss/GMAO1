@@ -47,18 +47,23 @@
 
             <!-- Image input -->
             <div>
-              <label for="edit-image" class="block text-sm font-medium text-gray-700">Image</label>
-              <input id="edit-image" type="file" (change)="onFileSelected($event)" class="mt-2 p-3 border border-gray-300 rounded-md w-full">
+              <label for="fileInput1" class="block text-gray-700 font-medium mb-1">Photo de profil</label>
+
+              <!-- input file caché mais pas cliquable -->
+              <input type="file" id="fileInput1" (change)="onFileSelected($event)" class="hidden" />
+
+              <!-- bouton stylé qui déclenche le input -->
+              <label for="fileInput1"
+                     class="mt-2 p-3 border border-gray-300 inline-block w-7/14 px-4 py-2 text-white bg-green-700 rounded-lg cursor-pointer hover:bg-green-800 transition focus:outline-none focus:ring-2 focus:ring-green-500">
+                Choisir une image
+              </label>
               <p *ngIf="imageError" class="text-red-500">{{ imageError }}</p>
             </div>
           </div>
 
           <div class="flex justify-end space-x-4">
-            <button type="reset" class="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">
-              <i class="fas fa-undo"></i> Réinitialiser
-            </button>
 
-            <button type="submit" [disabled]="editForm.invalid" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">
+            <button type="submit" [disabled]="editForm.invalid" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600">
               <i class="fas fa-save"></i> Mettre à jour
             </button>
           </div>
@@ -87,18 +92,27 @@
               </div>
             </div>
 
-            <div>
-              <label for="image" class="block text-sm font-medium text-gray-700">Image</label>
-              <input id="image" type="file" (change)="onFileSelected($event)" class="mt-2 p-3 border border-gray-300 rounded-md w-full">
+            <div class="mb-4">
+              <label for="fileInput" class="block text-gray-700 font-medium mb-1">Photo de profil</label>
+
+              <!-- input file caché mais pas cliquable -->
+              <input type="file" id="fileInput" (change)="onFileSelected($event)" class="hidden" />
+
+              <!-- bouton stylé qui déclenche le input -->
+              <label for="fileInput"
+                     class="mt-2 p-3 border border-gray-300 inline-block w-7/14 px-4 py-2 text-white bg-green-700 rounded-lg cursor-pointer hover:bg-green-800 transition focus:outline-none focus:ring-2 focus:ring-green-500">
+              Choisir une image
+              </label>
               <p *ngIf="imageError" class="text-red-500">{{ imageError }}</p>
             </div>
 
+
           </div>
           <div class="flex justify-end space-x-4">
-            <button type="reset" class="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">
+            <button type="reset" class="bg-yellow-500 font-semibold text-white py-2 px-4 rounded-md hover:bg-yellow-600">
               <i class="fas fa-undo"></i> Réinitialiser
             </button>
-  <button type="submit" [disabled]="serviceForm.invalid" class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600">
+  <button type="submit" [disabled]="serviceForm.invalid" class="bg-blue-600 font-semibold text-white py-2 px-4 rounded-md hover:bg-green-600">
               <i class="fas fa-save"></i> Enregistrer
             </button>
           </div>
@@ -163,114 +177,165 @@
 <!-- Attributes Panel -->
 <div
   *ngIf="showAttributesPanel && !showEditTypeForm"
-  class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+  class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
 
-  <div class="bg-white p-8 rounded-lg w-96 shadow-lg transform transition-all duration-300 scale-95 hover:scale-100">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold">{{ selectedType.type }} - Attributs</h2>
+  <div class="bg-white rounded-2xl w-full max-w-xl p-6 shadow-2xl transition-transform duration-300 transform scale-95 hover:scale-100">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center border-b pb-3 mb-4">
+      <h2 class="text-2xl font-bold text-gray-800">
+        {{ selectedType.type }} – Attributs
+      </h2>
       <button
         (click)="closeAttributesPanel()"
-        class="text-gray-500 hover:text-red-600 transition">
+        aria-label="Fermer"
+        class="text-gray-400 hover:text-red-500 text-xl transition-all duration-200">
         ✖
       </button>
     </div>
 
-    <!-- List of Attributes with Scrollbar -->
-    <ul class="space-y-4 overflow-y-auto max-h-64">
-      <li *ngFor="let attribute of attributes" class="bg-gray-100 p-2 rounded-md shadow-sm">
-        <strong>{{ attribute.nom }}:</strong>
-        <span>{{ getAttributeTypeLabel(attribute.attributEquipementType) }}</span>
-        <span *ngIf="attribute.obligatoire" class="text-red-600 font-semibold ml-2">(Obligatoire)</span>
-        <span *ngIf="attribute.actif" class="text-green-600 font-semibold ml-2">(Actif)</span>
-        <span *ngIf="!attribute.actif" class="text-gray-600 font-semibold ml-2">(Inactif)</span>
-        <!-- Edit Button -->
-        <button
-          (click)="editAttribute(attribute)"
-          class="text-blue-500 hover:text-blue-700 mt-2 text-sm font-semibold">
-          ✏️ Modifier
-        </button>
-      </li>
-    </ul>
+    <!-- Attributes List -->
+    <div
+      *ngIf="showAttributesPanel && !showEditTypeForm"
+      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
 
-    <!-- Add New Attribute Form -->
-    <div class="mt-6">
-      <button
-        (click)="showAddForm = !showAddForm"
-        class="bg-blue-600 text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-blue-700 transition-all duration-300">
-        <i class="fa fa-plus"></i> Ajouter un attribut
-      </button>
+      <div class="bg-white rounded-2xl w-full max-w-xl p-6 shadow-2xl transition-transform duration-300 transform scale-95 hover:scale-100">
 
-      <div *ngIf="showAddForm" class="mt-4">
-        <h3 class="text-lg font-semibold mb-4">Ajouter un nouvel attribut</h3>
-        <form (ngSubmit)="addNewAttribute()">
-          <div class="mb-4">
-            <label for="attributeName" class="block text-sm font-medium text-gray-700">Nom de l'attribut</label>
-            <input
-              id="attributeName"
-              type="text"
-              class="w-full p-2 border-2 rounded-lg mt-2"
-              [(ngModel)]="newAttribute.nom"
-              name="nom"
-              required
-              placeholder="Entrez le nom de l'attribut">
-          </div>
-          <div *ngIf="attributTaken" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
-
-          <div class="mb-4">
-            <label for="attributeType" class="block text-sm font-medium text-gray-700">Type de l'attribut</label>
-            <select
-              id="attributeType"
-              class="w-full p-2 border-2 rounded-lg mt-2"
-              [(ngModel)]="newAttribute.attributEquipementType"
-              name="attributEquipementType"
-              required>
-              <option value="STRING">Chaîne de caractères</option>
-              <option value="NUMBER">Nombre</option>
-              <option value="DATE">Date</option>
-              <option value="BOOLEAN">Booléen (Vrai/Faux)</option>
-              <option value="FLOAT">Nombre à virgule flottante</option>
-              <option value="ENUM">Liste de valeurs</option>
-              <option value="LONGTEXT">Texte long</option>
-            </select>
-          </div>
-
-          <!-- Obligatoire Checkbox -->
-          <div class="mb-4 flex items-center">
-            <input
-              id="attributeRequired"
-              type="checkbox"
-              class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              [(ngModel)]="newAttribute.obligatoire"
-              name="obligatoire">
-            <label for="attributeRequired" class="ml-2 block text-sm text-gray-700">Obligatoire</label>
-          </div>
-
-          <!-- Actif Checkbox -->
-          <div class="mb-4 flex items-center">
-            <input
-              id="attributeActif"
-              type="checkbox"
-              class="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-              [(ngModel)]="newAttribute.actif"
-              name="actif">
-            <label for="attributeActif" class="ml-2 block text-sm text-gray-700">Actif</label>
-          </div>
-
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+          <h2 class="text-2xl font-bold text-gray-800">
+            {{ selectedType.type }} – Attributs
+          </h2>
           <button
-            type="submit"
-            class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg mt-4 font-medium shadow-md hover:bg-blue-800 transition-all duration-300 transform hover:-translate-y-1"
-            [disabled]="!newAttribute.nom || !newAttribute.attributEquipementType">
-            Ajouter l'attribut
+            (click)="closeAttributesPanel()"
+            aria-label="Fermer"
+            class="text-gray-400 hover:text-red-500 text-xl transition-all duration-200">
+            ✖
           </button>
-        </form>
+        </div>
+        <!-- Add Attribute Section -->
+        <div class="mt-6" *ngIf="!showAddForm">
+          <button
+            (click)="showAddForm = true"
+            style="margin-left:470px; font-size: 14px;"
+            class="flex items-center gap-2 text-blue-700 px-4 py-2 rounded-full transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <i class="fa fa-plus"></i>
+          </button>
+        </div>
+        <!-- Attributes List -->
+        <div *ngIf="!showAddForm" class="max-h-64 overflow-y-auto pr-1">
+          <ul class="space-y-3">
+            <li *ngFor="let attribute of attributes" class="bg-gray-50 p-3 rounded-lg border shadow-sm">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-medium text-gray-800">
+                    {{ attribute.nom }} <span class="text-sm text-gray-500">({{ getAttributeTypeLabel(attribute.attributEquipementType) }})</span>
+                  </p>
+                  <div class="text-sm mt-1 space-x-2">
+                    <span *ngIf="attribute.obligatoire" class="text-red-600 font-semibold">(Obligatoire)</span>
+                    <span *ngIf="attribute.actif" class="text-green-600 font-semibold">(Actif)</span>
+                    <span *ngIf="!attribute.actif" class="text-gray-500 font-semibold">(Inactif)</span>
+                  </div>
+                </div>
+                <button
+                  (click)="editAttribute(attribute)"
+                  class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1"
+                  aria-label="Modifier l'attribut">
+                  <i class="fa fa-pen"></i>
+                </button>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Add Attribute Form -->
+        <div *ngIf="showAddForm" class="mt-6 pt-4">
+
+          <form (ngSubmit)="addNewAttribute()" class="space-y-4">
+            <!-- Nom -->
+            <div>
+              <label for="attributeName" class="block text-sm font-medium text-gray-700">Nom de l'attribut</label>
+              <input
+                id="attributeName"
+                type="text"
+                [(ngModel)]="newAttribute.nom"
+                name="nom"
+                required
+                placeholder="Entrez le nom de l'attribut"
+                class="mt-1 w-full px-3 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+              <div *ngIf="attributTaken" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
+            </div>
+
+            <!-- Type -->
+            <div>
+              <label for="attributeType" class="block text-sm font-medium text-gray-700">Type de l'attribut</label>
+              <select
+                id="attributeType"
+                [(ngModel)]="newAttribute.attributEquipementType"
+                name="attributEquipementType"
+                required
+                class="mt-1 w-full px-3 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                <option value="STRING">Chaîne de caractères</option>
+                <option value="NUMBER">Nombre</option>
+                <option value="DATE">Date</option>
+                <option value="BOOLEAN">Booléen (Vrai/Faux)</option>
+                <option value="FLOAT">Nombre à virgule flottante</option>
+                <option value="ENUM">Liste de valeurs</option>
+                <option value="LONGTEXT">Texte long</option>
+              </select>
+            </div>
+
+            <!-- Options -->
+            <div class="flex items-center gap-4">
+              <label class="inline-flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="newAttribute.obligatoire"
+                  name="obligatoire"
+                  class="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                <span class="text-sm text-gray-700">Obligatoire</span>
+              </label>
+              <label class="inline-flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="newAttribute.actif"
+                  name="actif"
+                  class="h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                <span class="text-sm text-gray-700">Actif</span>
+              </label>
+            </div>
+
+            <!-- Submit -->
+            <!-- Submit & Cancel Buttons -->
+            <div class="flex justify-end gap-4 mt-6">
+              <button
+                type="submit"
+                [disabled]="!newAttribute.nom || !newAttribute.attributEquipementType"
+                class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-blue-800 transition duration-300 disabled:opacity-50">
+                Enregistrer
+              </button>
+
+              <button
+                type="button"
+                (click)="showAddForm = false"
+                class="bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-lg shadow hover:bg-gray-300 transition duration-300">
+                Annuler
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+
       </div>
     </div>
+
   </div>
 </div>
 
 <!-- Modify Attribute Form -->
 <div *ngIf="editingAttribute.id" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white p-8 rounded-lg w-96 shadow-lg transform transition-all duration-300 scale-95 hover:scale-100">
+  <div class="bg-white p-8 rounded-lg w-[30rem] shadow-lg transform transition-all duration-300 scale-95 hover:scale-100">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold">Modifier l'attribut</h2>
       <button
@@ -285,15 +350,14 @@
         <label for="editAttributeName" class="block text-sm font-medium text-gray-700">Nom de l'attribut</label>
         <input
           id="editAttributeName"
-          type="text"
+          type="text" #nom="ngModel"
           class="w-full p-2 border-2 rounded-lg mt-2"
           [(ngModel)]="editingAttribute.nom"
           name="nom"
           required>
       </div>
-
+      <div *ngIf="nom.invalid && nom.touched" class="text-red-500 text-sm mt-1">Le nom est requis.</div>
       <div *ngIf="attributTaken" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
-
 
       <div class="mb-4">
         <label for="editAttributeType" class="block text-sm font-medium text-gray-700">Type de l'attribut</label>
@@ -333,12 +397,22 @@
         <label for="editAttributeActif" class="ml-2 block text-sm text-gray-700">Actif</label>
       </div>
 
-      <button
-        type="submit"
-        class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg mt-4 font-medium shadow-md hover:bg-blue-800 transition-all duration-300 transform hover:-translate-y-1"
-        [disabled]="!editingAttribute.nom || !editingAttribute.attributEquipementType">
-        Mettre à jour l'attribut
-      </button>
+      <!-- Submit & Cancel Buttons -->
+      <div class="flex justify-end gap-4 mt-6">
+        <button
+          type="submit"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium shadow-md hover:bg-blue-800 transition-all duration-300 transform hover:-translate-y-1"
+          [disabled]="!editingAttribute.nom || !editingAttribute.attributEquipementType">
+          Mettre à jour
+        </button>
+
+        <button
+          type="button"
+          (click)="closeEditPanel(); showAttributesPanel=true"
+          class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium shadow hover:bg-gray-300 transition-all duration-300">
+          Annuler
+        </button>
+      </div>
     </form>
   </div>
 </div>

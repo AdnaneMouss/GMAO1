@@ -1,6 +1,7 @@
 package com.huir.GmaoApp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -58,5 +59,14 @@ public class Intervention {
     // Preuve de l'intervention (photos avant/après)
     @OneToMany(mappedBy = "intervention", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PhotosIntervention> photos;
+
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(
+			name = "intervention_piece_detachee",
+			joinColumns = @JoinColumn(name = "intervention_id"),
+			inverseJoinColumns = @JoinColumn(name = "piece_detachee_id")
+	)
+    @JsonManagedReference(value = "intervention-piece")
+	private List<PieceDetachee> piecesDetachees;
 
 }

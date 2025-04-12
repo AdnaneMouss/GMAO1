@@ -1,5 +1,6 @@
 package com.huir.GmaoApp.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -57,6 +58,11 @@ public class PieceDetachee {
 
     @ManyToMany(mappedBy = "piecesDetachees", fetch = FetchType.EAGER)
     private List<Equipement> equipements;
+
+    @ManyToMany(mappedBy = "piecesDetachees", fetch = FetchType.EAGER)
+    @JsonBackReference(value = "intervention-piece")
+    private List<Intervention> interventions;
+
 
     @Transient
     public String getStatut() {

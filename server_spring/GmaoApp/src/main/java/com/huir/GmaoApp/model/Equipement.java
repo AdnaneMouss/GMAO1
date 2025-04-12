@@ -85,7 +85,7 @@ public class Equipement {
 
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "equipement", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "equipement", fetch = FetchType.EAGER)
     private List<MaintenanceCorrective> maintenanceCorrectives;
 
 }
