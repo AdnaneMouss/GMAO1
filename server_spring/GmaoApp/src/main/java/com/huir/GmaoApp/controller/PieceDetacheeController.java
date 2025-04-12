@@ -52,6 +52,8 @@ public class PieceDetacheeController {
         }
     }
 
+
+
     @PostMapping
     public ResponseEntity<?> createPieceWithImage(
             @RequestParam("file") MultipartFile file,

@@ -35,4 +35,12 @@ export class MaintenanceCorrectiveService {
   markAsCompleted(id: number): Observable<MaintenanceCorrective> {
     return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${id}/complete`, {});
   }
+
+  getTechnicianWorkload(technicianId: number): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/technician/workload/${technicianId}`);
+  }
+
+  updateMaintenanceCorrective(maintenanceId: number, maintenance: MaintenanceCorrective): Observable<MaintenanceCorrective> {
+    return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${maintenanceId}`, maintenance);
+  }
 }

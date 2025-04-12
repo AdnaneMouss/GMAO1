@@ -86,7 +86,7 @@ public class Equipement {
 
     // Maintenance corrective liée à cet équipement
     @JsonManagedReference
-    @OneToMany(mappedBy = "equipement", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "equipement", fetch = FetchType.EAGER)
     private List<MaintenanceCorrective> maintenanceCorrectives;
 
     // Maintenance préventive et autres maintenances liées à cet équipement

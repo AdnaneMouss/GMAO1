@@ -57,6 +57,7 @@ export class TypesEquipementsComponent implements OnInit {
     this.selectedType = null;
     this.selectedFile = null;
     this.typeTaken=false;
+    this.imageError='';
   }
 
 
@@ -340,6 +341,7 @@ export class TypesEquipementsComponent implements OnInit {
   // Handle editing an attribute
   editAttribute(attribute: AttributEquipements): void {
     this.editingAttribute = { ...attribute };
+    this.showAttributesPanel=false;
   }
 
 // For closing the edit panel when done

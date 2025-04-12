@@ -1,6 +1,7 @@
 package com.huir.GmaoApp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -59,64 +60,13 @@ public class Intervention {
     @OneToMany(mappedBy = "intervention", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PhotosIntervention> photos;
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public User getTechnicien() {
-		return technicien;
-	}
-
-	public void setTechnicien(User technicien) {
-		this.technicien = technicien;
-	}
-
-	public TypeIntervention getType() {
-		return type;
-	}
-
-	public void setType(TypeIntervention type) {
-		this.type = type;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public MaintenanceCorrective getMaintenanceCorrective() {
-		return maintenanceCorrective;
-	}
-
-	public void setMaintenanceCorrective(MaintenanceCorrective maintenanceCorrective) {
-		this.maintenanceCorrective = maintenanceCorrective;
-	}
-
-	public String getRemarques() {
-		return remarques;
-	}
-
-	public void setRemarques(String remarques) {
-		this.remarques = remarques;
-	}
-
-	public List<PhotosIntervention> getPhotos() {
-		return photos;
-	}
-
-	public void setPhotos(List<PhotosIntervention> photos) {
-		this.photos = photos;
-	}
-
-	public void setDuree(Long duree) {
-		this.duree = duree;
-	}
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(
+			name = "intervention_piece_detachee",
+			joinColumns = @JoinColumn(name = "intervention_id"),
+			inverseJoinColumns = @JoinColumn(name = "piece_detachee_id")
+	)
+    @JsonManagedReference(value = "intervention-piece")
+	private List<PieceDetachee> piecesDetachees;
 
 }

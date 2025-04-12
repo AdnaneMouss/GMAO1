@@ -13,73 +13,311 @@
     </div>
 <br>
     <!-- Modal for adding new maintenance -->
-    <div *ngIf="showModal" class="fixed inset-0 z-50 bg-gray-500 bg-opacity-75 flex justify-center items-center">
-      <div class="modal-content bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
+    <div *ngIf="showModal" class="fixed inset-0 z-50 bg-gray-800 bg-opacity-60 flex justify-center items-center overflow-y-auto">
+      <div class="bg-white rounded-lg max-h-[90vh] overflow-y-scroll w-full max-w-4xl p-6 relative">
+
+        <!-- Close button -->
+        <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-10" (click)="closeAddModal()">
+          ✖
+        </button>
         <form (ngSubmit)="addMaintenance()">
-          <h3 class="text-2xl font-semibold text-gray-800 mb-6">Ajouter une Maintenance Corrective</h3>
+          <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center">🛠️ Nouvelle Maintenance Corrective</h3>
 
-          <!-- Form Fields -->
-          <div class="mb-4">
-            <label for="titre" class="block text-gray-700 text-sm font-medium mb-2">
-              Titre <span class="text-red-500">*</span>
-            </label>
-            <input type="text" id="titre" [(ngModel)]="newMaintenance.titre" name="titre" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-
-          <div class="mb-4">
-            <label for="equipementNom" class="block text-gray-700 text-sm font-medium mb-2">
-              Équipement <span class="text-red-500">*</span>
-            </label>
-            <select id="equipementNom" [(ngModel)]="newMaintenance.equipementNom" name="equipementNom" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option *ngFor="let equipement of equipements" [value]="equipement.nom">{{ equipement.nom }}</option>
-            </select>
-          </div>
-
-          <div class="mb-4">
-            <label for="description" class="block text-gray-700 text-sm font-medium mb-2">
-              Description <span class="text-red-500">*</span>
-            </label>
-            <textarea id="description" [(ngModel)]="newMaintenance.description" name="description" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4"></textarea>
-          </div>
-
-          <div class="mb-4">
-            <label for="priorite" class="block text-gray-700 text-sm font-medium mb-2">
-              Priorité <span class="text-red-500">*</span>
-            </label>
-            <select id="priorite" [(ngModel)]="newMaintenance.priorite" name="priorite" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="URGENTE">Urgente</option>
-              <option value="NORMALE">Normale</option>
-              <option value="FAIBLE">Faible</option>
-            </select>
-          </div>
-
-          <div class="mb-4">
-            <label for="user" class="block text-gray-700 text-sm font-medium mb-2">
-              Technicien <span class="text-red-500">*</span>
-            </label>
-            <div class="flex space-x-2">
-              <select id="user" [(ngModel)]="newMaintenance.affecteAId" name="affecte" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option *ngFor="let user of users" [value]="user.id">{{ user.nom }}</option>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Bâtiment -->
+            <div>
+              <label class="block text-gray-700 mb-2 font-medium">
+                🏢 Bâtiment <span class="text-red-500">*</span>
+              </label>
+              <select id="batiment" [(ngModel)]="selectedBatiment" name="batiment" (change)="onBatimentChange()" required
+                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option *ngFor="let batiment of batiments" [value]="batiment.id">Batiment {{ batiment.numBatiment }}: {{ batiment.intitule }}</option>
               </select>
-              <button type="button" (click)="autoSelectTechnicien()"
-                      class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                Auto
-              </button>
+              <p *ngIf="!selectedBatiment" class="text-sm italic text-gray-500 mt-1 ml-1">
+                🔍 Commencez par choisir un bâtiment pour accéder aux informations associées (étages, salles, équipements).
+              </p>
             </div>
+
+            <!-- Display message if no étage available -->
+           <div *ngIf="selectedBatiment && etages.length === 0">
+            <p class="text-sm italic text-gray-500 mt-1 ml-1 text-red-500">
+              🚫 Aucun étage disponible pour ce bâtiment.
+            </p>
           </div>
+
+            <!-- Étage -->
+            <div *ngIf="selectedBatiment && etages.length > 0">
+              <label class="block text-gray-700 mb-2 font-medium">
+                🪜 Étage <span class="text-red-500">*</span>
+              </label>
+              <select id="etage" [(ngModel)]="selectedEtage" name="etage" (change)="onEtageChange()" required
+                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option *ngFor="let etage of etages" [value]="etage.id">{{ etage.num }}</option>
+              </select>
+              <p *ngIf="!selectedEtage" class="text-sm italic text-gray-500 mt-1 ml-1">
+                👀 Sélectionnez maintenant un étage pour continuer.
+              </p>
+            </div>
+
+          <!-- Display message if no salle available after Étage is selected -->
+          <div *ngIf="selectedEtage && salles.length === 0">
+            <p class="text-sm italic text-gray-500 mt-1 ml-1 text-red-500">
+              🚫 Aucune salle disponible pour cet étage.
+            </p>
+          </div>
+
+
+          <!-- Salle -->
+            <div *ngIf="selectedEtage && salles.length > 0">
+              <label class="block text-gray-700 mb-2 font-medium">
+                🚪 Salle <span class="text-red-500">*</span>
+              </label>
+              <select id="salle" [(ngModel)]="selectedSalle" name="salle" (change)="onSalleChange()" required
+                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option *ngFor="let salle of salles" [value]="salle.id">{{ salle.num }}</option>
+              </select>
+              <p *ngIf="!selectedSalle" class="text-sm italic text-gray-500 mt-1 ml-1">
+                🧭 Choisissez une salle pour voir les équipements disponibles.
+              </p>
+            </div>
+
+            <!-- Display message if no equipement available after Salle is selected -->
+            <div *ngIf="selectedSalle && equipements.length === 0">
+              <p class="text-sm italic text-gray-500 mt-1 ml-1 text-red-500">
+                🚫 Aucun équipement disponible pour cette salle.
+              </p>
+            </div>
+
+            <!-- Équipement -->
+            <div *ngIf="selectedSalle && equipements.length > 0">
+              <label class="block text-gray-700 mb-2 font-medium">
+                🧰 Équipement <span class="text-red-500">*</span>
+              </label>
+              <select id="equipement" [(ngModel)]="newMaintenance.equipementNom" name="equipement" required
+                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      (change)="onEquipementChange()">
+                <option *ngFor="let equipement of equipements" [value]="equipement.nom">{{ equipement.nom }}</option>
+              </select>
+              <p *ngIf="!newMaintenance.equipementNom" class="text-sm italic text-gray-500 mt-1 ml-1">
+                🔧 Veuillez choisir un équipement à maintenir.
+              </p>
+
+
+              <!-- Tiny info block 👇 -->
+              <div *ngIf="selectedEquipementDetails" class="text-sm text-gray-700 mt-2 space-y-1 ml-1">
+                <div><strong>📦 Modèle:</strong> {{ selectedEquipementDetails.modele }}</div>
+                <div><strong>🏭 Marque:</strong> {{ selectedEquipementDetails.marque }}</div>
+                <div><strong>🔧 Statut:</strong> {{ selectedEquipementDetails.statut }}</div>
+                <div><strong>🗓️ Dernière maintenance:</strong> {{ selectedEquipementDetails.dateDerniereMaintenance }}</div>
+              </div>
+            </div>
+
+            <!-- Titre -->
+            <div>
+              <label class="block text-gray-700 mb-2 font-medium">
+                📝 Titre <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="titre" [(ngModel)]="newMaintenance.titre" name="titre" required
+                     class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <!-- Description -->
+            <div class="md:col-span-2">
+              <label class="block text-gray-700 mb-2 font-medium">
+                📄 Description <span class="text-red-500">*</span>
+              </label>
+              <textarea id="description" [(ngModel)]="newMaintenance.description" name="description" required
+                        class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
+            </div>
+
+            <!-- Priorité -->
+            <div>
+              <label class="block text-gray-700 mb-2 font-medium">
+                🚨 Priorité <span class="text-red-500">*</span>
+              </label>
+              <select id="priorite" [(ngModel)]="newMaintenance.priorite" name="priorite" required
+                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="URGENTE">Urgente</option>
+                <option value="NORMALE">Normale</option>
+                <option value="FAIBLE">Faible</option>
+              </select>
+            </div>
+
+            <!-- Technicien -->
+              <div>
+                <label class="block text-gray-700 mb-2 font-medium">
+                  👨‍🔧 Technicien <span class="text-red-500">*</span>
+                </label>
+                <div class="flex gap-2">
+                  <select id="user" [(ngModel)]="newMaintenance.affecteAId" name="affecte" required
+                          class="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <option *ngFor="let user of users" [value]="user.id">
+                      {{ user.nom }} - Tâches en cours: {{ technicianWorkloads[user.id] }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
 
           <!-- Action Buttons -->
-          <div class="flex justify-between">
-            <button type="submit" [disabled]="!newMaintenance.titre || !newMaintenance.equipementNom || !newMaintenance.description || !newMaintenance.affecteAId" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none">
-              Ajouter
+          <div class="mt-8 flex justify-end gap-4">
+            <button
+              type="button"
+              class="bg-yellow-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-yellow-600 transition duration-300 ease-in-out flex items-center gap-2"
+              (click)="resetNewMaintenance()"
+            >
+              <i class="fas fa-undo"></i> Réinitialiser
             </button>
-            <button type="button" (click)="closeAddModal()" class="bg-gray-300 text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-400 focus:outline-none">
-              Annuler
+            <button type="submit"
+                    [disabled]="!newMaintenance.titre || !newMaintenance.equipementNom || !newMaintenance.description || !newMaintenance.affecteAId"
+                    class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700">
+              Ajouter
             </button>
           </div>
         </form>
+
       </div>
     </div>
+
+    <div *ngIf="showUpdatePanel" class="fixed inset-0 z-50 bg-gray-800 bg-opacity-60 flex justify-center items-center overflow-y-auto">
+      <div class="bg-white rounded-lg max-h-[90vh] overflow-y-scroll w-full max-w-4xl p-6 relative">
+
+        <!-- Close button -->
+        <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-10" (click)="closeAddModal()">
+          ✖
+        </button>
+
+        <form (ngSubmit)="updateMaintenance()">
+          <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center">🛠️ Mise à jour de la maintenance</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Bâtiment -->
+            <div>
+              <label class="block text-gray-700 mb-2 font-medium">
+                🏢 Bâtiment <span class="text-red-500">*</span>
+              </label>
+              <select id="batiment1" [(ngModel)]="selectedMaintenance!.equipementBatiment" name="batiment1" required
+                      (change)="onBatimentChange()"    class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option *ngFor="let batiment of batiments" [value]="batiment.id">Batiment {{ batiment.numBatiment }}: {{ batiment.intitule }}</option>
+              </select>
+              <p *ngIf="!selectedMaintenance!.equipementBatiment" class="text-sm italic text-gray-500 mt-1 ml-1">
+                🔍 Choisissez un bâtiment pour modifier les informations associées.
+              </p>
+            </div>
+
+            <!-- Étage -->
+            <div *ngIf="selectedMaintenance!.equipementBatiment">
+              <label class="block text-gray-700 mb-2 font-medium">
+                🪜 Étage <span class="text-red-500">*</span>
+              </label>
+              <select id="etage1" [(ngModel)]="selectedMaintenance!.equipementEtage" (change)="onEtageChange()" name="etage1" required
+                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option *ngFor="let etage of etages" [value]="etage.id">{{ etage.num }}</option>
+              </select>
+              <p *ngIf="!selectedMaintenance!.equipementEtage" class="text-sm italic text-gray-500 mt-1 ml-1">
+                👀 Sélectionnez un étage pour continuer.
+              </p>
+            </div>
+
+            <!-- Salle -->
+            <div *ngIf="selectedMaintenance!.equipementEtage">
+              <label class="block text-gray-700 mb-2 font-medium">
+                🚪 Salle <span class="text-red-500">*</span>
+              </label>
+              <select id="salle2" [(ngModel)]="selectedMaintenance!.equipementSalle" (change)="onSalleChange()" name="salle2" required
+                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option *ngFor="let salle of salles" [value]="salle.id">{{ salle.num }}</option>
+              </select>
+              <p *ngIf="!selectedMaintenance!.equipementSalle" class="text-sm italic text-gray-500 mt-1 ml-1">
+                🧭 Choisissez une salle pour voir les équipements disponibles.
+              </p>
+            </div>
+
+            <!-- Équipement -->
+            <div *ngIf="selectedMaintenance!.equipementSalle">
+              <label class="block text-gray-700 mb-2 font-medium">
+                🧰 Équipement <span class="text-red-500">*</span>
+              </label>
+              <select id="equipement2" [(ngModel)]="selectedMaintenance!.equipementNom" (change)="onEquipementChange()" name="equipement2" required
+                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option *ngFor="let equipement of equipements" [value]="equipement.nom">{{ equipement.nom }}</option>
+              </select>
+              <p *ngIf="!selectedMaintenance!.equipementNom" class="text-sm italic text-gray-500 mt-1 ml-1">
+                🔧 Choisissez un équipement à mettre à jour.
+              </p>
+
+              <!-- Tiny info block 👇 -->
+              <div *ngIf="selectedEquipementDetails" class="text-sm text-gray-700 mt-2 space-y-1 ml-1">
+                <div><strong>📦 Modèle:</strong> {{ selectedEquipementDetails.modele }}</div>
+                <div><strong>🏭 Marque:</strong> {{ selectedEquipementDetails.marque }}</div>
+                <div><strong>🔧 Statut:</strong> {{ selectedEquipementDetails.statut }}</div>
+                <div><strong>🗓️ Dernière maintenance:</strong> {{ selectedEquipementDetails.dateDerniereMaintenance }}</div>
+              </div>
+            </div>
+
+            <!-- Titre -->
+            <div>
+              <label class="block text-gray-700 mb-2 font-medium">
+                📝 Titre <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="titre2" [(ngModel)]="selectedMaintenance!.titre" name="titre2" required
+                     class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <!-- Description -->
+            <div class="md:col-span-2">
+              <label class="block text-gray-700 mb-2 font-medium">
+                📄 Description <span class="text-red-500">*</span>
+              </label>
+              <textarea id="description2" [(ngModel)]="selectedMaintenance!.description" name="description2" required
+                        class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
+            </div>
+
+            <!-- Priorité -->
+            <div>
+              <label class="block text-gray-700 mb-2 font-medium">
+                🚨 Priorité <span class="text-red-500">*</span>
+              </label>
+              <select id="priorite2" [(ngModel)]="selectedMaintenance!.priorite" name="priorite2" required
+                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="URGENTE">Urgente</option>
+                <option value="NORMALE">Normale</option>
+                <option value="FAIBLE">Faible</option>
+              </select>
+            </div>
+
+            <!-- Technicien -->
+            <div>
+              <label class="block text-gray-700 mb-2 font-medium">
+                👨‍🔧 Technicien <span class="text-red-500">*</span>
+              </label>
+              <div class="flex gap-2">
+                <select id="affecte2" [(ngModel)]="selectedMaintenance!.affecteAId" name="affecte2" required
+                        class="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                  <option *ngFor="let user of users" [value]="user.id">
+                    {{ user.nom }} - Tâches en cours: {{ technicianWorkloads[user.id] }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-8 flex justify-end gap-4">
+            <button type="submit"
+              class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700">
+              Mettre à jour
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+
 
     <!-- Filters Section -->
     <div class="flex justify-between mb-6">
@@ -149,9 +387,10 @@
           <td class="px-6 py-4 text-gray-600">{{ maintenance.creeParNom }}</td>
           <td class="px-6 py-4 text-gray-600">{{ maintenance.affecteANom }}</td>
           <td class="px-6 py-4">
-            <button *ngIf="maintenance.statut=='EN_ATTENTE'" class="text-blue-500 hover:text-blue-700">
+            <button (click)="openUpdatePanel(maintenance)" *ngIf="maintenance.statut === 'EN_ATTENTE'" class="text-blue-500 hover:text-blue-700">
               <i class="fas fa-edit"></i> Modifier
             </button>
+
           </td>
         </tr>
         </tbody>

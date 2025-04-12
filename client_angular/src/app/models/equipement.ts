@@ -27,6 +27,9 @@ export interface Equipement {
   historiquePannes: string;
   coutAchat: string;
   serviceNom: string;
+  batimentNom?: string;
+  etageNum?: number;
+  salleNum?: number;
   typeEquipement: TypesEquipements;
   service: Service;
   piecesDetachees: PieceDetachee[];

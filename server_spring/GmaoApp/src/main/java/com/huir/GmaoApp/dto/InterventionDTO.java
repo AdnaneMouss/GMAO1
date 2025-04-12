@@ -3,6 +3,7 @@ package com.huir.GmaoApp.dto;
 import com.huir.GmaoApp.model.Intervention;
 import com.huir.GmaoApp.model.MaintenanceCorrective;
 import com.huir.GmaoApp.model.TypeIntervention;
+import com.huir.GmaoApp.service.PieceDetacheeService;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -28,7 +29,9 @@ public class InterventionDTO {
     private String dateCloture;
     private String dateCreation;
     private List<PhotosInterventionDTO> photos;
+    private List<PieceDetacheeDTO> piecesDetachees;
     private String remarques;
+
 
 
     public InterventionDTO(Intervention intervention) {
@@ -38,7 +41,12 @@ public class InterventionDTO {
         this.description = intervention.getDescription();
         this.duree = intervention.getDuree();
         this.remarques = intervention.getRemarques();
-        this.equipementMaintenu = intervention.getMaintenanceCorrective().getEquipement().getNom();
+        this.equipementMaintenu = (intervention.getMaintenanceCorrective() != null &&
+                intervention.getMaintenanceCorrective().getEquipement() != null &&
+                intervention.getMaintenanceCorrective().getEquipement().getNom() != null)
+                ? intervention.getMaintenanceCorrective().getEquipement().getNom()
+                : null;
+
         // Map photos if available
         this.photos = intervention.getPhotos() != null
                 ? intervention.getPhotos().stream()
@@ -74,5 +82,11 @@ public class InterventionDTO {
                 ? intervention.getMaintenanceCorrective().getDateCreation().toString() // Convert LocalDateTime to String
                 : null;
 
+        // Map PieceDetachee if available
+        this.piecesDetachees = intervention.getPiecesDetachees() != null
+                ? intervention.getPiecesDetachees().stream()
+                .map(pieceDetachee -> new PieceDetacheeDTO(pieceDetachee))
+                .collect(Collectors.toList())
+                : null;
     }
 }

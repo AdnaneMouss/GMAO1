@@ -1,5 +1,6 @@
 import { PhotosIntervention } from "./photos-intervention";
 import { MaintenanceCorrective } from "./maintenance-corrective";
+import {PieceDetachee} from "./piece-detachee";
 
 export interface Intervention {
   id: number;
@@ -16,4 +17,6 @@ export interface Intervention {
   equipementMaintenu: string;
   remarques: string;
   photos: PhotosIntervention[];  // List of photos linked to the intervention
+  piecesDetachees?: number[];
+
 }

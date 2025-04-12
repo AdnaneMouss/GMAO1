@@ -20,6 +20,10 @@ export class EquipementService {
     return this.http.post<Equipement>(`${this.apiUrl}/create`, equipement);
   }
 
+  getEquipementsBySalle(salleId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/bySalle/${salleId}`);
+  }
+
   // Modifié pour renvoyer un Map<string, string> au lieu d'un tableau d'objets AttributEquipements
   getAttributsByEquipement(equipementId: number): Observable<Map<string, string>> {
     return this.http.get<Map<string, string>>(`${this.apiUrl}/${equipementId}/attributs`);

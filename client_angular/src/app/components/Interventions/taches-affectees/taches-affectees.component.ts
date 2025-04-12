@@ -4,6 +4,8 @@ import { MaintenanceCorrectiveService } from "../../../services/maintenance-corr
 import { MaintenanceCorrective } from "../../../models/maintenance-corrective";
 import { InterventionService } from "../../../services/intervention.service";
 import { Intervention } from "../../../models/intervention";
+import {PieceDetachee} from "../../../models/piece-detachee";
+import {PieceDetacheeService} from "../../../services/piece-detachee.service";
 
 @Component({
   selector: 'app-taches-affectees',
@@ -40,7 +42,8 @@ export class TachesAffecteesComponent implements OnInit {
     duree: number;
     id: number;
     photos: any[];
-    typeIntervention: string
+    typeIntervention: string;
+    piecesDetachees: number[];
   } = {
     description: "",
     duree: 0,
@@ -50,8 +53,12 @@ export class TachesAffecteesComponent implements OnInit {
     photos: [],
     remarques: "",
     technicienId: 0,
-    typeIntervention: 'CORRECTIVE'
+    typeIntervention: 'CORRECTIVE',
+    piecesDetachees: []
   };
+
+  selectedPieces: number[] = [];  // Array to hold selected pieces
+  piecesList: PieceDetachee[] = [];  // Array that will contain all available pieces for the dropdown
 
   // Add a variable for file input
   selectedFile: File | null = null;
@@ -59,6 +66,7 @@ export class TachesAffecteesComponent implements OnInit {
   constructor(
     private maintenanceService: MaintenanceCorrectiveService,
     private interventionService: InterventionService,
+    private PieceDetacheeService: PieceDetacheeService,
     private router: Router
   ) {}
 
@@ -66,6 +74,7 @@ export class TachesAffecteesComponent implements OnInit {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.technicienId = user.id;
     this.getMaintenancesByTechnicien(this.technicienId);
+    this.fetchPieces();
   }
 
   getMaintenancesByTechnicien(technicienId: number): void {
@@ -169,6 +178,18 @@ export class TachesAffecteesComponent implements OnInit {
     this.selectedFile = event.target.files[0]; // Capture the selected file
   }
 
+  fetchPieces(): void {
+    this.PieceDetacheeService.getAllPiecesDetachees().subscribe({
+      next: (data) => {
+        this.piecesList = data;
+        console.log(this.PieceDetacheeService.getAllPiecesDetachees())
+      },
+      error: (err) => {
+        console.error('Error fetching Pieces:', err);
+      }
+    });
+  }
+
   submitIntervention(): void {
     if (this.selectedFile) {
       // Prepare the intervention data along with the file for upload
@@ -176,7 +197,8 @@ export class TachesAffecteesComponent implements OnInit {
         description: this.intervention.description,
         remarques: this.intervention.remarques,
         maintenanceId: this.intervention.maintenanceId,
-        technicienId: this.intervention.technicienId
+        technicienId: this.intervention.technicienId,
+        piecesDetachees: this.selectedPieces,
       };
 
       // Call the service method to send the data along with the file
@@ -191,6 +213,12 @@ export class TachesAffecteesComponent implements OnInit {
         }
       );
     }
+  }
+
+
+  onPiecesChange(event: Event): void {
+    const selectedOptions = (event.target as HTMLSelectElement).selectedOptions;
+    this.selectedPieces = Array.from(selectedOptions).map(opt => Number(opt.value));
   }
 
   formatDateWithIntl(date: string | undefined): string {

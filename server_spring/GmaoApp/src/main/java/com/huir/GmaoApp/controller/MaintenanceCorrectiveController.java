@@ -5,6 +5,7 @@ import com.huir.GmaoApp.dto.MaintenanceCorrectiveDTO;
 import com.huir.GmaoApp.dto.ServiceDTO;
 import com.huir.GmaoApp.model.MaintenanceCorrective;
 import com.huir.GmaoApp.service.MaintenanceCorrectiveService;
+import com.huir.GmaoApp.service.MaintenanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +19,10 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "http://localhost:4200")
 public class MaintenanceCorrectiveController {
 
-@Autowired
-private MaintenanceCorrectiveService maintenanceCorrectiveService;
+    @Autowired
+    private MaintenanceCorrectiveService maintenanceCorrectiveService;
+    @Autowired
+    private MaintenanceService maintenanceService;
 
     @GetMapping
     public List<MaintenanceCorrectiveDTO> getAllServices() {
@@ -56,11 +59,27 @@ private MaintenanceCorrectiveService maintenanceCorrectiveService;
         return maintenanceCorrectiveService.getMaintenancesByTechnicien(technicienId);
     }
 
+    @GetMapping("/technician/workload/{id}")
+    public ResponseEntity<Integer> getTechnicianWorkload(@PathVariable("id") Long technicianId) {
+        int workload = maintenanceCorrectiveService.getTechnicianWorkload(technicianId);
+        return ResponseEntity.ok(workload);
+    }
+
+
     @PostMapping("/add")
     public ResponseEntity<MaintenanceCorrectiveDTO> addMaintenance(@RequestBody MaintenanceCorrectiveDTO dto) {
         MaintenanceCorrectiveDTO createdDto = maintenanceCorrectiveService.createMaintenanceCorrective(dto);
         return ResponseEntity.ok(createdDto);
     }
 
+    @PutMapping("/{maintenanceId}")
+    public ResponseEntity<MaintenanceCorrectiveDTO> updateMaintenanceCorrective(
+            @PathVariable Long maintenanceId,
+            @RequestBody MaintenanceCorrectiveDTO maintenanceCorrectiveDTO) {
 
+        MaintenanceCorrectiveDTO updatedMaintenanceCorrective =
+                maintenanceCorrectiveService.updateMaintenanceCorrective(maintenanceId, maintenanceCorrectiveDTO);
+
+        return ResponseEntity.ok(updatedMaintenanceCorrective);
+    }
 }

@@ -316,22 +316,21 @@ export class ListeUtilisateursComponent implements OnInit {
 
 
   validateGSM(gsm: string) {
-    const gsmRegex = /^(06|07)\d{8}$/;
+    const gsmRegex = /^\d{10}$/; // Only checks for exactly 10 digits
     if (!gsmRegex.test(gsm.trim())) {
       this.gsmInvalid = true;
-      this.errorMessage = "Le numéro doit commencer par 06 ou 07 et contenir 10 chiffres.";
-    }
-    else {
+      this.errorMessage = "Le numéro doit contenir exactement 10 chiffres.";
+    } else {
       this.gsmInvalid = false;
     }
   }
 
   validatePassword(password: string) {
 
-    const passwordRegex = /^(?=.*[0-9])(?=.*[\W_]).{6,}$/;
+    const passwordRegex = /^(?=.*[0-9])(?=.*[\W_]).{7,}$/;
     if (!passwordRegex.test(password)) {
       this.passwordInvalid = true;
-      this.errorMessage = "Le mot de passe doit contenir 6 caractères, dont un caractère spécial et un chiffre.";
+      this.errorMessage = "Le mot de passe doit contenir 7 caractères, dont un caractère spécial et un chiffre.";
     } else {
       this.passwordInvalid = false;
     }

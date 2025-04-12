@@ -53,9 +53,18 @@ public class MaintenanceCorrectiveDTO {
                 .collect(Collectors.toList())
                 : null;
 
-        this.equipementBatiment = maintenance.getEquipement().getBatiment() != null ? maintenance.getEquipement().getBatiment().getIntitule() : null;
-        this.equipementEtage = maintenance.getEquipement().getEtage() != null ? maintenance.getEquipement().getEtage().getNum() : null;
-        this.equipementSalle = maintenance.getEquipement().getSalle() != null ? maintenance.getEquipement().getSalle().getNum() : null;
+        Equipement equipement = maintenance.getEquipement();
+        if (equipement != null) {
+            this.equipementNom = equipement.getNom();
+            this.equipementBatiment = equipement.getBatiment() != null ? equipement.getBatiment().getIntitule() : null;
+            this.equipementEtage = equipement.getEtage() != null ? equipement.getEtage().getNum() : null;
+            this.equipementSalle = equipement.getSalle() != null ? equipement.getSalle().getNum() : null;
+        } else {
+            this.equipementNom = null;
+            this.equipementBatiment = null;
+            this.equipementEtage = null;
+            this.equipementSalle = null;
+        }
 
     }
 }  
