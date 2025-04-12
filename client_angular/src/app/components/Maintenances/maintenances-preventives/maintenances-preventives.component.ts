@@ -20,6 +20,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../../../services/NotificationService';
+import { AttributEquipements } from '../../../models/attribut-equipement';
 
                     
 
@@ -38,6 +39,7 @@ export class MaintenancesPreventivesComponent implements OnInit {
   message: string = '';
   filteredMaintenace = [...this.maintenance];
   equipements: Equipement[] = [];
+  typesEquipements: TypesEquipements[] = []
   users  :User[]  =[];
   selectedFile: File | null = null;  // Déclarer selectedFile ici ICI 
   isValid: boolean = true;
@@ -56,6 +58,18 @@ export class MaintenancesPreventivesComponent implements OnInit {
   notificationMessage: string = ''; // Variable pour stocker le message de notification
   notificationCount: number = 0;
   notification: {id: number, message: string}[] = [];
+  currentPage: number = 0;
+  pageSize: number = 15 // 20 éléments par page
+ 
+  selectedAttribut: any;
+  selectedEquipementId: number | null = null;
+
+
+
+
+
+  
+  
   
 
 private checkInterval: Subscription | undefined;
@@ -79,7 +93,24 @@ showNotifications: boolean = false;
     SAMEDI: false,
     DIMANCHE: false,
   };
- 
+
+  // Méthode pour mettre à jour le seuil à partir de l'attribut sélectionné
+updateSeuilFromAttribut() {
+  if (this.selectedAttribut && this.selectedAttribut.valeur) {
+    // Convertit la valeur en nombre si possible
+    const numericValue = parseFloat(this.selectedAttribut.valeur);
+    if (!isNaN(numericValue)) {
+      this.newMaintenance.seuil = numericValue;
+    }
+  }
+}
+// Méthode appelée lors du changement d'attribut
+onAttributChange(attribut: any) {
+  this.selectedAttribut = attribut;
+  this.updateSeuilFromAttribut();
+}
+
+
  
 
   getDays(): string[] {
@@ -120,9 +151,8 @@ showNotifications: boolean = false;
   ];
   
 
-  
- 
-  
+  selectedAttributs: AttributEquipements[] = [];
+
 
   closeForm() {
     this.selectedForm= null; // Ferme le formulaire
@@ -211,35 +241,50 @@ showNotifications: boolean = false;
     repetition: 0,
     seuil: 0,
     endDaterep: new Date(''),
-    equipementId: 0,
+    equipementId: null,
 
 
     indicateurs: [],
+    indice: {
+      nomIndice: '',
+      seuilIndice: 0
+    },
+
     selectedDays: {}, // Exemple : { "LUNDI": true, "MARDI": false }
     selectedMonth: {}, // Exemple : { "JANVIER": true, "FÉVRIER": false }
     repetitionType: 'TOUS_LES_SEMAINES',
     startDate: new Date(''),
     endDate: new Date(''),
     RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
-    message: ''
+    message: '',
+    NonSeuil: ''
   };
 
 
+
+  onEquipementChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const equipementId = Number(target.value);
   
-
-   
-
+    if (!equipementId) {
+      this.selectedAttributs = [];
+      return;
+    }
   
-
-
-
+    this.equipementService.getAttributsByEquipementId(equipementId).subscribe({
+      next: (attributs) => {
+        // Filter attributes where type === 'number'
+        this.selectedAttributs = attributs.filter(attr => attr.attributEquipementType === 'NUMBER');
+        console.log("attributs:", this.selectedAttributs);
+      },
+      error: (error) => {
+        console.error('Erreur lors de la récupération des attributs', error);
+        this.selectedAttributs = [];
+      }
+    });
+  }
   
-    
-
   
-
-
-
 
 
 
@@ -436,9 +481,47 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     });
 
     this.checkMaintenanceStartDate();
+    this.chargerEquipements();
+   
  
       
   }
+
+  getPaginatedMaintenances(): any[] {
+    const startIndex = this.currentPage * this.pageSize;
+    return this.filteredMaintenace.slice(startIndex, startIndex + this.pageSize);
+  }
+  getTotalPages(): number {
+    return Math.ceil(this.filteredMaintenace.length / this.pageSize);
+  }
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.getTotalPages()) {
+      this.currentPage = page;
+    }
+  }
+  prevPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+    }
+  }
+  
+  nextPage(): void {
+    if (this.currentPage < this.getTotalPages() - 1) {
+      this.currentPage++;
+    }
+  }  
+  
+
+  getMin(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+  
+ 
+  
+
+
+
+  
 
   startAutoCheck(): void {
     // Vérifier toutes les 5 minutes (300000 ms)
@@ -458,17 +541,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
   
       maintenances.forEach(maintenance => {
         // Vérifier les maintenances qui commencent aujourd'hui
-        if (maintenance.startDaterep) {
-          const startDate = new Date(maintenance.startDaterep);
-          startDate.setHours(0, 0, 0, 0);
-  
-          if (startDate.getTime() === today.getTime()) {
-            this.addNotification(
-              maintenance.id,
-              `La maintenance #${maintenance.id} commence aujourd'hui!`
-            );
-          }
-        }
+        
   
         // Vérifier les répétitions de maintenance
         if (maintenance.startDaterep && maintenance.endDaterep) {
@@ -484,21 +557,34 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
             if (date.getTime() === today.getTime()) {
               this.addNotification(
                 maintenance.id,
-                `Répétition de la maintenance #${maintenance.id} prévue aujourd'hui!`
+                `🔁 Répétition de la maintenance #${maintenance.id} (${maintenance.repetitiontype}) prévue aujourd'hui !`
               );
             }
           });
-        }   
+        }
+  
+        // Vérifier si la valeur suivie dépasse le seuil
+        if (
+          typeof maintenance.valeurSuivi === 'number' &&
+          typeof maintenance.seuil === 'number' &&
+          maintenance.valeurSuivi >= maintenance.seuil
+        ) {
+          this.addNotification(
+            maintenance.id,
+            `⚠️ Attention : La valeur suivie (${maintenance.valeurSuivi}) de la maintenance #${maintenance.id} a atteint ou dépassé le seuil (${maintenance.seuil}) !`
+          );
+        }
       });
     });
   }
+  
   
   private addNotification(id: number, message: string): void {
     if (!this.notification.some(n => n.id === id)) {
       const newNotification = { id, message };
   
       this.notificationService.addNotification(newNotification).subscribe({
-        next: () => console.log('Notification sauvegardée'),
+      next: () => console.log('Notification sauvegardée'),
         error: (err) => console.error('Erreur lors de la sauvegarde', err)
       });
   
@@ -517,6 +603,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
       closeButton: true,
       progressBar: true
     });
+    
   }
   toggleNotificationsPanel(): void {
     this.showNotificationsPanel = !this.showNotificationsPanel;
@@ -601,7 +688,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
   }
   
 
-  //Méthode pour calculer la REPETITION de l'intervention
+  //Méthode pour calculer la REPETITION de l'intervention  
   calculerRepetition(): void {
     if (this.newMaintenance.startDaterep && this.newMaintenance.endDaterep && this.newMaintenance.repetitiontype) {
       const startDaterep = new Date(this.newMaintenance.startDaterep);
@@ -918,8 +1005,9 @@ resetForm() {
       repetition:0,
       seuil:0,
       message:'',
+      NonSeuil:'',
       RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
-      equipementId:  0,
+      equipementId:  null,
      
      
   
@@ -1199,14 +1287,13 @@ showNotification(message: string): void {
     progressBar: true // Barre de progression
   });
 }
+
+
+onNotificationClick(notification: any): void {
+  // Ici, tu peux décider de l'action à effectuer quand une notification est cliquée.
+  // Par exemple, naviguer vers une page de détails, afficher un modal, etc.
+  
+  console.log('Notification cliquée:', notification);
+  
 }
-
-
-
- 
-
-
-
-
-
-
+}

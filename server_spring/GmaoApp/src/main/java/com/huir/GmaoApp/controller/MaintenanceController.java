@@ -30,6 +30,9 @@ import com.huir.GmaoApp.model.Maintenance;
 import com.huir.GmaoApp.model.Priorite;
 import com.huir.GmaoApp.model.Statut;
 import com.huir.GmaoApp.model.User;
+import com.huir.GmaoApp.repository.AttributEquipementsRepository;
+import com.huir.GmaoApp.repository.AttributEquipementsValeursRepository;
+import com.huir.GmaoApp.repository.IndiceRepository;
 import com.huir.GmaoApp.service.MaintenanceService;
 
 import jakarta.persistence.criteria.Path;
@@ -50,6 +53,15 @@ import org.slf4j.LoggerFactory;
 public class MaintenanceController {
 	 private static final Logger logger = LoggerFactory.getLogger(MaintenanceController.class);
 	
+		@Autowired
+		private AttributEquipementsRepository attributEquipementsRepository;
+		@Autowired
+		private AttributEquipementsValeursRepository attributEquipementsValeursRepository;
+
+
+
+		@Autowired
+	    private  IndiceRepository indiceRepository;
 
     @Autowired
     private MaintenanceService maintenanceService;
@@ -129,6 +141,13 @@ public class MaintenanceController {
 
         // Retourner l'objet avec la liste des dates de répétition
         return new NextRepetitionDatesResponse(nextDates);
+    }
+    
+    
+ // Expose l'endpoint pour tester la méthode
+    @GetMapping("/verifierSeuil")
+    public String verifierSeuil(@RequestParam String nomIndice) {
+        return maintenanceService.verifierSeuilMaintenance(nomIndice);
     }
 
   

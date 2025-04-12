@@ -433,6 +433,23 @@ select option {
   100% { transform: scale(1); }
 }
 
+.notifications-scroll {
+  max-height: 300px; /* ajuste selon tes besoins */
+  overflow-y: auto;
+  padding-right: 8px; /* petit espace pour ne pas couper les messages */
+}
+
+/* Tu peux aussi styliser la scrollbar si tu veux */
+.notifications-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notifications-scroll::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 3px;
+}
+
+
   
 
 

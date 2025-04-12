@@ -22,10 +22,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huir.GmaoApp.dto.EventDTO;
 import com.huir.GmaoApp.dto.IndicateurDTO;
 import com.huir.GmaoApp.dto.MaintenanceDTO;
+import com.huir.GmaoApp.model.AttributEquipementValeur;
+import com.huir.GmaoApp.model.AttributEquipements;
 import com.huir.GmaoApp.model.Event;
+import com.huir.GmaoApp.model.Indice;
 import com.huir.GmaoApp.model.Maintenance;
 import com.huir.GmaoApp.model.repetitiontype;
+import com.huir.GmaoApp.repository.AttributEquipementsRepository;
+import com.huir.GmaoApp.repository.AttributEquipementsValeursRepository;
 import com.huir.GmaoApp.repository.EventRepository;
+import com.huir.GmaoApp.repository.IndiceRepository;
 import com.huir.GmaoApp.repository.MaintenanceRepository;
 
 @Service
@@ -36,6 +42,19 @@ public class MaintenanceService {
     
     @Autowired
     private final EventRepository eventRepository;
+    
+    
+    
+
+	@Autowired
+	private AttributEquipementsRepository attributEquipementsRepository;
+	@Autowired
+	private AttributEquipementsValeursRepository attributEquipementsValeursRepository;
+
+
+
+	@Autowired
+    private  IndiceRepository indiceRepository;
 
     
     public MaintenanceService(MaintenanceRepository maintenanceRepository , EventRepository eventRepository) {
@@ -43,7 +62,7 @@ public class MaintenanceService {
         this.eventRepository  =  eventRepository;
     }
 
-    // Méthode pour ajouter une maintenance
+    // Méthode pour ajouter une maintenance  
     @Transactional
     public void addMaintenance(MaintenanceDTO maintenancedto) {
         Maintenance maintenance = new Maintenance();
@@ -58,13 +77,15 @@ public class MaintenanceService {
         maintenance.setAction(maintenancedto.getAction());   
         maintenance.setAutreAction(maintenancedto.getAutreAction());
         maintenance.setUser(maintenancedto.getUser()); 
-        maintenance.setRepetitiontype(maintenancedto.getRepetitiontype());  
+        maintenance.setRepetitiontype(maintenancedto.getRepetitiontype());   
         maintenance.setStartDaterep(maintenancedto.getStartDaterep());
         maintenance.setEndDaterep(maintenancedto.getEndDaterep());
         maintenance.setSelectedjours(maintenancedto.getSelectedjours());
         maintenance.setSelectedmois(maintenancedto.getSelectedmois());
         maintenance.setSeuil(maintenancedto.getSeuil());
         maintenance.setEquipementId(maintenancedto.getEquipementId()); 
+        maintenance.setNonSeuil(maintenancedto.getNonSeuil());
+        
        
         
         
@@ -214,7 +235,7 @@ public class MaintenanceService {
             maintenance.setSelectedmois(maintenancedto.getSelectedmois());
             maintenance.setSeuil(maintenancedto.getSeuil());
             maintenance .setEquipementId(maintenancedto.getEquipementId());
-          
+            maintenance.setNonSeuil(maintenancedto.getNonSeuil());
             
         //    if (maintenancedto.getIndicateurs() != null && !maintenancedto.getIndicateurs().isEmpty()) {
           //      ObjectMapper objectMapper = new ObjectMapper();
@@ -361,6 +382,55 @@ public class MaintenanceService {
 		        return count; // Retourner le nombre de dates de maintenance
 		    }
 	
+		 
+		 
+		 public String verifierSeuilMaintenance(String nomIndice) {
+		        // 1. Chercher l'indice par son nom
+		        Optional<Indice> optIndice = indiceRepository.findByNomIndice(nomIndice);
+		        
+		        if (optIndice.isPresent()) {
+		            Indice indice = optIndice.get();
+
+		            // 2. Chercher l'attribut avec le même nom (comparaison avec "INDICATEUR" dans la table AttributEquipements)
+		            Optional<AttributEquipements> optAttr = attributEquipementsRepository.findByNom(nomIndice);
+		            if (optAttr.isPresent()) {
+		                AttributEquipements attribut = optAttr.get();
+
+		                // 3. Comparer le nom de l'indice avec le nom de l'attribut
+		                if (indice.getNomIndice().equals(attribut.getNom())) {
+		                    
+		                    // 4. Chercher la valeur liée à cet attribut
+		                    Optional<AttributEquipementValeur> optValeur = attributEquipementsValeursRepository.findByAttributEquipement(attribut);
+		                    if (optValeur.isPresent()) {
+		                        AttributEquipementValeur valeur = optValeur.get();
+
+		                        // 5. Comparer la valeur (String) avec le seuilIndice (Double)
+		                        try {
+		                            double valeurDouble = Double.parseDouble(valeur.getValeur());
+		                            if (valeurDouble >= indice.getSeuilIndice()) {
+		                                return "⚠️ La maintenance doit être faite (valeur atteint ou dépasse le seuil).";
+		                            } else {
+		                                return "✅ La valeur n’a pas encore atteint le seuil.";
+		                            }
+		                        } catch (NumberFormatException e) {
+		                            return "Erreur : valeur non numérique.";
+		                        }
+		                    } else {
+		                        return "Aucune valeur trouvée pour cet attribut.";
+		                    }
+		                } else {
+		                    return "Le nom de l'indice ne correspond pas à celui de l'attribut.";
+		                }
+		            } else {
+		                return "Attribut correspondant non trouvé.";
+		            }
+		        } else {
+		            return "Indice non trouvé.";
+		        }
+		    }
+
+
+
 		
 
 }

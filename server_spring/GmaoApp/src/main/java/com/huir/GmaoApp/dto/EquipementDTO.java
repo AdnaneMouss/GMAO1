@@ -1,5 +1,6 @@
 package com.huir.GmaoApp.dto;
 
+import com.huir.GmaoApp.model.AttributEquipements;
 import com.huir.GmaoApp.model.Equipement;
 import lombok.*;
 
@@ -44,6 +45,8 @@ public class EquipementDTO {
 
     // Liste des attributs dynamiques
     private List<AttributEquipementValeurDTO> attributs;
+    private List<AttributEquipements> attributsEquipement;
+    
 
     // Champs pour les relations Batiment, Etage et Salle
     private String batimentNom;
@@ -316,6 +319,16 @@ public class EquipementDTO {
 	public void setSalleNum(Integer salleNum) {
 		this.salleNum = salleNum;
 	}
+
+	public List<AttributEquipements> getAttributsEquipement() {
+		return attributsEquipement;
+	}
+
+	public void setAttributsEquipement(List<AttributEquipements> attributsEquipement) {
+		this.attributsEquipement = attributsEquipement;
+	}
+	
+	
     
       
     

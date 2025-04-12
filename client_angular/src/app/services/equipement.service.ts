@@ -49,5 +49,9 @@ export class EquipementService {
   getEquipementById(id: number): Observable<Equipement> {
     return this.http.get<Equipement>(`${this.apiUrl}/${id}`);
   }
+  getAttributsByEquipementId(id: number): Observable<AttributEquipements[]> {
+    return this.http.get<AttributEquipements[]>(`${this.apiUrl}/${id}/attributs`);
+  }
+  
 
 }

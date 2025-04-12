@@ -107,7 +107,8 @@ public class Maintenance {
 		this.typeMaintenance = typeMaintenance;
 	}
 
-	private double seuil;
+	private int seuil;
+	private  String nonSeuil;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonManagedReference // Gestion de la relation parent
@@ -170,7 +171,6 @@ public class Maintenance {
 	    @Temporal(TemporalType.DATE) // Stocker uniquement la date (sans l'heure)
 	    private Date startDaterep; // Date de début
 
-	    @Temporal(TemporalType.DATE) // Stocker uniquement la date (sans l'heure)
 	    private Date endDaterep; // Date de fin
 	    
 	    private String selectedjours;	
@@ -201,7 +201,26 @@ public class Maintenance {
 	    public Long getEquipementId() {
 	        return equipement != null ? equipement.getId() : null;
 	    }
-	   
+	    
+	    public void setValeurSuivi(double valeurSuivi) {
+	        this.equipement = new Equipement();
+	        this.equipement.setValeurSuivi(valeurSuivi);  // Lier uniquement l'ID
+	    }
+
+	    public Double getValeurSuivi() {
+	        return equipement != null ? equipement.getValeurSuivi() : null;
+	    }
+	    
+	    
+	    public void setLabelsuivi(String labelsuivi) {
+	        this.equipement = new Equipement();
+	        this.equipement.setLabelSuivi(labelsuivi);  // Lier uniquement l'ID
+	    }
+
+	    public String getLabelSuivi() {
+	        return equipement != null ? equipement.getLabelSuivi() : null;
+	    }
+
 	 
 
 	    
@@ -258,6 +277,14 @@ public class Maintenance {
 	       
 	             
 
+
+	public String getNonSeuil() {
+			return nonSeuil;
+		}
+
+		public void setNonSeuil(String nonSeuil) {
+			this.nonSeuil = nonSeuil;
+		}
 
 	public Date getStartDaterep() {
 			return startDaterep;
@@ -521,11 +548,13 @@ public class Maintenance {
 			this.repetition = repetition;
 		}
 
-		public double getSeuil() {
+		
+
+		public int getSeuil() {
 			return seuil;
 		}
 
-		public void setSeuil(double seuil) {
+		public void setSeuil(int seuil) {
 			this.seuil = seuil;
 		}
 

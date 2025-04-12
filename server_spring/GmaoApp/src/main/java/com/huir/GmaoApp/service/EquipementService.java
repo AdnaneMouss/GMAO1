@@ -65,7 +65,7 @@ public class EquipementService {
         return attributsValeurs;
     }
 
-    public Equipement saveEquipement(EquipementDTO equipementDTO) {
+ /*   public Equipement saveEquipement(EquipementDTO equipementDTO) {
         // Create Equipement entity from DTO
         Equipement equipement = Equipement.builder()
                 .nom(equipementDTO.getNom())
@@ -143,7 +143,7 @@ public class EquipementService {
 
         return savedEquipement;
     }
-
+*/
     public Optional<Equipement> findEquipementById(Long id) {
         return equipementRepository.findById(id);
     }
@@ -227,6 +227,17 @@ public class EquipementService {
         }
         return Collections.emptyList(); // If equipement is not found, return an empty list
     }
+    
+    public List<AttributEquipements> getAttributsByEquipementId(Long equipementId) {
+        Optional<Equipement> equipementOpt = equipementRepository.findById(equipementId);
+        if (equipementOpt.isPresent()) {
+            TypesEquipements type = equipementOpt.get().getTypeEquipement();
+            return type.getAttributs(); // assuming it's fetched correctly
+        } else {
+            throw new EntityNotFoundException("Equipement not found");
+        }
+    }
+
 
 
 }

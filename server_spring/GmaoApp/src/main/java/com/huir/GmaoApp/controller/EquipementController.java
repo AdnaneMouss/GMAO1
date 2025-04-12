@@ -2,6 +2,7 @@ package com.huir.GmaoApp.controller;
 
 import com.huir.GmaoApp.dto.EquipementDTO;
 import com.huir.GmaoApp.dto.PieceDetacheeDTO;
+import com.huir.GmaoApp.model.AttributEquipements;
 import com.huir.GmaoApp.model.Equipement;
 import com.huir.GmaoApp.model.PieceDetachee;
 import com.huir.GmaoApp.repository.EquipementRepository;
@@ -51,19 +52,14 @@ public class EquipementController {
         return equipementRepository.findByServiceId(serviceId);
     }
 
-    @GetMapping("/{id}/attributs")
-    public ResponseEntity<Map<String, String>> getAttributsByEquipement(@PathVariable Long id) {
-        Map<String, String> attributsValeurs = equipementService.getAttributsByEquipement(id);
-        return ResponseEntity.ok(attributsValeurs);
-    }
 
 
-    @PostMapping("/create")
+ /*   @PostMapping("/create")
     public ResponseEntity<Equipement> createEquipement(@RequestBody EquipementDTO equipementDTO) {
         Equipement savedEquipement = equipementService.saveEquipement(equipementDTO);
         return ResponseEntity.ok(savedEquipement);
     }
-
+*/
 
     @GetMapping("/{id}")
     public Optional<EquipementDTO> getEquipementById(@PathVariable("id") Long equipementId) {
@@ -84,6 +80,12 @@ public class EquipementController {
     public ResponseEntity<Void> deleteEquipement(@PathVariable Long id) {
         equipementService.deleteEquipement(id);
         return ResponseEntity.noContent().build();
+    }
+    
+    @GetMapping("/{id}/attributs")
+    public ResponseEntity<List<AttributEquipements>> getAttributsByEquipementId(@PathVariable Long id) {
+        List<AttributEquipements> attributs = equipementService.getAttributsByEquipementId(id);
+        return ResponseEntity.ok(attributs);
     }
 }
 

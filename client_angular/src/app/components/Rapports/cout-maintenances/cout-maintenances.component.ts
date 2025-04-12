@@ -216,38 +216,60 @@ showAll: boolean = false; // Contrôle l'affichage complet ou partiel
   }
 
   exportEquipmentPDF(equipment: Equipement): void {
-    const doc = new jsPDF();
+    const doc = new jsPDF('p', 'mm', 'a4');
     const primaryColor = '#4169E1';
-    const secondaryColor = '#A9A9A9';
-    
-    // Configuration initiale
-    let yPosition = 30;
+    const secondaryColor = '#6B7280';
     const marginLeft = 15;
-    const valueOffset = 80;
-    
-    // Ajout du logo
-    const logoUrl = 'assets/logo.png';
-    const img = new Image();
-    img.src = logoUrl;
-
- 
-const etageNom = equipment.etage?.num || 'Inconnu';
-const salleNom = equipment.salle?.num || 'Inconnue';
-const serviceNom = equipment.service?.nom || 'Inconnu';
-
+    const labelWidth = 60;
+    let yPosition = 20;
   
-    img.onload = () => {
-      try {
-        // En-tête avec logo
-        doc.addImage(img, 'PNG', marginLeft, 10, 30, 15);
-        doc.setFontSize(12);
-        doc.setTextColor(secondaryColor);
-        doc.text('H.U.I.R', 50, 15);
-        doc.text('HOPITAL UNIVERSITAIRE INTERNATIONAL DE RABAT', 50, 20);
+    // 1. Chargement asynchrone du logo
+    const loadImage = async (url: string): Promise<string> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = url;
         
-        // Titre principal
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL('image/png'));
+          } else {
+            resolve('');
+          }
+        };
+        
+        img.onerror = () => {
+          console.warn('Logo non chargé, continuation sans logo');
+          resolve('');
+        };
+      });
+    };
+  
+    // 2. Fonction principale async
+    (async () => {
+      try {
+        // A. Ajout du logo
+        const logoData = await loadImage('assets/logo.png');
+        
+        if (logoData) {
+          doc.addImage(logoData, 'PNG', marginLeft, yPosition, 30, 30);
+          doc.setFontSize(8);
+          doc.setTextColor(secondaryColor);
+          doc.text('Hôpital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
+          doc.text('Système de Gestion des Équipements', marginLeft + 35, yPosition + 15);
+        }
+        
+        yPosition += logoData ? 40 : 20;
+  
+        // B. En-tête du document
         doc.setFontSize(16);
         doc.setTextColor(primaryColor);
+        doc.setFont('helvetica', 'bold');
         doc.text('FICHE TECHNIQUE ÉQUIPEMENT', 105, yPosition, { align: 'center' });
         yPosition += 10;
         
@@ -257,57 +279,129 @@ const serviceNom = equipment.service?.nom || 'Inconnu';
         doc.line(marginLeft, yPosition, 195, yPosition);
         yPosition += 15;
   
-        // Section 1: Informations de base
-        this.addSectionHeader(doc, 'INFORMATIONS GÉNÉRALES', marginLeft, yPosition);
-        yPosition += 7;
-        this.addField(doc, 'Nom', equipment.nom, marginLeft, yPosition, valueOffset, 'left');
-        this.addField(doc, 'Numéro de série', equipment.numeroSerie, marginLeft, yPosition, valueOffset, 'left');
-        this.addField(doc, 'Modèle', equipment.modele, marginLeft, yPosition, valueOffset, 'left');
-        this.addField(doc, 'Marque', equipment.marque, marginLeft, yPosition, valueOffset, 'left');
-        this.addField(doc, 'Description', equipment.description, marginLeft, yPosition, valueOffset, 'left');
-        
+        // C. Sections d'information
+        const sections = [
+          {
+            title: 'INFORMATIONS GÉNÉRALES',
+            fields: [
+              { label: 'Nom', value: equipment.nom || 'N/A' },
+              { label: 'Numéro de série', value: equipment.numeroSerie || 'N/A' },
+              { label: 'Modèle', value: equipment.modele || 'N/A' },
+              { label: 'Marque', value: equipment.marque || 'N/A' },
+              { label: 'Description', value: equipment.description || 'N/A' },
+              { label: 'Statut', value: equipment.statut || 'N/A', special: 'status' },
+              { label: 'Actif', value: equipment.actif ? 'Oui' : 'Non' },
+              { label: 'Type', value: equipment.typeEquipement?.type || 'N/A' }
+            ]
+          },
+          {
+            title: 'DATES IMPORTANTES',
+            fields: [
+              { label: 'Date achat', value: equipment.dateAchat ? new Date(equipment.dateAchat).toLocaleDateString() : 'N/A' },
+              { label: 'Date mise en service', value: equipment.dateMiseEnService ? new Date(equipment.dateMiseEnService).toLocaleDateString() : 'N/A' },
+              { label: 'Date dernière maintenance', value: equipment.dateDerniereMaintenance ? new Date(equipment.dateDerniereMaintenance).toLocaleDateString() : 'N/A' },
+              { label: 'Garantie', value: equipment.garantie || 'N/A' },
+              { label: 'Fréquence maintenance', value: equipment.frequenceMaintenance || 'N/A' }
+            ]
+          },
+          {
+            title: 'LOCALISATION',
+            fields: [
+              { label: 'Bâtiment', value: equipment.batiment?.numBatiment?.toString() || 'N/A' },
+              { label: 'Étage', value: equipment.etage?.num?.toString() || 'N/A' },
+              { label: 'Salle', value: equipment.salle?.num?.toString() || 'N/A' },
+              { label: 'Service', value: equipment.service?.nom || 'N/A' }
+            ]
+          },
+          {
+            title: 'COÛTS ET SUIVI',
+            fields: [
+              { label: 'Coût d\'achat', value: equipment.coutAchat ? `${equipment.coutAchat} DH` : 'N/A' },
+              { label: 'Label suivi', value: equipment.labelSuivi || 'N/A' },
+              { label: 'Valeur suivi', value: equipment.valeurSuivi?.toString() || 'N/A' }
+            ]
+          }
+        ];
   
-        // Section 2: Statut et localisation
-        this.addField(doc, 'Actif', equipment.actif ? 'Oui' : 'Non', marginLeft, yPosition, valueOffset, 'left');
-        this.addField(doc, "Numéro bâtiment", String(equipment.batiment?.numBatiment ?? "Inconnu"), marginLeft, yPosition, valueOffset, 'left');
-        this.addField(doc, "Numéro etage", String(equipment.etage?.num ?? "Inconnu"), marginLeft, yPosition, valueOffset, 'left');
-        this.addField(doc, "salle", String(equipment.salle?.num ?? "Inconnu"), marginLeft, yPosition, valueOffset, 'left');
-        this.addField(doc, 'Service', serviceNom, marginLeft, yPosition + 28, valueOffset, 'left');
-        
-        
-        // Gestion des propriétés optionnelles avec vérification de type
-        this.addField(doc, 'Coût d\'achat', equipment.coutAchat ? `${equipment.coutAchat} DH` : null, marginLeft, yPosition, valueOffset, 'left');
-        this.addField(doc, 'Pièces détachées', `${equipment.piecesDetachees.length} pièces associées`, marginLeft, yPosition, valueOffset, 'left');
-        
-        this.addField(doc, 'Historique des pannes', equipment.historiquePannes || 'Aucun historique', marginLeft, yPosition, valueOffset, 'left');
-        this.addField(doc, 'Valeur suivi', equipment.valeurSuivi?.toString(), marginLeft, yPosition, valueOffset, 'left');
-        this.addField(doc, 'Label suivi', equipment.labelSuivi || null, marginLeft, yPosition, valueOffset, 'left');
-
+        // D. Génération dynamique des sections
+        for (const section of sections) {
+          // Vérifier si besoin d'une nouvelle page
+          if (yPosition > 250) {
+            doc.addPage();
+            yPosition = 20;
+          }
   
+          // Titre de section
+          doc.setFontSize(12);
+          doc.setTextColor(primaryColor);
+          doc.setFont('helvetica', 'bold');
+          doc.text(section.title, marginLeft, yPosition);
+          yPosition += 10;
   
-        
-        
-       
+          // Contenu de section
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          
+          for (const field of section.fields) {
+            if (yPosition > 270) {
+              doc.addPage();
+              yPosition = 20;
+            }
   
-        // Pied de page
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${field.label}:`, marginLeft, yPosition);
+            
+            if (field.special === 'status') {
+              const statusColor = this.getStatusColor(field.value);
+              doc.setTextColor(statusColor);
+              doc.text(field.value, marginLeft + labelWidth, yPosition);
+              doc.setTextColor('#000000');
+            } else {
+              doc.setFont('helvetica', 'normal');
+              doc.text(field.value, marginLeft + labelWidth, yPosition);
+            }
+            
+            yPosition += 7;
+          }
+          
+          yPosition += 10; // Espace entre sections
+        }
+  
+        // E. Pied de page
         doc.setFontSize(8);
         doc.setTextColor(secondaryColor);
-        doc.text(`Document généré le ${new Date().toLocaleDateString()} - H.U.I.R`, 105, 285, { align: 'center' });
+        doc.text(`Document généré le ${new Date().toLocaleDateString()} - Système de Gestion des Équipements H.U.I.R`, 105, 285, { align: 'center' });
   
-        // Enregistrement du PDF
-        doc.save(`fiche_equipement_${(equipment.nom || 'equipement').replace(/\s+/g, '_')}.pdf`);
-      } catch (e) {
-        console.error('Erreur lors de la génération du PDF:', e);
+        // F. Sauvegarde du PDF
+        doc.save(`fiche_technique_${equipment.nom?.replace(/\s+/g, '_') || 'equipement'}.pdf`);
+  
+      } catch (error) {
+        console.error('Erreur lors de la génération du PDF:', error);
+        // Fallback sans image si échec
+        this.generateSimplePDF(doc, equipment);
       }
-    };
-  
-    img.onerror = () => {
-      console.error('Le logo est introuvable, génération sans logo...');
-      this.generatePDFWithoutLogo(doc, equipment);
-    };
+    })();
   }
   
-  // Méthodes utilitaires avec typage strict
+  // Helper pour les couleurs de statut
+  private getStatusColor(status: string): string {
+    const colors: {[key: string]: string} = {
+      'Actif': '#228B22',
+      'En panne': '#F59E0B',
+      'Hors service': '#DC143C',
+      'En maintenance': '#3B82F6'
+    };
+    return colors[status] || '#000000';
+  }
+  
+  // Fallback si échec du PDF complet
+  private generateSimplePDF(doc: jsPDF, equipment: Equipement): void {
+    doc.text('FICHE ÉQUIPEMENT SIMPLIFIÉE', 20, 20);
+    doc.text(`Nom: ${equipment.nom || 'N/A'}`, 20, 30);
+    doc.text(`Numéro de série: ${equipment.numeroSerie || 'N/A'}`, 20, 40);
+    doc.save(`fiche_simple_${equipment.nom?.replace(/\s+/g, '_') || 'equipement'}.pdf`);
+  }
+  
   private addSectionHeader(doc: jsPDF, text: string, x: number, y: number): void {
     doc.setFontSize(12);
     doc.setTextColor('#4169E1');
@@ -316,9 +410,21 @@ const serviceNom = equipment.service?.nom || 'Inconnu';
     doc.setFont('helvetica', 'normal');
   }
   
-  addField(doc: jsPDF, label: string, value: string | null | undefined, x: number, y: number, offset: number, align: 'left' | 'center' | 'right'): void {
-    doc.text(`${label} : ${value ?? 'N/A'}`, x + offset, y, { align });
+
+  
+  // Méthode addField améliorée
+  private addField(doc: jsPDF, label: string, value: string, x: number, y: number, labelWidth: number): void {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${label}:`, x, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(value, x + labelWidth, y);
   }
+  
+  // Méthodes utilitaires avec typage strict
+ 
+  
+ 
   
     
   
