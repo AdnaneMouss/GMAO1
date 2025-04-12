@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
+import { FullCalendarModule } from '@fullcalendar/angular';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
@@ -47,17 +48,11 @@ import { EquipementFormComponent } from './equipement-form/equipement-form.compo
 
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ToastrModule } from 'ngx-toastr';
+import {UserRapportComponent} from "./components/Rapports/user-rapport/user-rapport.component";
+import {
+  MaintenanceCalendarComponent
+} from "./components/Maintenances/maintenance-calendar/maintenance-calendar.component";
 
-<<<<<<< HEAD
-import { MaintenanceCalendarComponent } from './components/Maintenances/maintenance-calendar/maintenance-calendar.component';
-import { FullCalendarModule } from '@fullcalendar/angular';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { UserRapportComponent } from './components/Rapports/user-rapport/user-rapport.component';
-
-=======
->>>>>>> 56e4f900fee9d383279aac9e0b0120aea28b922c
 @NgModule({
   declarations: [
     AppComponent,
@@ -83,12 +78,9 @@ import { UserRapportComponent } from './components/Rapports/user-rapport/user-ra
     TypesEquipementsComponent,
     BatimentsListeComponent,
     EquipementFormComponent,
-<<<<<<< HEAD
     MaintenanceCalendarComponent,
     UserRapportComponent,
-=======
 
->>>>>>> 56e4f900fee9d383279aac9e0b0120aea28b922c
   ],
   imports: [
     AppRoutingModule,
@@ -96,12 +88,7 @@ import { UserRapportComponent } from './components/Rapports/user-rapport/user-ra
     ListeEquipementsComponent,
     LoginComponent,
     MatSnackBarModule,
-<<<<<<< HEAD
     FullCalendarModule,
-
-
-=======
->>>>>>> 56e4f900fee9d383279aac9e0b0120aea28b922c
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,
