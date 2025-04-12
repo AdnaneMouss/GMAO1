@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
+import { FullCalendarModule } from '@fullcalendar/angular';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
@@ -47,15 +48,10 @@ import { EquipementFormComponent } from './equipement-form/equipement-form.compo
 
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ToastrModule } from 'ngx-toastr';
-
-
-import { MaintenanceCalendarComponent } from './components/Maintenances/maintenance-calendar/maintenance-calendar.component';
-import { FullCalendarModule } from '@fullcalendar/angular';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { UserRapportComponent } from './components/Rapports/user-rapport/user-rapport.component';
-
+import {UserRapportComponent} from "./components/Rapports/user-rapport/user-rapport.component";
+import {
+  MaintenanceCalendarComponent
+} from "./components/Maintenances/maintenance-calendar/maintenance-calendar.component";
 
 @NgModule({
   declarations: [
@@ -82,7 +78,6 @@ import { UserRapportComponent } from './components/Rapports/user-rapport/user-ra
     TypesEquipementsComponent,
     BatimentsListeComponent,
     EquipementFormComponent,
-
     MaintenanceCalendarComponent,
     UserRapportComponent,
 
@@ -93,11 +88,7 @@ import { UserRapportComponent } from './components/Rapports/user-rapport/user-ra
     ListeEquipementsComponent,
     LoginComponent,
     MatSnackBarModule,
-
     FullCalendarModule,
- 
-  
-
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,
