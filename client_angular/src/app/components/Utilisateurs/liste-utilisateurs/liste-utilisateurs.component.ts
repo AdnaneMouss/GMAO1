@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 //@ts-ignore
 import { saveAs } from 'file-saver';
 import {environment} from "../../../../environments/environment";
+import {Intervention} from "../../../models/intervention";
 @Component({
   selector: 'app-liste-utilisateurs',
   templateUrl: './liste-utilisateurs.component.html',
@@ -37,22 +38,7 @@ export class ListeUtilisateursComponent implements OnInit {
     password: '',
     role: 'ADMIN',
     image: '',
-    Intervention: {
-      id: 0,
-      technicienId: 0,
-      typeIntervention: 'PREVENTIVE',
-      description: '',
-      duree: 0,
-      maintenanceId: 0,
-      maintenanceStatut: 'EN_ATTENTE',
-      maintenancePriorite: 'NORMALE',
-      dateCommencement: undefined,
-      dateCloture: undefined,
-      dateCreation: undefined,
-      equipementMaintenu: '',
-      remarques: '',
-      photos: []
-    }
+    Intervention: {} as Intervention
   };
   passwordVisible = false;
   showAddPanel = false; // Controls the panel visibility
@@ -347,22 +333,7 @@ export class ListeUtilisateursComponent implements OnInit {
       password: '',
       role: 'ADMIN',
       image: '',
-      Intervention: {
-        id: 0,
-        technicienId: 0,
-        typeIntervention: 'PREVENTIVE',
-        description: '',
-        duree: 0,
-        maintenanceId: 0,
-        maintenanceStatut: 'EN_ATTENTE',
-        maintenancePriorite: 'NORMALE',
-        dateCommencement: undefined,
-        dateCloture: undefined,
-        dateCreation: undefined,
-        equipementMaintenu: '',
-        remarques: '',
-        photos: []
-      }
+      Intervention: {} as Intervention
     };
     this.emailInvalid = false;
     this.gsmInvalid = false;
