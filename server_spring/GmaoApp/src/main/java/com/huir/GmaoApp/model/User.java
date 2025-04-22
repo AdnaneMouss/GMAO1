@@ -93,7 +93,6 @@ public class User {
     @OneToMany(mappedBy = "technicien", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Intervention> interventions;
 
-<<<<<<< HEAD
 	public Long getId() {
 		return id;
 	}
@@ -101,10 +100,6 @@ public class User {
 	public void setId(Long id) {
 		this.id = id;
 	}
-    
-    
-    
-=======
->>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
+
     
 }

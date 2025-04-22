@@ -202,15 +202,7 @@ public class PieceDetachee {
 	}
 
 
-	public List<Intervention> getInterventions() {
-		return interventions;
-	}
 
-
-	public void setInterventions(List<Intervention> interventions) {
-		this.interventions = interventions;
-	}
-    
     
     
 }
