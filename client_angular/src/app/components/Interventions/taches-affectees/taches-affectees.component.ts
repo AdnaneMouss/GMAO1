@@ -110,7 +110,7 @@ export class TachesAffecteesComponent implements OnInit {
         (this.filters.equipementBatiment ? maintenance.equipementBatiment.toLowerCase().includes(this.filters.equipementBatiment.toLowerCase()) : true) &&
         (this.filters.statut ? maintenance.statut.toLowerCase().includes(this.filters.statut.toLowerCase()) : true) &&
         (this.filters.priorite ? maintenance.priorite.toLowerCase().includes(this.filters.priorite.toLowerCase()) : true) &&
-        dateInRange // Check if the intervention date is in the selected range
+        dateInRange // Check if the intervention date is in the selected range   
       );
     });
   }

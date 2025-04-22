@@ -621,6 +621,41 @@
                 </div>
               </div>
 
+
+
+
+
+
+
+
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar-x fs-3 me-3" style="color: #00008B;"></i>
+                  <div>
+                    <h5 class="card-title mb-1">Détail de l'attribut sélectionné</h5>
+              
+                    <!-- Affichage de la valeur de l'attribut si elle est définie -->
+                    <h5 class="card-title mb-1" *ngIf="selectedAttribut?.valeur">
+                      {{ selectedAttribut.valeur }}
+                    </h5>
+                    
+                    <!-- Affichage du seuil de maintenance si la valeur existe -->
+                    <h5 class="card-title mb-1" *ngIf="maintenance?.seuil">
+                      {{ maintenance.seuil }}
+                    </h5>
+              
+                    <!-- Affichage du message si "messageSeuil" existe -->
+                    <div *ngIf="messageSeuil" class="mt-3 p-3 rounded-lg bg-yellow-100 text-yellow-900 border-l-4 border-yellow-500">
+                      {{ messageSeuil }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              
+
+             
+
             
 
 
@@ -656,25 +691,7 @@
               </div>
 
 
-              <div class="col-md-6 mb-4" *ngIf="!isEditMode && selectedAttribut">
-                <div class="card shadow-sm border-0 h-100">
-                  <div class="card-body d-flex align-items-center bg-white">
-                    <i class="bi bi-info-circle fs-3 me-3" style="color: #006400;"></i>
-                    <div>
-                      <h5 class="card-title mb-1">Détail de l'attribut sélectionné</h5>
-              
-                      <p class="card-text"><strong>Nom :</strong> {{ selectedAttribut.nom }}</p>
-                      <p class="card-text"><strong>Valeur :</strong> {{ selectedAttribut.valeur }}</p>
-                      <p class="card-text"><strong>Type :</strong> {{ selectedAttribut.attributEquipementType }}</p>
-              
-                      <div *ngIf="messageSeuil" class="mt-3 p-3 rounded-lg bg-yellow-100 text-yellow-900 border-l-4 border-yellow-500">
-                        {{ messageSeuil }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
+             
 
 
            

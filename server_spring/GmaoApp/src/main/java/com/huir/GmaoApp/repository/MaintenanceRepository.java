@@ -10,11 +10,15 @@ import org.springframework.stereotype.Repository;
 
 
 import com.huir.GmaoApp.model.Maintenance;
+import com.huir.GmaoApp.model.MaintenanceCorrective;
+import com.huir.GmaoApp.model.Statut;
 
 
 @Repository
 public interface MaintenanceRepository extends JpaRepository<Maintenance, Long> {
 	 Optional<Maintenance> findById(Long id);
+	 List<Maintenance> findByAffecteAId(Long affecteA);
+	 List<Maintenance> findByAffecteAIdAndStatutNotIn(Long technicianId, List<Statut> statuses);
 	
 	 
 	

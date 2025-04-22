@@ -1,4 +1,6 @@
 import { NgModule } from '@angular/core';
+
+
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
@@ -57,6 +59,10 @@ import { InfosUtilisateursComponent } from './components/parametres/infos-utilis
 import { ChangePasswordComponent } from './components/Parametres/change-password/change-password.component';
 import { HistoriqueMaintenancesCorrectivesComponent } from './components/Maintenances/historique-maintenances-correctives/historique-maintenances-correctives.component';
 
+import { InterventionsPreventivesPrecedentesComponent } from './components/Interventions/interventions-preventives-precedentes/interventions-preventives-precedentes.component';
+import { TachesPreventivesAffecteeComponent } from './components/Interventions/taches-preventives-affectee/taches-preventives-affectee.component';
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -84,10 +90,19 @@ import { HistoriqueMaintenancesCorrectivesComponent } from './components/Mainten
     EquipementFormComponent,
     MaintenanceCalendarComponent,
     UserRapportComponent,
+<<<<<<< HEAD
+    InterventionsPreventivesPrecedentesComponent,
+    TachesPreventivesAffecteeComponent,
+
+ 
+
+
+=======
     NotificationsComponent,
     InfosUtilisateursComponent,
     ChangePasswordComponent,
     HistoriqueMaintenancesCorrectivesComponent,
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
   ],
   imports: [
     AppRoutingModule,

@@ -21,6 +21,7 @@ import { ToastrService } from 'ngx-toastr';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../../../services/NotificationService';
 import { AttributEquipements } from '../../../models/attribut-equipement';
+import { EtageService } from '../../../services/etage.service';
 
 
 
@@ -43,7 +44,9 @@ export class MaintenancesPreventivesComponent implements OnInit {
   users  :User[]  =[];
   selectedFile: File | null = null;  // Déclarer selectedFile ici ICI
   isValid: boolean = true;
-  batiments:Batiment[]=[];
+
+
+  batiments: any[] = [];
   indicateurs: [] = [];
   maintenanceType: 'frequence' | 'indicateur' = 'frequence';
   showJournalierForm = false;
@@ -63,7 +66,14 @@ export class MaintenancesPreventivesComponent implements OnInit {
 
   selectedAttribut: any;
   selectedEquipementId: number | null = null;
+  selectedEquipement: string = '';
+  selectedEquipementDetails: any;
 
+  selectedBatiment: number = 0;
+  selectedEtage: number = 0;
+  selectedSalle: number = 0;
+  etages: any[] = [];
+  salles: any[] = [];
 
 
 
@@ -93,6 +103,9 @@ showNotifications: boolean = false;
     SAMEDI: false,
     DIMANCHE: false,
   };
+
+
+  
 
   // Méthode pour mettre à jour le seuil à partir de l'attribut sélectionné
 updateSeuilFromAttribut() {
@@ -258,7 +271,8 @@ onAttributChange(attribut: any) {
     endDate: new Date(''),
     RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
     message: '',
-    NonSeuil: ''
+    NonSeuil: '',
+    equipementBatiment: "", equipementEtage: 0, equipementSalle: 0
   };
 
 
@@ -267,6 +281,15 @@ onAttributChange(attribut: any) {
     const target = event.target as HTMLSelectElement;
     const equipementId = Number(target.value);
 
+<<<<<<< HEAD
+
+    this.selectedEquipementDetails = this.equipements.find(
+      equipement => equipement.nom === this.newMaintenance.equipement.nom
+    ) || null;
+
+  
+=======
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
     if (!equipementId) {
       this.selectedAttributs = [];
       return;
@@ -283,9 +306,22 @@ onAttributChange(attribut: any) {
         this.selectedAttributs = [];
       }
     });
+  }  
+
+
+  onEquipementChanger(): void {
+    // Find the selected equipement by name
+    this.selectedEquipementDetails = this.equipements.find(
+      equipement => equipement.nom === this.newMaintenance.equipement.nom
+    ) || null;
+
   }
 
+<<<<<<< HEAD
+  
+=======
 
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
 
 
 
@@ -295,9 +331,21 @@ onAttributChange(attribut: any) {
   showPanel = false; // Controls the panel visibility
   searchVisible: boolean = false;
   maintenances: any[] = []; // Tableau pour stocker les maintenances
+<<<<<<< HEAD
+  
+  
+  constructor(private maintenanceService: MaintenanceService, 
+    private cdr: ChangeDetectorRef,private equipementService: EquipementService,
+    private userService: UserService, batimentservice:BatimentService, 
+     private route: ActivatedRoute,private toastr: ToastrService,
+     private http: HttpClient,private notificationService: NotificationService,   
+     private batimentService: BatimentService ,
+      private etageService: EtageService,) { }
+=======
 
 
   constructor(private maintenanceService: MaintenanceService, private cdr: ChangeDetectorRef,private equipementService: EquipementService,private userService: UserService, batimentservice:BatimentService,  private route: ActivatedRoute,private toastr: ToastrService,private http: HttpClient,private notificationService: NotificationService ) { }
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
 
   validateDates() {
     if (this.newMaintenance.dateDebutPrevue && this.newMaintenance.dateFinPrevue) {
@@ -483,9 +531,16 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
 
     this.checkMaintenanceStartDate();
     this.chargerEquipements();
+<<<<<<< HEAD
+    this.loadBatiments();
+   
+ 
+      
+=======
 
 
 
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
   }
 
   getPaginatedMaintenances(): any[] {
@@ -591,9 +646,23 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
 
       this.notification.push(newNotification);
       this.notificationCount++;
-      this.showToastNotification(message);
+      //this.showToastNotification(message);
     }
   }
+<<<<<<< HEAD
+  
+  
+ 
+   // showToastNotification(message: string): void {
+    //this.toastr.info(message, 'Nouvelle maintenance', {
+     // timeOut: 5000,
+     // positionClass: 'toast-top-right',
+     // closeButton: true,
+     // progressBar: true
+    //});
+    
+  //}
+=======
 
 
 
@@ -606,6 +675,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     });
 
   }
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
   toggleNotificationsPanel(): void {
     this.showNotificationsPanel = !this.showNotificationsPanel;
     if (!this.showNotificationsPanel) {
@@ -826,6 +896,13 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     });
   }
 
+  loadBatiments() {
+    this.batimentService.getAllBatiments().subscribe(data => {
+      this.batiments = data;
+      console.log("batiments:", this.batiments);
+    });
+  }
+
   checkForNotification(repetitionDates: Date[]): void {
     const today = new Date().setHours(0, 0, 0, 0);
     for (let date of repetitionDates) {
@@ -843,6 +920,70 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     alert('🔔 Une maintenance est prévue pour aujourd’hui !');
   }
 
+<<<<<<< HEAD
+  loadEtages(batimentId: number) {
+    this.batimentService.getEtagesByBatimentId(batimentId).subscribe(data => {
+      this.etages = data;
+    });
+  }
+  
+=======
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
+
+  onBatimentChange(): void {
+    // Reset dependent selections
+    this.etages = [];
+    this.salles = [];
+    this.equipements = [];
+
+    this.selectedEtage = 0;
+    this.selectedSalle = 0;
+
+    // Load next level
+    this.loadEtages(this.selectedBatiment);
+
+    // Update new maintenance object
+    this.newMaintenance.equipementBatiment = this.selectedBatiment?.toString() ?? '';
+  }
+
+  onEtageChange(): void {
+    // Reset dependent selections
+    this.salles = [];
+    this.equipements = [];
+
+    this.selectedSalle = 0;
+
+    // Load next level
+    this.loadSalles(this.selectedEtage);
+
+    // Update new maintenance object
+    this.newMaintenance.equipementEtage = this.selectedEtage;
+  }
+
+  onSalleChange(): void {
+    // Reset equipements before loading
+    this.equipements = [];
+    this.selectedEquipementDetails = null;
+    // Load equipements for the selected salle
+    this.loadEquipements(this.selectedSalle);
+
+    // Update new maintenance object
+    this.newMaintenance.equipementSalle = this.selectedSalle;
+  }
+  loadEquipements(salleId: number) {
+    this.equipementService.getEquipementsBySalle(salleId).subscribe(data => {
+      this.equipements = data;
+    });
+  }
+
+
+
+  
+  loadSalles(etageId: number) {
+    this.etageService.getSallesByEtageId(etageId).subscribe(data => {
+      this.salles = data;
+    });
+  }
 
  // showNotifications(): void {
    // if (this.notifications.length > 0) {
@@ -1009,12 +1150,23 @@ resetForm() {
       NonSeuil:'',
       RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
       equipementId:  null,
+<<<<<<< HEAD
+      equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
+
+     
+     
+  
+  
+    
+   
+=======
 
 
 
 
 
 
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
       equipement: {
         id: 0,
         image: '',

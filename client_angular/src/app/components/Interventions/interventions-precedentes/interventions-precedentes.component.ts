@@ -4,6 +4,7 @@ import { InterventionService } from "../../../services/intervention.service";
 import { PhotosIntervention } from '../../../models/photos-intervention';
 import {environment} from "../../../../environments/environment";
 import {PieceDetachee} from "../../../models/piece-detachee";
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-interventions-precedentes',
@@ -44,8 +45,8 @@ export class InterventionsPrecedentesComponent implements OnInit {
         this.interventions = data.filter(intervention =>
           intervention.maintenanceId && intervention.maintenanceStatut === 'TERMINEE'
         );
-
-        // 👇 For each intervention, fetch its pieces
+ 
+        // 👇 For each intervention, fetch its pieces    
         this.interventions.forEach(intervention => {
           this.getPiecesForIntervention(intervention.id);
         });
