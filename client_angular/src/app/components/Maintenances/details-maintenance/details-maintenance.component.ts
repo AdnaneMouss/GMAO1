@@ -23,7 +23,7 @@ import { EquipementService } from '../../../services/equipement.service';
 export class DetailsMaintenanceComponent implements OnInit {
   users  :User[]  =[];
   equipement :Equipement[]  =[];
-  filteredTechnicienUsers: any[] = []; 
+  filteredTechnicienUsers: any[] = [];
   message: string = '';
 
   maintenanceId!: number;
@@ -36,12 +36,12 @@ export class DetailsMaintenanceComponent implements OnInit {
   AttributEquipementValeur :any[]  =[];
 
   selectedAttributs: AttributEquipements[] = [];
- 
- 
- 
- 
- 
-  
+
+
+
+
+
+
   maintenance: maintenance = {
     equipement: {
       serviceNom: "",
@@ -106,7 +106,8 @@ export class DetailsMaintenanceComponent implements OnInit {
         dateCreation: undefined,
         equipementMaintenu: '',
         remarques: '',
-        photos: []
+        photos: [],
+        piecesDetachees: []
       }
     },
     id: 0,
@@ -142,9 +143,9 @@ export class DetailsMaintenanceComponent implements OnInit {
   services!: Service[];
   selectedFileName: string = '';
 
- 
 
- 
+
+
 constructor(
     private maintenanceService: MaintenanceService,
     private serviceService: ServiceService,
@@ -157,16 +158,16 @@ constructor(
   ) { }
 
 
-  
+
   onEquipementChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const equipementId = Number(target.value);
-  
+
     if (!equipementId) {
       this.selectedAttributs = [];
       return;
     }
-  
+
     this.equipementService.getAttributsByEquipementId(equipementId).subscribe({
       next: (attributs) => {
         // Filter attributes where type === 'number'
@@ -179,35 +180,35 @@ constructor(
       }
     });
   }
-  
+
 
 
   ngOnInit(): void {
     const maintenanceId = +this.route.snapshot.paramMap.get('id')!;  // Get equipment ID from route params
     this.fetchMaintenanceDetails(maintenanceId);  // Call to fetchMaintenanceDetails
     this.getAllServices();
-    
-   
+
+
     this.loadUsers();
-    this.checkThreshold(); 
+    this.checkThreshold();
     console.log("Données equipement :", this.maintenance.equipement);
     const seuil = this.maintenance.seuil;
     const valeurAttribut = this.selectedAttribut.valeur;
-  
+
     this.messageSeuil = this.verifierSeuilMaintenance(seuil,valeurAttribut);
 
-    
-   
-    
-    
-   
+
+
+
+
+
   }
 
 
 
   verifierSeuilMaintenance(seuil: number, valeurAttribut: number): string {
     const difference = Math.abs(seuil - valeurAttribut);
-  
+
     if (valeurAttribut >= seuil) {
       return `⚠️ Maintenance doit être faite : la valeur a dépassé le seuil (${valeurAttribut} ≥ ${seuil})`;
     } else if (difference <= 0.1 * seuil) {
@@ -216,16 +217,16 @@ constructor(
       return '';
     }
   }
-  
 
 
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
 
   isLoading: boolean = true;
   nextRepetitionDates: Date[] = [];
@@ -337,21 +338,21 @@ constructor(
   return uniqueDates;
 }
 
-  
-  
-  
-  
+
+
+
+
 
   onSubmit(): void {
     // Convertir les dates si elles sont des strings
-    const startDate = this.maintenance.startDaterep instanceof Date 
-      ? this.maintenance.startDaterep 
+    const startDate = this.maintenance.startDaterep instanceof Date
+      ? this.maintenance.startDaterep
       : new Date(this.maintenance.startDaterep);
-    
+
     const endDate = this.maintenance.endDaterep instanceof Date
       ? this.maintenance.endDaterep
       : new Date(this.maintenance.endDaterep);
-  
+
     this.nextRepetitionDates = this.calculateRepetitionDates(
       startDate,
       endDate,
@@ -359,7 +360,7 @@ constructor(
       this.maintenance.selectedjours || [],
       this.maintenance.selectedmois || []
     );
-  
+
     this.maintenanceService.createMaintenance(this.maintenance).subscribe({
       next: (response) => {
         console.log('Succès:', response);
@@ -372,14 +373,14 @@ constructor(
   }
 
 
-  
-  
- 
-      
-   
- 
-  
-  
+
+
+
+
+
+
+
+
   getAllServices(): void {
     this.serviceService.getAllServices().subscribe(
       (data: Service[]) => {
@@ -410,14 +411,14 @@ constructor(
         //console.log(this.maintenance,)
       //},
 
-      
+
       //error: (err) => {
        // console.error('Error fetching  details:', err);
         //this.errorMessage = 'Failed to load mainteance details';
       //}
     //});
 
-    
+
 
   //}
   fetchMaintenanceDetails(id: number): void {
@@ -472,7 +473,7 @@ constructor(
             password: '',
             gsm: '',
             image: '',
-          
+
             role: 'TECHNICIEN',
             actif: true,
             dateInscription: '',
@@ -490,10 +491,11 @@ constructor(
               dateCreation: undefined,
               equipementMaintenu: '',
               remarques: '',
-              photos: []
+              photos: [],
+              piecesDetachees: []
             }
           };
-        }    
+        }
 
         console.log('Détails maintenance:', this.maintenance);
         console.log('Équipement:', this.maintenance.equipement);
@@ -510,7 +512,7 @@ constructor(
           );
         }
 
-        // Charger les utilisateurs techniciens 
+        // Charger les utilisateurs techniciens
         this.loadTechnicianUsers();
 
         this.checkThreshold();
@@ -524,16 +526,16 @@ constructor(
     });
 }
 
-  
+
   // Méthode pour charger les utilisateurs techniciens
   loadTechnicianUsers(): void {
     this.userService.getAllUsers().subscribe({
       next: (users: User[]) => {
         // Filtrer pour n'avoir que les techniciens
-        this.filteredTechnicienUsers = users.filter(user => 
+        this.filteredTechnicienUsers = users.filter(user =>
           user.role === 'TECHNICIEN' || user.role === 'RESPONSABLE'
         );
-        
+
         // Si aucun utilisateur n'est affecté, sélectionner le premier technicien par défaut
         if (this.maintenance.user?.id === 0 && this.filteredTechnicienUsers.length > 0) {
           this.maintenance.user = this.filteredTechnicienUsers[0];
@@ -544,14 +546,14 @@ constructor(
       }
     });
   }
-  
+
   // Méthode pour vérifier le seuil
-  
-  
+
+
   // Function to check if any repetition date matches the current date
   checkForNotification(repetitionDates: Date[]): void {
     const today = new Date().setHours(0, 0, 0, 0); // Set to midnight for comparison
-  
+
     // Check if any repetition date matches the current date
     for (let date of repetitionDates) {
       if (date.setHours(0, 0, 0, 0) === today) {
@@ -560,15 +562,15 @@ constructor(
       }
     }
   }
-  
+
   // Function to trigger a notification (you can customize with libraries or native methods)
   //sendNotification(): void {
     // Simple notification (you can customize with libraries or push notifications)
     //alert('A maintenance task is scheduled for today!');
   //}
-  
-  
-  
+
+
+
   enableEditMode(): void {
     this.isEditMode = true;
   }
@@ -584,22 +586,22 @@ constructor(
         return '#000000'; // Noir par défaut
     }
   }
- 
-  
+
+
   onFileSelected(event: any) {
     const file = event.target.files[0];  // Récupère le fichier sélectionné
     if (file) {
       this.selectedFileName = file.name;  // Met à jour le nom du fichier
       this.maintenance.documentPath = file;    // Stocke l'objet fichier si nécessaire
     }
-  }   
+  }
   clearFile() {
     this.selectedFileName = '';  // Réinitialise le nom du fichier
     this.maintenance.documentPath = null;  // Réinitialise le fichier
   }
-  
- 
-    
+
+
+
   saveChanges(): void {
     if (this.maintenance) {
       this.maintenanceService.updateMaintenance(this.maintenance.id!, this.maintenance).subscribe({
@@ -620,7 +622,7 @@ constructor(
   sendNotification(): void {
     // Crée le message avec l'ID de la maintenance
     const notificationMessage = `Une tâche de maintenance :id : ${this.maintenance.id},Action:${this.maintenance.action} est prévue pour aujourd'hui`;
-    
+
     this._snackBar.open(notificationMessage, 'Fermer', {
       duration: 6000, // La notification reste pendant 6 secondes
       verticalPosition: 'top', // Position en haut de l'écran
@@ -646,7 +648,7 @@ constructor(
   } else {
       this.message = "✅ Normal : Valeur suivie (" + valeur + ") sous le seuil (" + seuil + ")";
   }
-  
+
   }
 
 
@@ -655,11 +657,11 @@ constructor(
   onEquipementSelected() {
     this.selectedEquipement = this.equipements.find(e => e.id === this.maintenance.equipementId);
   }
-  
 
 
-  
-  
+
+
+
 
 
 
@@ -671,4 +673,3 @@ constructor(
 
 
 
- 

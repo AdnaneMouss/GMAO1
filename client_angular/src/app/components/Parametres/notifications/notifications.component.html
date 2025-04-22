@@ -1,0 +1,34 @@
+<div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-xl shadow-md space-y-4">
+  <h2 class="text-xl font-semibold text-gray-800 text-center">Paramètres de notification</h2>
+
+  <div class="flex items-center justify-between">
+    <span class="text-gray-700 text-lg">Notifications</span>
+    <label class="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        class="sr-only peer"
+        [(ngModel)]="notificationsEnabled"
+        (change)="updateNotifications()"
+      />
+      <div
+        class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition-all duration-300"
+      ></div>
+      <div
+        class="absolute ml-1 mt-1 w-4 h-4 bg-white rounded-full shadow transform peer-checked:translate-x-5 transition-all duration-300"
+      ></div>
+    </label>
+  </div>
+
+  <div class="text-center text-sm text-gray-600">
+    État actuel :
+    <span
+      class="font-medium"
+      [ngClass]="{
+        'text-green-600': notificationsEnabled,
+        'text-red-500': !notificationsEnabled
+      }"
+    >
+      {{ notificationValue ? 'Activées' : 'Désactivées' }}
+    </span>
+  </div>
+</div>

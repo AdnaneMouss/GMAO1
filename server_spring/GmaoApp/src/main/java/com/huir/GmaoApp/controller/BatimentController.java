@@ -26,7 +26,7 @@ public class BatimentController {
 
 
     @GetMapping
-    public List<BatimentDTO> getAllEquipements() {
+    public List<BatimentDTO> getAllBatiments() {
         return batimentService.getAllBatiments().stream()
                 .map(BatimentDTO::new)
                 .collect(Collectors.toList());

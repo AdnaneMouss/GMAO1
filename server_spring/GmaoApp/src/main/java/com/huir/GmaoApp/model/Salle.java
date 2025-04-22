@@ -1,9 +1,13 @@
 package com.huir.GmaoApp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -22,32 +26,15 @@ public class Salle {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "etage_id")
     @JsonBackReference("etage-salle")
+	@JsonIgnore
     private Etage etage;
 
-	public Long getId() {
-		return id;
-	}
+	@JsonManagedReference
+	@OneToMany(mappedBy = "salle", fetch = FetchType.EAGER)
+	@JsonIgnore
+	private List<Equipement> equipement;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
 
-	public int getNum() {
-		return num;
-	}
-
-	public void setNum(int num) {
-		this.num = num;
-	}
-
-	public Etage getEtage() {
-		return etage;
-	}
-
-	public void setEtage(Etage etage) {
-		this.etage = etage;
-	}
-    
     
     
 }

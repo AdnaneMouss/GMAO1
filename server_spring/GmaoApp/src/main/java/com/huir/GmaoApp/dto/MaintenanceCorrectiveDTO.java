@@ -28,6 +28,7 @@ public class MaintenanceCorrectiveDTO {
     private Long affecteAId;
     private Long creeParId;
     private String equipementNom;
+    private String equipementNumSerie;
     private String equipementBatiment;
     private Integer equipementSalle;
     private Integer equipementEtage;
@@ -47,6 +48,7 @@ public class MaintenanceCorrectiveDTO {
         this.affecteAId = maintenance.getAffecteA() != null ? maintenance.getAffecteA().getId() : null;
         this.creeParId = maintenance.getCreePar() != null ? maintenance.getCreePar().getId() : null;
         this.equipementNom = maintenance.getEquipement() != null ? maintenance.getEquipement().getNom() : null;
+        this.equipementNumSerie = maintenance.getEquipement() != null ? maintenance.getEquipement().getNumeroSerie() : null;
         this.interventions = maintenance.getInterventions() != null
                 ? maintenance.getInterventions().stream()
                 .map(InterventionDTO::new)

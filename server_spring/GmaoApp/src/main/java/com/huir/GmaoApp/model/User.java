@@ -65,6 +65,8 @@ public class User {
 
     private boolean actif = true;
 
+    private boolean notifications = true;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime dateInscription = LocalDateTime.now();
 
@@ -90,5 +92,6 @@ public class User {
     @JsonManagedReference("user-intervention")
     @OneToMany(mappedBy = "technicien", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Intervention> interventions;
+
     
 }

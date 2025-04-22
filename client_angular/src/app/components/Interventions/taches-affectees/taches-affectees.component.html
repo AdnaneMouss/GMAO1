@@ -183,28 +183,54 @@
 
           <div class="mb-4">
             <label for="piecesDetachees" class="block text-sm font-medium text-gray-600">
-              Pièce détachée utilisée <span class="text-red-500">*</span>
+              Pièces détachées utilisées <span class="text-red-500">*</span>
             </label>
+
+            <!-- Selection dropdown -->
             <select
               id="piecesDetachees"
-              name="piecesDetachees"
-              [ngModel]="selectedPieces"
-              (ngModelChange)="onPiecesChange($event)"
-              required
-              multiple
-              #piecesRef="ngModel"
+              #pieceSelect
               class="w-full p-2 border rounded mt-1"
-              aria-describedby="pieceDetacheeHelp"
+              (change)="onAddPiece(pieceSelect.value)"
             >
-              <option *ngFor="let piece of piecesList" [ngValue]="piece.id">{{ piece.nom }}</option>
+              <option value="" disabled selected>Choisir une pièce détachée</option>
+              <option *ngFor="let piece of piecesList" [value]="piece.id" [disabled]="isPieceSelected(piece.id)">
+                {{ piece.nom }}
+              </option>
             </select>
-            <small id="pieceDetacheeHelp" class="text-gray-500 text-xs">
-              Entrez la pièce détachée utilisée lors de l'intervention.
-            </small>
-            <div *ngIf="piecesRef.invalid && piecesRef.touched" class="text-red-500 text-sm mt-1">
-              Veuillez sélectionner au moins une pièce détachée.
+
+
+            <!-- Selected pieces list -->
+            <div *ngIf="selectedPieces.length > 0" class="mt-3 space-y-2">
+              <div
+                *ngFor="let piece of selectedPieces; let i = index"
+                class="flex items-center justify-between bg-gray-100 p-2 rounded-lg"
+              >
+                <div class="flex flex-col">
+                  <span class="font-medium"></span>
+                  <input
+                    type="number"
+                    min="1"
+                    [(ngModel)]="piece.quantite"
+                    class="mt-1 w-24 p-1 text-sm border rounded"
+                    placeholder="Quantité"
+                  />
+                </div>
+                <button
+                  type="button"
+                  (click)="removePiece(i)"
+                  class="text-red-600 hover:underline text-sm"
+                >
+                  Supprimer
+                </button>
+              </div>
             </div>
+
+            <small class="text-gray-500 text-xs block mt-2">
+              Ajoutez chaque pièce avec sa quantité utilisée.
+            </small>
           </div>
+
 
           <!-- Photos -->
           <div class="mb-4">

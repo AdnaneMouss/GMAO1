@@ -16,20 +16,19 @@ import {SalleService} from "../../../services/salle.service";
   styleUrls: ['./maintenances-correctives.component.css']
 })
 export class MaintenancesCorrectivesComponent implements OnInit {
-  maintenanceCorrectives: MaintenanceCorrective[] = [];
+  maintenancesCorrectives: MaintenanceCorrective[] = [];
   filteredMaintenanceCorrectives: MaintenanceCorrective[] = [];
   isLoading: boolean = true;
   showModal: boolean = false;
-
-  hoveredUser: any = null;
-
-
+  maintenanceToCancel: number | null = null;
+  equipementTaken: boolean = false;
 
   // Filter variables
   searchKeyword: string = '';
   showUpdatePanel: boolean = false;
   errorMessage: string = '';
   updateSuccessful: boolean = false;
+  addSuccessful: boolean = false;
   selectedStatut: string = '';
   selectedPriorite: string = '';
   selectedEquipement: string = '';
@@ -58,7 +57,7 @@ export class MaintenancesCorrectivesComponent implements OnInit {
   technicianWorkloads: { [key: number]: number } = {};  // Object to store workloads by technician ID
 
 
-  // Form for adding new maintenance 
+  // Form for adding new maintenance
   newMaintenance: MaintenanceCorrective = {
     equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
     affecteANom: "", creeParNom: "",
@@ -82,7 +81,7 @@ export class MaintenancesCorrectivesComponent implements OnInit {
   ngOnInit(): void {
     this.loadAllMaintenances();
     this.getEquipements();
-    this.fetchUsers();
+    this.fetchMaintenances();
     this.setCurrentUser();
     this.loadBatiments();
   }
@@ -106,6 +105,8 @@ export class MaintenancesCorrectivesComponent implements OnInit {
     this.selectedBatiment = 0;
     this.selectedSalle = 0;
     this.selectedEtage = 0;
+    this.equipementTaken= false;
+    this.errorMessage='';
 
   }
 
@@ -171,7 +172,38 @@ export class MaintenancesCorrectivesComponent implements OnInit {
       equipement => equipement.nom === this.newMaintenance.equipementNom
     ) || null;
 
+    // Auto-set the maintenance title
+    if (this.selectedEquipementDetails) {
+      this.newMaintenance.titre = `Maintenance de l’équipement ${this.selectedEquipementDetails.nom}`;
+    } else {
+      this.newMaintenance.titre = '';
+    }
   }
+
+  cancelTask(id: number): void {
+    this.maintenanceCorrectiveService.cancelTask(id).subscribe(
+      (updatedMaintenance) => {
+        const index = this.maintenancesCorrectives.findIndex(m => m.id === id);
+        if (index !== -1) {
+          this.maintenancesCorrectives[index] = updatedMaintenance;
+          this.loadAllMaintenances();
+          this.maintenanceToCancel=null;
+        }
+      },
+      (error) => {
+        console.error('Error cancelling task:', error);
+      }
+    );
+  }
+
+  confirmCancelTask(id: number): void {
+    this.maintenanceToCancel = id;
+  }
+
+  cancelCancelTask(): void {
+    this.maintenanceToCancel = null;
+  }
+
 
 
   loadSalles(etageId: number) {
@@ -210,7 +242,7 @@ export class MaintenancesCorrectivesComponent implements OnInit {
   });
 }
 
-  fetchUsers(): void {
+  fetchMaintenances(): void {
     this.userService.getAllUsers().subscribe((data: User[]) => {
       this.users = data.filter(user => user.role === 'TECHNICIEN'); // Filter technicians
       this.technicianWorkloads = {};  // Object to store workloads by technician ID
@@ -234,9 +266,13 @@ export class MaintenancesCorrectivesComponent implements OnInit {
     this.maintenanceCorrectiveService.getAllMaintenances()
       .subscribe(
         (data: MaintenanceCorrective[]) => {
-          this.maintenanceCorrectives = data;
-          this.filteredMaintenanceCorrectives = data;
-          this.totalItems = data.length;
+          // Filter only EN_COURS or EN_ATTENTE
+          const relevantStatuses = ['EN_COURS', 'EN_ATTENTE'];
+          const filtered = data.filter(m => relevantStatuses.includes(m.statut));
+
+          this.maintenancesCorrectives = filtered;
+          this.filteredMaintenanceCorrectives = filtered;
+          this.totalItems = filtered.length;
           this.isLoading = false;
           this.applyFilters();
         },
@@ -247,6 +283,7 @@ export class MaintenancesCorrectivesComponent implements OnInit {
       );
   }
 
+
   openAddModal() {
     this.showModal = true;
   }
@@ -254,6 +291,7 @@ export class MaintenancesCorrectivesComponent implements OnInit {
   openUpdatePanel(maintenance: any): void {
     this.selectedMaintenance = { ...maintenance }; // Create a copy of the maintenance object
     this.showUpdatePanel = true; // Open the modal
+    this.onBatimentChange();
   }
 
   // Example method to close the modal
@@ -289,29 +327,26 @@ export class MaintenancesCorrectivesComponent implements OnInit {
     this.maintenanceCorrectiveService.createMaintenance(this.newMaintenance)
       .subscribe(
         (addedMaintenance) => {
-          this.maintenanceCorrectives.unshift(addedMaintenance);
+          this.maintenancesCorrectives.unshift(addedMaintenance);
           this.applyFilters();
-
-          this.newMaintenance = {
-            equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
-            affecteAId: 0,
-            creeParId: 0,
-            affecteANom: '',
-            creeParNom: this.currentUser?.nom || 'h',
-            dateCreation: "",
-            id: 0,
-            interventions: [],
-            titre: '',
-            description: '',
-            statut: 'EN_ATTENTE',
-            priorite: 'NORMALE',
-            equipementNom: ''
-          };
-
+          this.fetchMaintenances();
+          this.resetNewMaintenance();
           this.showModal = false;
+          this.addSuccessful = true;
+          this.successMessage = "Maintenance ajoutée avec succès";
         },
-        error => {
-          console.error('Error adding maintenance corrective', error);
+        (error) => {
+          console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
+
+          // Handle different types of errors
+          if (error.status === 409 && error.error) {
+
+            const message = error.error.message;
+
+              this.equipementTaken = true;
+              this.errorMessage = message;
+            }
+
         }
       );
   }
@@ -346,32 +381,37 @@ export class MaintenancesCorrectivesComponent implements OnInit {
     ).subscribe(
       (updatedMaintenance) => {
         // Find and update the maintenance in the list
-        const index = this.maintenanceCorrectives.findIndex(
+        const index = this.maintenancesCorrectives.findIndex(
           maintenance => maintenance.id === updatedMaintenance.id
         );
         if (index !== -1) {
-          this.maintenanceCorrectives[index] = updatedMaintenance;
+          this.maintenancesCorrectives[index] = updatedMaintenance;
         }
 
-        // Reset the selected maintenance and hide the update panel
-        this.selectedMaintenance = {
-          equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
-          affecteAId: 0, creeParId: 0, affecteANom: '', creeParNom: '',
-          dateCreation: "", id: 0, interventions: [],
-          titre: '', description: '', statut: 'EN_ATTENTE',
-          priorite: 'NORMALE', equipementNom: ''
-        };
+this.resetNewMaintenance();
 
         this.updateSuccessful = true;
         this.showUpdatePanel = false;
         this.successMessage = 'Maintenance mise à jour avec succès';
-
+        this.loadAllMaintenances();
         // Hide the success message after 3 seconds
         setTimeout(() => {
           this.updateSuccessful = false;
         }, 3000);
       },
-      (error) => {}
+      (error) => {
+        console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
+
+        // Handle different types of errors
+        if (error.status === 409 && error.error) {
+
+          const message = error.error.message;
+
+          this.equipementTaken = true;
+          this.errorMessage = message;
+        }
+
+      }
     );
   }
 
@@ -380,15 +420,16 @@ export class MaintenancesCorrectivesComponent implements OnInit {
 
   // Apply filters
   applyFilters(): void {
-    let filtered = this.maintenanceCorrectives.filter(maintenance => {
+    let filtered = this.maintenancesCorrectives.filter(maintenance => {
       const matchesStatut = this.selectedStatut ? maintenance.statut === this.selectedStatut : true;
       const matchesPriorite = this.selectedPriorite ? maintenance.priorite === this.selectedPriorite : true;
-      const matchesEquipement = this.selectedEquipement ? maintenance.equipementNom.includes(this.selectedEquipement) : true;
+      const matchesEquipement = this.selectedEquipement
+        ? maintenance.equipementNom.toLowerCase().includes(this.selectedEquipement.toLowerCase())
+        : true;
       const matchesDate = (this.startDate && this.endDate) ?
         new Date(maintenance.dateCreation) >= new Date(this.startDate) && new Date(maintenance.dateCreation) <= new Date(this.endDate) : true;
-      const matchesSearch = this.searchKeyword ? maintenance.titre.includes(this.searchKeyword) || (maintenance.description && maintenance.description.includes(this.searchKeyword)) : true;
 
-      return matchesStatut && matchesPriorite && matchesEquipement && matchesDate && matchesSearch;
+      return matchesStatut && matchesPriorite && matchesEquipement && matchesDate;
     });
 
     this.totalItems = filtered.length;

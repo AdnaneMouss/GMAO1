@@ -1,8 +1,8 @@
+<!--
 <div class="max-h-[60vh] overflow-y-auto px-2">
   <form (ngSubmit)="onSubmit()" #equipementForm="ngForm">
-    <!-- Grid Layout for Inputs -->
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <!-- Dropdown for Type Equipement -->
+
       <div class="col-span-2">
         <label for="typeEquipement" class="text-gray-700 font-semibold">Type d'équipement</label>
         <select id="typeEquipement" class="w-full border border-gray-300 rounded-lg p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -12,15 +12,14 @@
         </select>
       </div>
 
-      <!-- Static Attributes -->
+
       <div *ngFor="let attribute of staticAttributes">
         <label class="text-gray-700 font-semibold">
           {{ attribute }}
           <span *ngIf="isRequired(attribute)" class="text-red-500">*</span>
         </label>
 
-        <!-- Input field for all attributes except 'Date achat', 'Service', 'Bâtiment', 'Etage' and 'Salle' -->
-        <input *ngIf="attribute !== 'Date achat' && attribute !== 'Service' && attribute !== 'Bâtiment' && attribute !== 'Etage' && attribute !== 'Salle'"
+   <input *ngIf="attribute !== 'Date achat' && attribute !== 'Service' && attribute !== 'Bâtiment' && attribute !== 'Etage' && attribute !== 'Salle'"
                type="text"
                class="w-full border border-gray-300 rounded-lg p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                [(ngModel)]="equipement[attribute]" name="{{attribute}}"
@@ -28,13 +27,13 @@
                [required]="isRequired(attribute)"
                [ngClass]="{'border-red-500': field.invalid && field.touched}" />
 
-        <!-- Date Achat Input -->
+
         <input *ngIf="attribute === 'Date achat'" type="date"
                class="w-full border border-gray-300 rounded-lg p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                [(ngModel)]="equipement.dateAchat" name="dateAchat"
                [required]="isRequired(attribute)" />
 
-        <!-- Service Dropdown -->
+
         <select *ngIf="attribute === 'Service'" class="w-full border border-gray-300 rounded-lg p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 [(ngModel)]="equipement.service.id" name="service">
           <option *ngFor="let service of services" [value]="service.id">
@@ -42,7 +41,7 @@
           </option>
         </select>
 
-        <!-- Batiment Dropdown -->
+
         <select *ngIf="attribute === 'Bâtiment'" class="w-full border border-gray-300 rounded-lg p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 [(ngModel)]="equipement.batiment.id" name="batiment" (change)="onBatimentChange($event)">
           <option *ngFor="let batiment of batiments" [value]="batiment.id">
@@ -50,7 +49,7 @@
           </option>
         </select>
 
-        <!-- Etage Dropdown -->
+
         <select *ngIf="attribute === 'Etage' && selectedBatimentId" class="w-full border border-gray-300 rounded-lg p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 [(ngModel)]="equipement.etage.id" name="etage" (change)="onEtageChange($event)">
           <option *ngFor="let etage of etages" [value]="etage.id">
@@ -58,7 +57,7 @@
           </option>
         </select>
 
-        <!-- Salle Dropdown (only visible if Etage is selected) -->
+
         <select *ngIf="attribute === 'Salle' && selectedEtageId" class="w-full border border-gray-300 rounded-lg p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 [(ngModel)]="equipement.salle.id" name="salle">
           <option *ngFor="let salle of salles" [value]="salle.id">
@@ -68,7 +67,7 @@
 
       </div>
 
-      <!-- Dynamic Attributes Based on Selected Type -->
+
       <div *ngFor="let attribut of attributsForSelectedType">
         <div *ngIf="attribut.actif">
           <label class="text-gray-700 font-semibold">
@@ -137,7 +136,7 @@
 
     </div>
 
-    <!-- Submit Button -->
+
     <div class="mt-4">
       <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               [disabled]="equipementForm.invalid">
@@ -146,3 +145,4 @@
     </div>
   </form>
 </div>
+-->

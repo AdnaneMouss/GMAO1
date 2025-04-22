@@ -21,8 +21,7 @@ public class MaintenanceCorrectiveController {
 
     @Autowired
     private MaintenanceCorrectiveService maintenanceCorrectiveService;
-    @Autowired
-    private MaintenanceService maintenanceService;
+
 
     @GetMapping
     public List<MaintenanceCorrectiveDTO> getAllServices() {
@@ -31,6 +30,16 @@ public class MaintenanceCorrectiveController {
                 .collect(Collectors.toList());
     }
 
+
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<MaintenanceCorrective> cancelTask(@PathVariable Long id) {
+        MaintenanceCorrective updatedMaintenance = maintenanceCorrectiveService.cancelTask(id);
+        if (updatedMaintenance != null) {
+            return ResponseEntity.ok(updatedMaintenance);
+        } else {
+            return ResponseEntity.status(400).body(null); // Si la maintenance n'est pas trouvée ou ne peut être commencée
+        }
+    }
 
     @PutMapping("/{id}/start")
     public ResponseEntity<MaintenanceCorrective> startTask(@PathVariable Long id) {

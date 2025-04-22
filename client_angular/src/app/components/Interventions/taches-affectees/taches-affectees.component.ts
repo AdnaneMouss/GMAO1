@@ -30,6 +30,9 @@ export class TachesAffecteesComponent implements OnInit {
   currentMaintenanceId: number | null = null;
   confirmationMessage: string = '';
   technicienId: number = 0;
+  selectedFiles: File[] = [];
+  selectedPieces: { id: number; quantite: number }[] = [];
+
 
   // For intervention form
   showInterventionForm: boolean = false;
@@ -44,6 +47,7 @@ export class TachesAffecteesComponent implements OnInit {
     photos: any[];
     typeIntervention: string;
     piecesDetachees: number[];
+    quantiteDepiecesUtilisee: number;
   } = {
     description: "",
     duree: 0,
@@ -54,10 +58,10 @@ export class TachesAffecteesComponent implements OnInit {
     remarques: "",
     technicienId: 0,
     typeIntervention: 'CORRECTIVE',
-    piecesDetachees: []
+    piecesDetachees: [],
+    quantiteDepiecesUtilisee: 0
   };
 
-  selectedPieces: number[] = [];  // Array to hold selected pieces
   piecesList: PieceDetachee[] = [];  // Array that will contain all available pieces for the dropdown
 
   // Add a variable for file input
@@ -173,9 +177,11 @@ export class TachesAffecteesComponent implements OnInit {
     this.intervention.technicienId = this.technicienId;
   }
 
-  // Method to handle file input change
   onFileChange(event: any): void {
-    this.selectedFile = event.target.files[0]; // Capture the selected file
+    if (event.target.files && event.target.files.length > 0) {
+      this.selectedFiles = Array.from(event.target.files); // Convert to array
+      console.log('Selected files:', this.selectedFiles);
+    }
   }
 
   fetchPieces(): void {
@@ -190,36 +196,65 @@ export class TachesAffecteesComponent implements OnInit {
     });
   }
 
-  submitIntervention(): void {
-    if (this.selectedFile) {
-      // Prepare the intervention data along with the file for upload
-      const interventionData = {
-        description: this.intervention.description,
-        remarques: this.intervention.remarques,
-        maintenanceId: this.intervention.maintenanceId,
-        technicienId: this.intervention.technicienId,
-        piecesDetachees: this.selectedPieces,
-      };
+  isPieceSelected(pieceId: number): boolean {
+    return this.selectedPieces.some(p => p.id === +pieceId);
+  }
 
-      // Call the service method to send the data along with the file
-      this.interventionService.createIntervention(interventionData, this.selectedFile).subscribe(
-        (newIntervention) => {
-          console.log('Intervention added successfully:', newIntervention);
-          this.showInterventionForm = false;  // Hide the form after submission
-          this.router.navigate(['/interventions/liste']);
-        },
-        (error) => {
-          console.error('Error creating intervention:', error);
-        }
-      );
+  onAddPiece(pieceId: string): void {
+    const id = +pieceId;
+    const selected = this.piecesList.find(p => p.id === id);
+    if (selected && !this.isPieceSelected(id)) {
+      this.selectedPieces.push({ ...selected, quantite: 1 });
     }
   }
 
 
-  onPiecesChange(event: Event): void {
-    const selectedOptions = (event.target as HTMLSelectElement).selectedOptions;
-    this.selectedPieces = Array.from(selectedOptions).map(opt => Number(opt.value));
+  removePiece(index: number): void {
+    this.selectedPieces.splice(index, 1);
   }
+
+  submitIntervention(): void {
+    if (!this.selectedPieces || this.selectedPieces.length === 0) {
+      console.warn('Aucune pièce détachée sélectionnée.');
+      return;
+    }
+
+    if (!this.intervention.description || !this.intervention.maintenanceId || !this.intervention.technicienId) {
+      console.warn('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
+    // 📦 Préparer les IDs et quantités séparément
+    const pieceDetacheeIds = this.selectedPieces.map(p => p.id);
+    const quantites = this.selectedPieces.map(p => p.quantite);
+
+    // 🧠 Vérification rapide de correspondance
+    if (pieceDetacheeIds.length !== quantites.length) {
+      console.error('Mismatch entre les pièces détachées et les quantités.');
+      return;
+    }
+
+    // 🛠️ Envoi au service
+    this.interventionService.createIntervention(
+      this.selectedFiles || null,
+      this.intervention.description,
+      this.intervention.remarques || '',
+      this.intervention.maintenanceId,
+      this.intervention.technicienId,
+      pieceDetacheeIds,
+      quantites
+    ).subscribe({
+      next: (newIntervention) => {
+        console.log('✅ Intervention créée avec succès:', newIntervention);
+        this.showInterventionForm = false;
+        this.router.navigate(['/interventions/liste']);
+      },
+      error: (err) => {
+        console.error('🚨 Erreur lors de la création de l\'intervention:', err);
+      }
+    });
+  }
+
 
   formatDateWithIntl(date: string | undefined): string {
     if (!date) {

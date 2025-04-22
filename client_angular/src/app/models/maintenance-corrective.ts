@@ -14,6 +14,7 @@ export interface MaintenanceCorrective {
   creeParNom: string; // ID of the user assigned to the ticket
   creeParId: number; // ID of the user assigned to the ticket
   equipementNom: string;
+  equipementNumSerie?: string;
   equipementBatiment: string;
   equipementSalle: number;
   equipementEtage: number;

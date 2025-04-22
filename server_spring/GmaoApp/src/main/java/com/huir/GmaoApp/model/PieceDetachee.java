@@ -59,9 +59,9 @@ public class PieceDetachee {
     @ManyToMany(mappedBy = "piecesDetachees", fetch = FetchType.EAGER)
     private List<Equipement> equipements;
 
-    @ManyToMany(mappedBy = "piecesDetachees", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "pieceDetachee", cascade = CascadeType.ALL)
     @JsonBackReference(value = "intervention-piece")
-    private List<Intervention> interventions;
+    private List<InterventionPieceDetachee> interventionPieces;
 
 
     @Transient

@@ -13,4 +13,5 @@ export interface User {
   actif: boolean;
   dateInscription: string;
   Intervention: Intervention;
+  notifications?: boolean;
 }

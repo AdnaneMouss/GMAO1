@@ -14,6 +14,7 @@ import com.huir.GmaoApp.repository.PieceDetacheeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -102,41 +103,53 @@ public class PieceDetacheeController {
     /**
      * 🔹 Mettre à jour une pièce avec ou sans image
      */
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updatePiece(
             @PathVariable Long id,
+
+            // Make all parameters optional
             @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestParam("nom") String nom,
-            @RequestParam("description") String description,
-            @RequestParam("reference") String reference,
-            @RequestParam("fournisseur") String fournisseur,
-            @RequestParam("coutUnitaire") double coutUnitaire,
-            @RequestParam("quantiteStock") int quantiteStock,
-            @RequestParam("quantiteMinimale") int quantiteMinimale,
-            @RequestParam("dateAchat") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateAchat,
-            @RequestParam("datePeremption") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datePeremption
+            @RequestParam(value = "nom") String nom,
+            @RequestParam(value = "description") String description,
+            @RequestParam(value = "reference") String reference,
+            @RequestParam(value = "fournisseur") String fournisseur,
+            @RequestParam(value = "coutUnitaire") Double coutUnitaire,
+            @RequestParam(value = "quantiteStock") Integer quantiteStock,
+            @RequestParam(value = "quantiteMinimale") Integer quantiteMinimale,
+
+            // Make dates optional with DateTimeFormat
+            @RequestParam(value = "dateAchat") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateAchat,
+            @RequestParam(value = "datePeremption") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datePeremption
     ) {
+        System.out.println("🔥 Reached updatePiece endpoint");
+        System.out.println("💾 ID: " + id);
+
         Optional<PieceDetachee> existingPieceOpt = pieceDetacheeRepository.findById(id);
         if (existingPieceOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        if (pieceDetacheeRepository.existsByReference(reference)) {
-            return ResponseEntity.badRequest().body("Une pièce avec cette référence existe déjà.");
-        }
-
 
         PieceDetachee existingPiece = existingPieceOpt.get();
-        existingPiece.setNom(nom);
-        existingPiece.setDescription(description);
-        existingPiece.setReference(reference);
-        existingPiece.setFournisseur(fournisseur);
-        existingPiece.setCoutUnitaire(coutUnitaire);
-        existingPiece.setQuantiteStock(quantiteStock);
-        existingPiece.setQuantiteMinimale(quantiteMinimale);
-        existingPiece.setDateAchat(dateAchat);
-        existingPiece.setDatePeremption(datePeremption);
+
+        // Update only the fields that were provided in the request
+        if (nom != null) existingPiece.setNom(nom);
+        if (description != null) existingPiece.setDescription(description);
+        if (reference != null && !reference.equals(existingPiece.getReference())) {
+            if (pieceDetacheeRepository.existsByReference(reference)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Une pièce avec cette référence existe déjà.");
+            }
+            existingPiece.setReference(reference);
+        }
+        if (fournisseur != null) existingPiece.setFournisseur(fournisseur);
+        if (coutUnitaire != null) existingPiece.setCoutUnitaire(coutUnitaire);
+        if (quantiteStock != null) existingPiece.setQuantiteStock(quantiteStock);
+        if (quantiteMinimale != null) existingPiece.setQuantiteMinimale(quantiteMinimale);
+        if (dateAchat != null) existingPiece.setDateAchat(dateAchat);
+        if (datePeremption != null) existingPiece.setDatePeremption(datePeremption);
 
         try {
+            // Handle file upload if it's provided
             if (file != null && !file.isEmpty()) {
                 String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
                 Path filePath = Paths.get("uploads", fileName);
@@ -145,6 +158,7 @@ public class PieceDetacheeController {
                 existingPiece.setImage(fileName);
             }
 
+            // Save the updated piece
             PieceDetachee updatedPiece = pieceDetacheeService.addPiece(existingPiece);
             return ResponseEntity.ok(new PieceDetacheeDTO(updatedPiece));
 
@@ -152,5 +166,6 @@ public class PieceDetacheeController {
             return ResponseEntity.internalServerError().body("Erreur lors de la mise à jour de l'image.");
         }
     }
+
 
 }

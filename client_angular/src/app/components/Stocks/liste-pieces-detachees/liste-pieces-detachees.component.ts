@@ -22,7 +22,8 @@ export class ListePiecesDetacheesComponent  implements OnInit {
   showEditPanel: boolean = false;  // Toggle the visibility of the edit panel
   pieceUpdated: boolean = false;
   successMessage: string = '';
-
+  isEditing: boolean = false;
+  imageError: string | null = null;
 
   newPiece: PieceDetachee = {
   id: 0,
@@ -154,33 +155,37 @@ selectedPiece: any = {};
         }, 3000);
       },
       (error) => {
-        // Handle specific error cases
-        if (error.status === 409 && error.error) {
-          // Check for conflict errors (reference, fournisseur, etc.)
-          const field = error.error.field;
-          const message = error.error.message;
-
-          if (field === 'reference') {
-            this.referenceTaken = true;
-            this.errorMessage = message;
-          }
-          else {
-            this.errorMessage = message || 'Un conflit est survenu lors de la mise à jour.';
-          }
-        } else if (error.status === 400) {
-          console.log("Sent data:",pieceData);
-          this.errorMessage = 'Des données invalides ont été envoyées. Veuillez vérifier et réessayer.';
-        } else if (error.status === 404) {
-          // Handle not found error (piece not found)
-          this.errorMessage = 'Pièce non trouvée.';
-        } else {
-          // Generic error fallback
-          this.errorMessage = 'Échec de la mise à jour de la pièce.';
+        if (error.status === 409) {
+          this.referenceTaken = true;
+          this.refTakenErrorMessage = 'Une pièce avec cette référence existe déjà.';
         }
       }
     );
   }
 
+  enableEditing(): void {
+    this.isEditing = true;
+  }
+
+  viewDetails(pieceId: number): void {
+    this.PieceDetacheeService.getPieceDetacheeById(pieceId).subscribe({
+      next: (piece) => {
+        this.selectedPiece = { ...piece }; // Clone the object to prevent unwanted changes
+        this.showEditPanel = true;
+        this.isEditing = false; // Ensure it's in view mode by default
+      },
+      error: (err) => {
+        console.error('Error fetching piece details:', err);
+      }
+    });
+  }
+
+
+// Method to close the panel
+  closePanel(): void {
+    this.showEditPanel = false;
+    this.resetNewPiece();
+  }
 
   openEditPanel(piece: any): void {
     this.selectedPiece = { ...piece };

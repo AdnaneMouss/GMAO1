@@ -1,52 +1,27 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-parametres-generaux',
   templateUrl: './parametres-generaux.component.html',
   styleUrl: './parametres-generaux.component.css'
 })
-export class ParametresGenerauxComponent {
-  selectedSection: string = 'account';
-  isEditMode: boolean = false;
+export class ParametresGenerauxComponent implements OnInit {
 
-  // User Info
-  user = {
-    name: 'Jean Dupont',
-    email: 'jean.dupont@example.com',
-    password: '',
-    confirmPassword: ''
-  };
+  selectedParam: string = '';
 
-  // Settings (Notifications, Theme, Language, Security)
-  settings = {
-    notifications: {
-      email: true,
-      push: false
-    },
-    theme: 'light',  // Options: 'light', 'dark'
-    language: 'fr',  // Options: 'fr', 'en', 'es'
-    security: {
-      twoFactor: false
+  parameterItems = [
+    { key: 'notifications', label: 'Notifications', icon: 'fas fa-bell' },
+    { key: 'compte', label: 'Compte', icon: 'fas fa-user-cog' },
+    { key: 'securite', label: 'Sécurité', icon: 'fas fa-lock' },
+    { key: 'language', label: 'Langue', icon: 'fas fa-globe' },
+  ];
+
+
+  selectParameter(key: string) {
+    this.selectedParam = key;
+  }
+    ngOnInit(): void {
+
     }
-  };
 
-  // Switch between settings sections
-  selectSection(section: string) {
-    this.selectedSection = section;
-  }
-
-  // Toggle between view and edit modes
-  toggleEditMode() {
-    this.isEditMode = !this.isEditMode;
-  }
-
-  // Save changes (implement actual logic/API calls later)
-  saveChanges() {
-    console.log('Changes saved!', this.settings, this.user);
-  }
-
-  // Check if the form is valid
-  get formValid() {
-    return this.user.password === this.user.confirmPassword && this.user.email && this.user.name;
-  }
 }

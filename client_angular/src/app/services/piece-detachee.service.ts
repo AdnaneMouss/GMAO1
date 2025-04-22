@@ -55,26 +55,21 @@ export class PieceDetacheeService {
     formData.append('description', pieceData.description);
     formData.append('reference', pieceData.reference);
     formData.append('fournisseur', pieceData.fournisseur);
-    formData.append('coutUnitaire', pieceData.coutUnitaire.toString());
+    formData.append('coutUnitaire', pieceData.coutUnitaire.toFixed(2)); // "120.00"
+
     formData.append('quantiteStock', pieceData.quantiteStock.toString());
     formData.append('quantiteMinimale', pieceData.quantiteMinimale.toString());
 
-    // Ensure date fields are in "yyyy-MM-dd" format
-    formData.append('dateAchat', this.formatDate(pieceData.dateAchat));
-    formData.append('datePeremption', this.formatDate(pieceData.datePeremption));
+    formData.append('dateAchat', new Date(pieceData.dateAchat).toISOString().split('T')[0]);
+    formData.append('datePeremption', new Date(pieceData.datePeremption).toISOString().split('T')[0]);
 
     if (imageFile) {
-      formData.append('imageFile', imageFile); // Only append image if it's provided
+      formData.append('file', imageFile); // Only append image if it's provided
     }
 
     return this.http.put<any>(`${this.apiUrl}/${pieceId}`, formData);
   }
 
-// Helper function to format date to "yyyy-MM-dd"
-  private formatDate(date: string): string {
-    const formattedDate = new Date(date).toISOString().split('T')[0];
-    return formattedDate;
-  }
 
   deletePieceDetachee(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);

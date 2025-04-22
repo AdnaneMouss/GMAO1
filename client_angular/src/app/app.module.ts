@@ -52,6 +52,10 @@ import {UserRapportComponent} from "./components/Rapports/user-rapport/user-rapp
 import {
   MaintenanceCalendarComponent
 } from "./components/Maintenances/maintenance-calendar/maintenance-calendar.component";
+import { NotificationsComponent } from './components/Parametres/notifications/notifications.component';
+import { InfosUtilisateursComponent } from './components/parametres/infos-utilisateurs/infos-utilisateurs.component';
+import { ChangePasswordComponent } from './components/Parametres/change-password/change-password.component';
+import { HistoriqueMaintenancesCorrectivesComponent } from './components/Maintenances/historique-maintenances-correctives/historique-maintenances-correctives.component';
 
 @NgModule({
   declarations: [
@@ -80,7 +84,10 @@ import {
     EquipementFormComponent,
     MaintenanceCalendarComponent,
     UserRapportComponent,
-
+    NotificationsComponent,
+    InfosUtilisateursComponent,
+    ChangePasswordComponent,
+    HistoriqueMaintenancesCorrectivesComponent,
   ],
   imports: [
     AppRoutingModule,
