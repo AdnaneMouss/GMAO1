@@ -105,7 +105,7 @@ showNotifications: boolean = false;
   };
 
 
-  
+
 
   // Méthode pour mettre à jour le seuil à partir de l'attribut sélectionné
 updateSeuilFromAttribut() {
@@ -281,15 +281,12 @@ onAttributChange(attribut: any) {
     const target = event.target as HTMLSelectElement;
     const equipementId = Number(target.value);
 
-<<<<<<< HEAD
+
 
     this.selectedEquipementDetails = this.equipements.find(
       equipement => equipement.nom === this.newMaintenance.equipement.nom
     ) || null;
 
-  
-=======
->>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
     if (!equipementId) {
       this.selectedAttributs = [];
       return;
@@ -306,7 +303,7 @@ onAttributChange(attribut: any) {
         this.selectedAttributs = [];
       }
     });
-  }  
+  }
 
 
   onEquipementChanger(): void {
@@ -317,12 +314,6 @@ onAttributChange(attribut: any) {
 
   }
 
-<<<<<<< HEAD
-  
-=======
-
->>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
-
 
 
   nextRepetitionDates: Date[] = [];
@@ -331,21 +322,15 @@ onAttributChange(attribut: any) {
   showPanel = false; // Controls the panel visibility
   searchVisible: boolean = false;
   maintenances: any[] = []; // Tableau pour stocker les maintenances
-<<<<<<< HEAD
-  
-  
-  constructor(private maintenanceService: MaintenanceService, 
+
+  constructor(private maintenanceService: MaintenanceService,
     private cdr: ChangeDetectorRef,private equipementService: EquipementService,
-    private userService: UserService, batimentservice:BatimentService, 
+    private userService: UserService, batimentservice:BatimentService,
      private route: ActivatedRoute,private toastr: ToastrService,
-     private http: HttpClient,private notificationService: NotificationService,   
+     private http: HttpClient,private notificationService: NotificationService,
      private batimentService: BatimentService ,
       private etageService: EtageService,) { }
-=======
 
-
-  constructor(private maintenanceService: MaintenanceService, private cdr: ChangeDetectorRef,private equipementService: EquipementService,private userService: UserService, batimentservice:BatimentService,  private route: ActivatedRoute,private toastr: ToastrService,private http: HttpClient,private notificationService: NotificationService ) { }
->>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
 
   validateDates() {
     if (this.newMaintenance.dateDebutPrevue && this.newMaintenance.dateFinPrevue) {
@@ -531,16 +516,9 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
 
     this.checkMaintenanceStartDate();
     this.chargerEquipements();
-<<<<<<< HEAD
     this.loadBatiments();
-   
- 
-      
-=======
 
 
-
->>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
   }
 
   getPaginatedMaintenances(): any[] {
@@ -649,10 +627,9 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
       //this.showToastNotification(message);
     }
   }
-<<<<<<< HEAD
-  
-  
- 
+
+
+
    // showToastNotification(message: string): void {
     //this.toastr.info(message, 'Nouvelle maintenance', {
      // timeOut: 5000,
@@ -660,9 +637,8 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
      // closeButton: true,
      // progressBar: true
     //});
-    
+
   //}
-=======
 
 
 
@@ -675,7 +651,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     });
 
   }
->>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
+
   toggleNotificationsPanel(): void {
     this.showNotificationsPanel = !this.showNotificationsPanel;
     if (!this.showNotificationsPanel) {
@@ -920,15 +896,13 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     alert('🔔 Une maintenance est prévue pour aujourd’hui !');
   }
 
-<<<<<<< HEAD
   loadEtages(batimentId: number) {
     this.batimentService.getEtagesByBatimentId(batimentId).subscribe(data => {
       this.etages = data;
     });
   }
-  
-=======
->>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
+
+
 
   onBatimentChange(): void {
     // Reset dependent selections
@@ -978,7 +952,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
 
 
 
-  
+
   loadSalles(etageId: number) {
     this.etageService.getSallesByEtageId(etageId).subscribe(data => {
       this.salles = data;
@@ -1150,23 +1124,8 @@ resetForm() {
       NonSeuil:'',
       RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
       equipementId:  null,
-<<<<<<< HEAD
       equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
 
-     
-     
-  
-  
-    
-   
-=======
-
-
-
-
-
-
->>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
       equipement: {
         id: 0,
         image: '',

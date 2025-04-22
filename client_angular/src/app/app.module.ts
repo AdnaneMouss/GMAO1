@@ -90,19 +90,12 @@ import { TachesPreventivesAffecteeComponent } from './components/Interventions/t
     EquipementFormComponent,
     MaintenanceCalendarComponent,
     UserRapportComponent,
-<<<<<<< HEAD
     InterventionsPreventivesPrecedentesComponent,
     TachesPreventivesAffecteeComponent,
-
- 
-
-
-=======
     NotificationsComponent,
     InfosUtilisateursComponent,
     ChangePasswordComponent,
     HistoriqueMaintenancesCorrectivesComponent,
->>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
   ],
   imports: [
     AppRoutingModule,
