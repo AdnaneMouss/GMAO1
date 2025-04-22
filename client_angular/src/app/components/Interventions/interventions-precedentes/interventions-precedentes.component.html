@@ -12,12 +12,6 @@
         class="border px-4 py-2 rounded w-64"
       />
 
-      <!-- Filtre par type d'intervention -->
-      <select [(ngModel)]="filters.typeIntervention" class="border px-4 py-2 rounded">
-        <option value="">Tous les types</option>
-        <option value="CORRECTIVE">Corrective</option>
-        <option value="PREVENTIVE">Préventive</option>
-      </select>
 
       <!-- Filtre par priorité -->
       <select [(ngModel)]="filters.priorite" class="border px-4 py-2 rounded">
@@ -33,7 +27,6 @@
         <thead class="bg-green-700 text-white">
         <tr>
           <th class="px-6 py-3 text-sm font-semibold">#</th>
-          <th class="px-6 py-3 text-sm font-semibold">Type</th>
           <th class="px-6 py-3 text-sm font-semibold">Commencée le</th>
           <th class="px-6 py-3 text-sm font-semibold">Terminée le</th>
           <th class="px-6 py-3 text-sm font-semibold">Equipement</th>
@@ -48,7 +41,6 @@
         <tbody>
         <tr *ngFor="let intervention of filteredInterventions(); let i = index" class="border-b hover:bg-gray-50">
           <td class="px-6 py-4 text-gray-800 font-medium">{{ i + 1 }}</td>
-          <td class="px-6 py-4 text-gray-600">{{ intervention.typeIntervention }}</td>
           <td class="px-6 py-4 text-gray-600">{{ formatDateWithIntl(intervention.dateCommencement) }}</td>
           <td class="px-6 py-4 text-gray-600">{{ formatDateWithIntl(intervention.dateCloture) }}</td>
           <td class="px-6 py-4 text-gray-600">{{ intervention.equipementMaintenu }}</td>
@@ -65,46 +57,100 @@
           </td>
           <td class="px-6 py-4 text-gray-600">{{ intervention.remarques || 'Non renseignées' }}</td>
 
-          <td class="px-6 py-4 text-gray-600">
-            <ng-container>
-              <ul class="list-disc pl-4 text-sm text-gray-700">
-                <li *ngFor="let piece of piecesByIntervention[intervention.id]">{{ piece.nom }}</li>
-              </ul>
-            </ng-container>
-            <ng-template #noPieces>
-              <span class="text-gray-400 italic text-sm">Aucune pièce</span>
-            </ng-template>
+          <td class="px-6 py-4 text-center">
+            <button
+              (click)="viewPieces(intervention)"
+              class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200 shadow-sm"
+            >
+              Voir les pièces
+            </button>
+
           </td>
 
 
-          <td class="px-6 py-4">
+          <td class="px-6 py-4 text-center">
             <button
               *ngIf="intervention.photos.length > 0"
+              (click)="viewPhotos(intervention)"
               class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm"
-              (click)="viewPhotos(intervention)">
+            >
               Voir les photos
             </button>
-            <span *ngIf="intervention.photos.length === 0" class="text-gray-500">Aucune photo</span>
+
+            <span *ngIf="intervention.photos.length === 0" class="text-gray-400 italic">Aucune photo</span>
           </td>
+
         </tr>
         </tbody>
 
       </table>
 
       <!-- Modal d'affichage des photos -->
-      <div *ngIf="showPhotoModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full">
-          <h2 class="text-lg font-semibold mb-4">Photos de l'intervention</h2>
 
-          <div class="grid grid-cols-2 gap-4">
-            <img *ngFor="let photo of selectedPhotos" [src]="getImageUrl(photo.url)" alt="Photo intervention" class="w-full h-40 object-cover rounded-md shadow">
+      <div *ngIf="showPhotoModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm transition-opacity duration-300"
+      >
+        <!-- Modal Content -->
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 p-6 animate-fadeIn">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">📸 Photos de l'intervention</h2>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto">
+            <img
+              *ngFor="let photo of selectedPhotos"
+              [src]="getImageUrl(photo.url)"
+              alt="Photo intervention"
+              class="w-full h-48 object-cover rounded-lg shadow hover:scale-105 transform transition"
+            />
           </div>
 
-          <button (click)="showPhotoModal = false" class="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition">
-            Fermer
-          </button>
+          <div class="mt-6 flex justify-center">
+            <button
+              (click)="showPhotoModal = false"
+              class="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200"
+            >
+              ✖ Fermer
+            </button>
+          </div>
         </div>
       </div>
+
+      <!-- Modal pour les pièces détachées -->
+      <div
+        *ngIf="showPiecesModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm transition-opacity duration-300"
+      >
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 p-6 animate-fadeIn">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+            🛠️ Pièces détachées utilisées
+          </h2>
+
+          <ng-container *ngIf="selectedPieces.length > 0; else noPiecesModal">
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <li
+                *ngFor="let piece of selectedPieces"
+                class="bg-gray-100 px-4 py-3 rounded-lg shadow text-gray-700"
+              >
+                <p class="font-semibold">🔹 {{ piece.nom }}</p>
+                <p class="text-sm text-gray-600 italic">ID: {{ piece.id }}</p>
+              </li>
+            </ul>
+          </ng-container>
+
+          <ng-template #noPiecesModal>
+            <p class="text-gray-500 italic text-center">Aucune pièce détachée enregistrée pour cette intervention.</p>
+          </ng-template>
+
+          <div class="mt-6 flex justify-center">
+            <button
+              (click)="showPiecesModal = false"
+              class="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200"
+            >
+              ✖ Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>

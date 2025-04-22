@@ -31,6 +31,10 @@ export class MaintenanceCorrectiveService {
     return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${id}/start`, {});
   }
 
+  cancelTask(id: number): Observable<MaintenanceCorrective> {
+    return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${id}/cancel`, {});
+  }
+
   // Mark a maintenance task as completed
   markAsCompleted(id: number): Observable<MaintenanceCorrective> {
     return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${id}/complete`, {});

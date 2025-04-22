@@ -1,0 +1,26 @@
+<!-- app-appearance.component.html -->
+<div class="space-y-6">
+  <!-- Mode Sombre / Mode Clair -->
+  <div class="flex items-center gap-4">
+    <label class="text-gray-600 dark:text-gray-300">🌞 Mode Clair</label>
+    <input
+      type="checkbox"
+      [checked]="isDark"
+      (change)="toggleDarkMode($event)"
+      class="toggle-checkbox"
+    />
+    <label class="text-gray-600 dark:text-gray-300">🌙 Mode Sombre</label>
+  </div>
+
+  <!-- Aperçu du thème -->
+  <div class="mt-6">
+    <h3 class="text-sm text-gray-600 dark:text-gray-300 mb-2">Aperçu du thème :</h3>
+
+    <!-- Mini Card Preview -->
+    <div class="bg-white text-gray-900 dark:bg-gray-900 dark:text-white p-4 rounded-xl shadow-sm transition-all duration-300">
+      Ceci s'adapte selon le thème 🌗
+    </div>
+  </div>
+
+  <!-- Autres paramètres, par exemple choix de thème principal, langue, etc. -->
+</div>

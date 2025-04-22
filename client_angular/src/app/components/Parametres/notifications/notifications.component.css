@@ -1,0 +1,21 @@
+/* Tailwind Custom Toggle */
+.toggle__line {
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.toggle__line:hover {
+  background-color: #d1d5db;
+}
+
+.toggle__dot {
+  transition: transform 0.3s ease-in-out;
+}
+
+input:checked ~ .toggle__line {
+  background-color: #4caf50; /* Green when ON */
+}
+
+input:checked ~ .toggle__line .toggle__dot {
+  transform: translateX(100%); /* Move the dot to the right */
+}

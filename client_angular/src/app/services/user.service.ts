@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { User } from '../models/user';
 
@@ -72,6 +72,19 @@ export class UserService {
     return this.http.put<any>(`${this.apiUrl}/${userId}`, formData);
   }
 
+  updateNotifications(userId: number, notifications: boolean): Observable<any> {
+    const params = new HttpParams().set('notifications', notifications.toString());
+
+    return this.http.put(`${this.apiUrl}/${userId}/notifications`, null, { params });
+  }
+
+  updateField(userId: number, field: keyof User, value: any): Observable<User> {
+    return this.http.patch<User>(`${this.apiUrl}/${userId}`, { field, value });
+  }
+
+  deactivateUser(id: number): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/deactivate/${id}`, {});
+  }
 
 
 }

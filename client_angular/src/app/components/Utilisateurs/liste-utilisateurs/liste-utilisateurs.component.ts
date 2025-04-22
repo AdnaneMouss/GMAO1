@@ -119,9 +119,6 @@ export class ListeUtilisateursComponent implements OnInit {
     this.usernameTaken = this.existingUsernames.includes(this.newUser.username);
   }
 
-
-
-
   getImageUrl(imagePath: string | undefined): string {
     return `${environment.apiUrl}${imagePath}`;
   }

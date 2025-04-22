@@ -60,13 +60,10 @@ public class Intervention {
     @OneToMany(mappedBy = "intervention", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PhotosIntervention> photos;
 
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(
-			name = "intervention_piece_detachee",
-			joinColumns = @JoinColumn(name = "intervention_id"),
-			inverseJoinColumns = @JoinColumn(name = "piece_detachee_id")
-	)
+    @OneToMany(mappedBy = "intervention", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference(value = "intervention-piece")
-	private List<PieceDetachee> piecesDetachees;
+    private List<InterventionPieceDetachee> interventionPieces;
+
+
 
 }

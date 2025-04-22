@@ -23,7 +23,7 @@ import { NotificationService } from '../../../services/NotificationService';
 import { AttributEquipements } from '../../../models/attribut-equipement';
 import { EtageService } from '../../../services/etage.service';
 
-                    
+
 
 @Component({
   selector: 'app-maintenances-preventives',
@@ -35,14 +35,14 @@ export class MaintenancesPreventivesComponent implements OnInit {
   selectedFilter: string = '';
   isSortedAZ: boolean = true;
   errorMessage: string = '';
-  isSearchOpen = false;  
+  isSearchOpen = false;
   searchTerm = '';
   message: string = '';
   filteredMaintenace = [...this.maintenance];
   equipements: Equipement[] = [];
   typesEquipements: TypesEquipements[] = []
   users  :User[]  =[];
-  selectedFile: File | null = null;  // Déclarer selectedFile ici ICI 
+  selectedFile: File | null = null;  // Déclarer selectedFile ici ICI
   isValid: boolean = true;
 
 
@@ -53,9 +53,9 @@ export class MaintenancesPreventivesComponent implements OnInit {
   dropdownOpen: boolean = false;
   selectedForm: string| null = null;
   selectedAction: string = '';
-  customAction: string = '';  
+  customAction: string = '';
   filteredResponsableUsers: any[] = [];
-  filteredTechnicienUsers: any[] = []; 
+  filteredTechnicienUsers: any[] = [];
   selectedStatus: string = '';
   selectedPriorite: string = '';
   notificationMessage: string = ''; // Variable pour stocker le message de notification
@@ -63,7 +63,7 @@ export class MaintenancesPreventivesComponent implements OnInit {
   notification: {id: number, message: string}[] = [];
   currentPage: number = 0;
   pageSize: number = 15 // 20 éléments par page
- 
+
   selectedAttribut: any;
   selectedEquipementId: number | null = null;
   selectedEquipement: string = '';
@@ -78,9 +78,9 @@ export class MaintenancesPreventivesComponent implements OnInit {
 
 
 
-  
-  
-  
+
+
+
 
 private checkInterval: Subscription | undefined;
 showNotificationsPanel: boolean = false;
@@ -89,7 +89,7 @@ generatedDates: Date[] = [];
 
 
 
- 
+
 notifications: string[] = [];
 
 showNotifications: boolean = false;
@@ -124,7 +124,7 @@ onAttributChange(attribut: any) {
 }
 
 
- 
+
 
   getDays(): string[] {
     return Object.keys(this.selectedDays);
@@ -142,8 +142,8 @@ onAttributChange(attribut: any) {
     Octobre: false,
     Novembre: false,
     Décembre: false,
-   
-    
+
+
   };
   getMois(): string[] {
     return Object.keys(this.selectedMois);
@@ -162,7 +162,7 @@ onAttributChange(attribut: any) {
     "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
     "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
   ];
-  
+
 
   selectedAttributs: AttributEquipements[] = [];
 
@@ -232,7 +232,8 @@ onAttributChange(attribut: any) {
         dateCreation: undefined,
         equipementMaintenu: '',
         remarques: '',
-        photos: []
+        photos: [],
+        piecesDetachees: []
       }
     },
     id: 0,
@@ -280,17 +281,20 @@ onAttributChange(attribut: any) {
     const target = event.target as HTMLSelectElement;
     const equipementId = Number(target.value);
 
+<<<<<<< HEAD
 
     this.selectedEquipementDetails = this.equipements.find(
       equipement => equipement.nom === this.newMaintenance.equipement.nom
     ) || null;
 
   
+=======
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
     if (!equipementId) {
       this.selectedAttributs = [];
       return;
     }
-  
+
     this.equipementService.getAttributsByEquipementId(equipementId).subscribe({
       next: (attributs) => {
         // Filter attributes where type === 'number'
@@ -313,16 +317,21 @@ onAttributChange(attribut: any) {
 
   }
 
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
 
 
 
   nextRepetitionDates: Date[] = [];
-  
-  
+
+
   showPanel = false; // Controls the panel visibility
   searchVisible: boolean = false;
   maintenances: any[] = []; // Tableau pour stocker les maintenances
+<<<<<<< HEAD
   
   
   constructor(private maintenanceService: MaintenanceService, 
@@ -332,6 +341,11 @@ onAttributChange(attribut: any) {
      private http: HttpClient,private notificationService: NotificationService,   
      private batimentService: BatimentService ,
       private etageService: EtageService,) { }
+=======
+
+
+  constructor(private maintenanceService: MaintenanceService, private cdr: ChangeDetectorRef,private equipementService: EquipementService,private userService: UserService, batimentservice:BatimentService,  private route: ActivatedRoute,private toastr: ToastrService,private http: HttpClient,private notificationService: NotificationService ) { }
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
 
   validateDates() {
     if (this.newMaintenance.dateDebutPrevue && this.newMaintenance.dateFinPrevue) {
@@ -353,7 +367,7 @@ onAttributChange(attribut: any) {
     if (!this.isValid) {
       return; // Stoppe la soumission si les dates sont incorrectes
     }
-    
+
     // Ici, tu peux ajouter la logique d'ajout (envoi des données au backend)
     console.log('Maintenance ajoutée', this.newMaintenance);
   }
@@ -368,14 +382,14 @@ onAttributChange(attribut: any) {
   }
   filterTechnicienUsers(users: any[]): any[] {
     return users.filter(user => user.role?.trim().toLowerCase() === 'technicien');
-  }  
+  }
   trackByFn(index: number, user: any): any {
     return user.id; // Utilise un identifiant unique pour chaque utilisateur
   }
 
 
 
-  
+
   filterMaintenancesByStatus() {
     console.log("Maintenances Data:", this.maintenances);  // Vérifier si la donnée des maintenances est correcte
 
@@ -390,8 +404,8 @@ onAttributChange(attribut: any) {
       console.log("No status selected, showing all maintenances:", this.filteredMaintenace);
     }
   }
-  
-  
+
+
   filterMaintenancesByPriorite() {
     console.log("Maintenances Data:", this.maintenances);  // Vérifier si la donnée des maintenances est correcte
 
@@ -485,14 +499,14 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     return dates;
 }
 
-  
 
 
 
 
 
 
-  
+
+
 
   ngOnInit(): void {
    this.startAutoCheck();
@@ -517,10 +531,16 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
 
     this.checkMaintenanceStartDate();
     this.chargerEquipements();
+<<<<<<< HEAD
     this.loadBatiments();
    
  
       
+=======
+
+
+
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
   }
 
   getPaginatedMaintenances(): any[] {
@@ -540,24 +560,24 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
       this.currentPage--;
     }
   }
-  
+
   nextPage(): void {
     if (this.currentPage < this.getTotalPages() - 1) {
       this.currentPage++;
     }
-  }  
-  
+  }
+
 
   getMin(a: number, b: number): number {
     return Math.min(a, b);
   }
-  
- 
-  
 
 
 
-  
+
+
+
+
 
   startAutoCheck(): void {
     // Vérifier toutes les 5 minutes (300000 ms)
@@ -570,15 +590,15 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
   checkUpcomingMaintenances(): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-  
+
     this.maintenanceService.getAllMaintenances().subscribe(maintenances => {
       this.notifications = []; // Réinitialiser les notifications
       this.notificationCount = 0;
-  
+
       maintenances.forEach(maintenance => {
         // Vérifier les maintenances qui commencent aujourd'hui
-        
-  
+
+
         // Vérifier les répétitions de maintenance
         if (maintenance.startDaterep && maintenance.endDaterep) {
           const repetitionDates = this.calculateRepetitionDates(
@@ -587,7 +607,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
             maintenance.repetitiontype,
             maintenance.selectedjours
           );
-  
+
           repetitionDates.forEach(date => {
             date.setHours(0, 0, 0, 0);
             if (date.getTime() === today.getTime()) {
@@ -598,7 +618,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
             }
           });
         }
-  
+
         // Vérifier si la valeur suivie dépasse le seuil
         if (
           typeof maintenance.valeurSuivi === 'number' &&
@@ -613,22 +633,23 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
       });
     });
   }
-  
-  
+
+
   private addNotification(id: number, message: string): void {
     if (!this.notification.some(n => n.id === id)) {
       const newNotification = { id, message };
-  
+
       this.notificationService.addNotification(newNotification).subscribe({
       next: () => console.log('Notification sauvegardée'),
         error: (err) => console.error('Erreur lors de la sauvegarde', err)
       });
-  
+
       this.notification.push(newNotification);
       this.notificationCount++;
       //this.showToastNotification(message);
     }
   }
+<<<<<<< HEAD
   
   
  
@@ -641,13 +662,27 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     //});
     
   //}
+=======
+
+
+
+  showToastNotification(message: string): void {
+    this.toastr.info(message, 'Nouvelle maintenance', {
+      timeOut: 5000,
+      positionClass: 'toast-top-right',
+      closeButton: true,
+      progressBar: true
+    });
+
+  }
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
   toggleNotificationsPanel(): void {
     this.showNotificationsPanel = !this.showNotificationsPanel;
     if (!this.showNotificationsPanel) {
       this.notificationCount = 0; // Réinitialiser le compteur quand on ferme le panneau
     }
   }
-  
+
   clearNotifications(): void {
     this.notifications = [];
     this.notificationCount = 0;
@@ -697,7 +732,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     this.userService.getAllUsers().subscribe({
       next: (data) => {
         this.users = data;
-        console.log("users chargés :", this.users); 
+        console.log("users chargés :", this.users);
       },
       error: (err) => {
         console.error("Erreur lor s du chargement des users", err);
@@ -705,15 +740,15 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     });
   }
 
-  
+
 
   // Méthode pour calculer la durée de l'intervention
   calculerDureeIntervention(): void {
     if (this.newMaintenance.dateDebutPrevue && this.newMaintenance.dateFinPrevue) {
       const startDate = new Date(this.newMaintenance.dateDebutPrevue);
       const endDate = new Date(this.newMaintenance.dateFinPrevue);
-      
-      
+
+
     }
   }
 
@@ -722,32 +757,32 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
       ? "🔧 Attention ! La valeur suivie a atteint le seuil."
       : "✅ La valeur suivie est encore en dessous du seuil.";
   }
-  
 
-  //Méthode pour calculer la REPETITION de l'intervention  
+
+  //Méthode pour calculer la REPETITION de l'intervention
   calculerRepetition(): void {
     if (this.newMaintenance.startDaterep && this.newMaintenance.endDaterep && this.newMaintenance.repetitiontype) {
       const startDaterep = new Date(this.newMaintenance.startDaterep);
       const endDaterep = new Date(this.newMaintenance.endDaterep);
       const repetitiontype = this.newMaintenance.repetitiontype;
       const selectedjours = this.newMaintenance.selectedjours || []; // S'assure que ce n'est pas undefined
-  
+
       console.log("Envoi des données :", {
         startDaterep,
         endDaterep,
         repetitiontype,
         selectedjours
       });
-  
-      
-      
-      
+
+
+
+
     }
   }
-  
-   
-  
-  
+
+
+
+
   exportToExcel(): void {
     // Créer un tableau de données au format Excel
     const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.maintenances);
@@ -763,12 +798,12 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     }
     this.showJournalierForm = this.newMaintenance.frequence === 'JOURNALIER';
   }
-  
- 
-  
-  
- 
-  
+
+
+
+
+
+
 
 
 
@@ -783,7 +818,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
         this.errorMessage = "Erreur lors du chargement des maintenances.";
         console.error(err);
       }
-    });      
+    });
   }
 /////NOTIFICATION SUBCRIBE
  // startAutoCheck(): void {
@@ -798,28 +833,28 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
         console.log('Maintenance details:', this.newMaintenance);
 
         // Vérifier les dates de répétition après récupération des données
-        
-                
+
+
         if (this.newMaintenance.startDaterep && this.newMaintenance.endDaterep) {
           const repetitionDates: Date[] = [];
           let currentDate = new Date(this.newMaintenance.startDaterep);
           let endDaterep = new Date(this.newMaintenance.endDaterep);
           let selectedjours: number[] = (this.newMaintenance.selectedjours || []).map(Number); // Assurer que c'est bien un tableau de nombres
-        
+
           while (currentDate <= endDaterep) {
             // Vérifier si la date doit être ajoutée pour une répétition hebdomadaire avec jours spécifiques
             if (
-              this.newMaintenance.repetitiontype !== 'TOUS_LES_SEMAINES' || 
+              this.newMaintenance.repetitiontype !== 'TOUS_LES_SEMAINES' ||
               selectedjours.includes(currentDate.getDay())
             ) {
               repetitionDates.push(new Date(currentDate));
             }
-        
+
             switch (this.newMaintenance.repetitiontype) {
               case 'TOUS_LES_JOURS':
                 currentDate.setDate(currentDate.getDate() + 1);
                 break;
-        
+
               case 'TOUS_LES_SEMAINES':
                 if (selectedjours.length > 0) {
                   let nextDayFound = false;
@@ -833,15 +868,15 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
                   currentDate.setDate(currentDate.getDate() + 7);
                 }
                 break;
-        
+
               case 'MENSUEL':
                 currentDate.setMonth(currentDate.getMonth() + 1);
                 break;
-        
+
               case 'ANNUEL':
                 currentDate.setFullYear(currentDate.getFullYear() + 1);
                 break;
-        
+
               default:
                 break;
             }
@@ -879,18 +914,21 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     }
   }
 
-  
+
   // ✅ Affichage de la notification
   sendNotification(): void {
     alert('🔔 Une maintenance est prévue pour aujourd’hui !');
   }
 
+<<<<<<< HEAD
   loadEtages(batimentId: number) {
     this.batimentService.getEtagesByBatimentId(batimentId).subscribe(data => {
       this.etages = data;
     });
   }
   
+=======
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
 
   onBatimentChange(): void {
     // Reset dependent selections
@@ -955,7 +993,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     //}
   //}
 
-  
+
 togglePanel(): void {
   this.showPanel = !this.showPanel; // Toggle the panel visibility
 }
@@ -974,7 +1012,7 @@ removeIndicateur(index: number) {
 }
 
 
-   
+
 addMaintenance() {
   // Assurez-vous que la date est au format Date
   if (this.newMaintenance.dateDebutPrevue) {
@@ -986,7 +1024,7 @@ addMaintenance() {
   if (this.newMaintenance.dateProchainemaintenance) {
     this.newMaintenance.dateProchainemaintenance = new Date(this.newMaintenance.dateProchainemaintenance);
   }
-  
+
 
   // Vérifiez que la date de début est avant la date de fin
   if (this.newMaintenance.dateDebutPrevue && this.newMaintenance.dateFinPrevue) {
@@ -1042,17 +1080,17 @@ addMaintenance() {
   if(!this.newMaintenance.action)
   {
     champsManquants.push("action")
-  }  
+  }
   if(!this.newMaintenance.selectedjours)
     {
       champsManquants.push("selectedjours")
-    }  
+    }
 
 
 
 
 
- 
+
 
   // Si un champ est manquant, afficher un message d'erreur
   if (champsManquants.length > 0) {
@@ -1096,8 +1134,8 @@ resetForm() {
       frequence:'',
       action:'VERIFICATION_PERFORMANCES',
       autreAction: '',
-      startDaterep: new Date(''), 
-      endDaterep: new Date(''), 
+      startDaterep: new Date(''),
+      endDaterep: new Date(''),
       indicateurs: [],
       selectedmois: [],
       selectedjours: [],
@@ -1112,6 +1150,7 @@ resetForm() {
       NonSeuil:'',
       RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
       equipementId:  null,
+<<<<<<< HEAD
       equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
 
      
@@ -1120,6 +1159,14 @@ resetForm() {
   
     
    
+=======
+
+
+
+
+
+
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
       equipement: {
         id: 0,
         image: '',
@@ -1148,18 +1195,18 @@ resetForm() {
         valeurSuivi: 0,
         labelSuivi: ''
       },
-      user: {  
+      user: {
         id: 0,
         nom: '',
-        civilite: 'M', 
+        civilite: 'M',
         email: '',
         username: '',
         password: '',
         gsm: '',
-        image: '',  
-        role: 'ADMIN', 
-        actif: true,  
-        dateInscription: '',  
+        image: '',
+        role: 'ADMIN',
+        actif: true,
+        dateInscription: '',
 
         Intervention: {
           id: 0,
@@ -1175,23 +1222,24 @@ resetForm() {
           dateCreation: undefined,
           equipementMaintenu: '',
           remarques: '',
-          photos: []
+          photos: [],
+          piecesDetachees: []
         }
       },
       batiment :{
-        
+
         id: 0,
         numBatiment: 0,
         intitule: '',
         etages:[],
-        
-  
+
+
     },
 
-    
-      
+
+
     };
-  
+
 }
 
 
@@ -1254,7 +1302,7 @@ onSubmit(): void {
     }
   );
 }
- 
+
 
 
 onFileSelected(event: any) {
@@ -1297,11 +1345,11 @@ showDetails(maintenance: any) {
   //if (this.selectedFilter) {
    // this.filteredMaintenace = this.maintenance.filter(e => e.statut === this.selectedFilter);
   ///} else {
-    //this.filteredMaintenace = [...this.maintenance]; 
+    //this.filteredMaintenace = [...this.maintenance];
   //}
 //}
 
-//dat de la prpchaine  maittenance 
+//dat de la prpchaine  maittenance
 
 
 daysOfWeek = [
@@ -1318,7 +1366,7 @@ daysOfWeek = [
 eventTime: string = '';
   eventDate: string = '';
   repeatCount: number = 1;
- 
+
   endDate: string = '';
 
 
@@ -1338,7 +1386,7 @@ showForm(formId: string): void {
 
 toggleJourSelection(jour: string, event: Event): void {
   const checkbox = event.target as HTMLInputElement;
-  
+
   // Vérifie si `selectedjours` existe, sinon l'initialise
   if (!this.newMaintenance.selectedjours) {
     this.newMaintenance.selectedjours = [];
@@ -1398,8 +1446,8 @@ showNotification(message: string): void {
 onNotificationClick(notification: any): void {
   // Ici, tu peux décider de l'action à effectuer quand une notification est cliquée.
   // Par exemple, naviguer vers une page de détails, afficher un modal, etc.
-  
+
   console.log('Notification cliquée:', notification);
-  
+
 }
 }

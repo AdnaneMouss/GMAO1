@@ -59,9 +59,6 @@ public class MaintenanceController {
 		private AttributEquipementsRepository attributEquipementsRepository;
 		@Autowired
 		private AttributEquipementsValeursRepository attributEquipementsValeursRepository;
-
-
-
 		@Autowired
 	    private  IndiceRepository indiceRepository;
 

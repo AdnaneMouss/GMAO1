@@ -1,6 +1,7 @@
 package com.huir.GmaoApp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,11 +27,13 @@ public class Etage {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "batiment_id")
     @JsonBackReference("batiment-etage")
+	@JsonManagedReference
     private Batiment batiment;
 
     // Relation OneToMany avec Salle (un étage contient plusieurs salles)
     @OneToMany(mappedBy = "etage", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonManagedReference("etage-salle")
+	@JsonIgnore
     private List<Salle> salles;
 
 	public Long getId() {

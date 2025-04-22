@@ -117,7 +117,7 @@ public class EquipementService {
         // Save Equipement entity
         Equipement savedEquipement = equipementRepository.save(equipement);
 
-        // Process dynamic attributes (AttributEquipementValeur)
+       //  Process dynamic attributes (AttributEquipementValeur)
         if (equipementDTO.getAttributs() != null && !equipementDTO.getAttributs().isEmpty()) {
             List<AttributEquipementValeur> attributEquipementValeurs = equipementDTO.getAttributs().stream()
                     .map(dto -> {

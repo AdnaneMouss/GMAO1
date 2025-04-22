@@ -22,6 +22,7 @@ import {Service} from "../../../models/service";
 import {AttributEquipements} from "../../../models/attribut-equipement";
 import {TypesEquipements} from "../../../models/types-equipements";
 import {TypesEquipementsService} from "../../../services/types-equipements.service";
+import {environment} from "../../../../environments/environment";
 
 @Component({
   selector: 'app-liste-equipements',
@@ -84,6 +85,7 @@ export class ListeEquipementsComponent implements OnInit {
     private typesEquipementsService: TypesEquipementsService
   ) {}
 
+
   ngOnInit(): void {
     this.getEquipements();
     this.getTypesEquipements(); // Fetch Types Equipements on component initialization
@@ -103,6 +105,10 @@ export class ListeEquipementsComponent implements OnInit {
         }
       });
     });
+  }
+
+  getImageUrl(imagePath: string): string {
+    return `${environment.apiUrl}${imagePath}`;
   }
 
   getAttributsByEquipement(equipementId: number): void {

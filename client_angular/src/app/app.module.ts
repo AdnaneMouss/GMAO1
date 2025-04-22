@@ -54,6 +54,10 @@ import {UserRapportComponent} from "./components/Rapports/user-rapport/user-rapp
 import {
   MaintenanceCalendarComponent
 } from "./components/Maintenances/maintenance-calendar/maintenance-calendar.component";
+import { NotificationsComponent } from './components/Parametres/notifications/notifications.component';
+import { InfosUtilisateursComponent } from './components/parametres/infos-utilisateurs/infos-utilisateurs.component';
+import { ChangePasswordComponent } from './components/Parametres/change-password/change-password.component';
+import { HistoriqueMaintenancesCorrectivesComponent } from './components/Maintenances/historique-maintenances-correctives/historique-maintenances-correctives.component';
 
 import { InterventionsPreventivesPrecedentesComponent } from './components/Interventions/interventions-preventives-precedentes/interventions-preventives-precedentes.component';
 import { TachesPreventivesAffecteeComponent } from './components/Interventions/taches-preventives-affectee/taches-preventives-affectee.component';
@@ -86,12 +90,19 @@ import { TachesPreventivesAffecteeComponent } from './components/Interventions/t
     EquipementFormComponent,
     MaintenanceCalendarComponent,
     UserRapportComponent,
+<<<<<<< HEAD
     InterventionsPreventivesPrecedentesComponent,
     TachesPreventivesAffecteeComponent,
 
  
 
 
+=======
+    NotificationsComponent,
+    InfosUtilisateursComponent,
+    ChangePasswordComponent,
+    HistoriqueMaintenancesCorrectivesComponent,
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
   ],
   imports: [
     AppRoutingModule,

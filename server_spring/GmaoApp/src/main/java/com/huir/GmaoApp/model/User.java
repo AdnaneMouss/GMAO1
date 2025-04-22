@@ -65,6 +65,8 @@ public class User {
 
     private boolean actif = true;
 
+    private boolean notifications = true;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime dateInscription = LocalDateTime.now();
 
@@ -91,6 +93,7 @@ public class User {
     @OneToMany(mappedBy = "technicien", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Intervention> interventions;
 
+<<<<<<< HEAD
 	public Long getId() {
 		return id;
 	}
@@ -101,5 +104,7 @@ public class User {
     
     
     
+=======
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
     
 }

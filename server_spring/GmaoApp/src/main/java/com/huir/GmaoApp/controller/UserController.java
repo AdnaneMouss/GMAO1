@@ -9,6 +9,8 @@ import com.huir.GmaoApp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,7 +56,6 @@ public class UserController {
                                                  @RequestParam("civilite") String civilite,
                                                  @RequestParam("role") String role) {
 
-
         if (userService.existsByUsername(username)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("field", "username", "message", "Ce nom d'utilisateur est déjà utilisé."));
@@ -75,7 +76,12 @@ public class UserController {
         user.setNom(nom);
         user.setEmail(email);
         user.setUsername(username);
-        user.setPassword(password);  // You might want to hash the password
+
+        // Hash the password before saving
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String hashedPassword = passwordEncoder.encode(password);
+        user.setPassword(hashedPassword);
+
         user.setGsm(gsm);
         user.setCivilite(Civilite.valueOf(civilite));  // assuming Civilite is an enum
         user.setRole(Role.valueOf(role));  // assuming Role is an enum
@@ -83,8 +89,7 @@ public class UserController {
         try {
             // Handle image upload
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            // Save the file in the static/uploads folder within the resources
-            Path filePath = Paths.get("uploads", fileName);  // Just save to 'uploads' directly (relative to project root)
+            Path filePath = Paths.get("uploads", fileName);
             Files.createDirectories(filePath.getParent());
             Files.write(filePath, file.getBytes());
 
@@ -92,17 +97,17 @@ public class UserController {
             String imageUrl = fileName;
             user.setImage(imageUrl);
 
+
             // Save the user to the database
             User savedUser = userService.addUser(user);
 
             // Return the saved user data along with its image URL
-            return ResponseEntity.ok(new UserDTO(savedUser)); // assuming you have a UserDTO
+            return ResponseEntity.ok(new UserDTO(savedUser));
 
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Image upload failed");
         }
     }
-
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(
@@ -111,7 +116,6 @@ public class UserController {
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "nom", required = false) String nom,
             @RequestParam(value = "gsm", required = false) String gsm,
-            @RequestParam(value = "password", required = false) String password,
             @RequestParam(value = "role", required = false) String role,
             @RequestParam(value = "actif", required = false) Boolean actif,
             @RequestParam(value = "civilite", required = false) String civilite,
@@ -156,7 +160,6 @@ public class UserController {
         if (email != null) existingUser.setEmail(email);
         if (username != null) existingUser.setUsername(username);
         if (gsm != null) existingUser.setGsm(gsm);
-        if (password != null) existingUser.setPassword(password);  // Remember to hash the password before saving
         if (role != null) existingUser.setRole(Role.valueOf(role));
         if (civilite != null) existingUser.setCivilite(Civilite.valueOf(civilite));
         if (actif != null) existingUser.setActif(actif);
@@ -207,4 +210,84 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/notifications")
+    public String updateNotifications(@PathVariable Long id, @RequestParam boolean notifications) {
+        boolean updated = userService.updateNotifications(id, notifications);
+        if (updated) {
+            return "Notifications updated successfully.";
+        } else {
+            return "User not found.";
+        }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> updateUserField(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> update
+    ) {
+        String field = update.get("field");
+        String value = update.get("value");
+
+        if (field == null || value == null) {
+            return ResponseEntity.badRequest().body("Champ ou valeur manquant.");
+        }
+
+        Optional<User> existingUserOpt = userRepository.findById(id);
+        if (existingUserOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utilisateur non trouvé.");
+        }
+
+        User existingUser = existingUserOpt.get();
+
+        switch (field) {
+            case "username":
+                if (!existingUser.getUsername().equals(value)) {
+                    Optional<User> usernameExists = userRepository.findByUsername(value);
+                    if (usernameExists.isPresent()) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(Map.of("field", "username", "message", "Ce nom d'utilisateur est déjà utilisé."));
+                    }
+                }
+                break;
+
+            case "email":
+                if (!existingUser.getEmail().equals(value)) {
+                    Optional<User> emailExists = userRepository.findByEmail(value);
+                    if (emailExists.isPresent()) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(Map.of("field", "email", "message", "Cet email est déjà utilisé."));
+                    }
+                }
+                break;
+
+            case "gsm":
+                if (!existingUser.getGsm().equals(value)) {
+                    Optional<User> gsmExists = userRepository.findByGsm(value);
+                    if (gsmExists.isPresent()) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(Map.of("field", "gsm", "message", "Ce numéro de téléphone est déjà utilisé."));
+                    }
+                }
+                break;
+
+            // You can extend it with more validation logic for other fields if needed
+        }
+
+        try {
+            User updated = userService.updateUserField(id, field, value);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de la mise à jour.");
+        }
+    }
+
+
+@PutMapping("/deactivate/{id}")
+public void deactivateUser(@PathVariable Long id) {
+        userService.deactivateAcc(id);
 }
+}
+

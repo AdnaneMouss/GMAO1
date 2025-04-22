@@ -2,6 +2,7 @@ package com.huir.GmaoApp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.huir.GmaoApp.dto.MaintenanceDTO;
 
@@ -74,6 +75,7 @@ public class Equipement {
     private List<PieceDetachee> piecesDetachees;
 
     // Relation avec Salle (Chaque équipement est dans une salle)
+	@JsonBackReference("salle-equipement")
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "salle_id")
     private Salle salle;

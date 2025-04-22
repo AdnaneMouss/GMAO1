@@ -4,7 +4,9 @@ import com.huir.GmaoApp.dto.UserDTO;
 import com.huir.GmaoApp.model.Services;
 import com.huir.GmaoApp.model.User;
 import com.huir.GmaoApp.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,9 +28,15 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public UserService( UserRepository userRepository) {
+    private final EmailService emailService;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+    
+    public UserService(UserRepository userRepository, EmailService emailService) {
 
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     public User addUser(User user) {
@@ -44,16 +52,21 @@ public class UserService {
     public Optional<User> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
+
+
     public UserDTO findByEmailAndPassword(String email, String password) {
         Optional<User> utilisateurOpt = userRepository.findByEmail(email);
         if (utilisateurOpt.isPresent()) {
             User utilisateur = utilisateurOpt.get();
-            if (utilisateur.getPassword().equals(password)) {
-                return new UserDTO(utilisateur); // Renvoie un DTO à la place de l'entité
+
+            // Compare the raw password with the hashed one
+            if (passwordEncoder.matches(password, utilisateur.getPassword())) {
+                return new UserDTO(utilisateur); // Return DTO if password matches
             }
         }
-        return null; // Retourne null si l'utilisateur n'est pas trouvé ou si le mot de passe est incorrect
+        return null; // Return null if not found or password doesn't match
     }
+
     // Get all users
     public List<User> findAllUsers() {
         return userRepository.findAll();
@@ -124,6 +137,68 @@ public class UserService {
     public boolean existsByPhone(String gsm) {
         return userRepository.existsByGsm(gsm);
     }
+
+    public boolean updateNotifications(Long userId, boolean notifications) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            user.setNotifications(notifications);
+            userRepository.save(user);
+
+            // 👉 Send email ONLY if notifications are turned ON
+            if (notifications && user.getEmail() != null) {
+                String subject = "Notifications activées dans GMAO";
+                String body = "Bonjour " + user.getNom() + ",\n\n"
+                        + "Vous avez activé les notifications dans votre espace GMAO.\n"
+                        + "Vous recevrez désormais des alertes importantes liées à vos équipements et maintenances.\n\n"
+                        + "Merci de votre confiance.\n\n"
+                        + "Cordialement,\nL'équipe GMAO";
+
+                emailService.sendEmail(user.getEmail(), subject, body);
+            }
+
+            return true;
+        }
+
+        return false; // User not found
+    }
+
+
+    public User updateUserField(Long id, String fieldName, String newValue) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        switch (fieldName) {
+            case "nom":
+                user.setNom(newValue);
+                break;
+            case "email":
+                user.setEmail(newValue);
+                break;
+            case "gsm":
+                user.setGsm(newValue);
+                break;
+            case "username":
+                user.setUsername(newValue);
+                break;
+            case "image":
+                user.setImage(newValue);
+                break;
+            default:
+                throw new IllegalArgumentException("Champ '" + fieldName + "' non supporté ou non modifiable.");
+        }
+
+        return userRepository.save(user);
+    }
+
+public void deactivateAcc(Long id){
+    User user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    user.setActif(false);
+    userRepository.save(user);
+}
 
 
 }

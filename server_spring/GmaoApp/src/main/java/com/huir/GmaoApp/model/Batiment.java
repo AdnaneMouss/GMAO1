@@ -1,5 +1,6 @@
 package com.huir.GmaoApp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,10 +23,10 @@ public class Batiment {
     private String intitule;
     private Boolean actif;
 
-    // Gestion de la relation avec Etage
-    // Ici, Batiment est le parent, donc on utilise @JsonManagedReference avec un nom de référence unique.
+
     @OneToMany(mappedBy = "batiment", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonManagedReference("batiment-etage")
+	@JsonIgnore
     private List<Etage> etages;
 
 	public Long getId() {

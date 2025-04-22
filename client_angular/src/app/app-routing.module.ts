@@ -54,8 +54,15 @@ import {
   MaintenancesCorrectivesComponent
 } from "./components/Maintenances/maintenances-correctives/maintenances-correctives.component";
 import { UserRapportComponent } from './components/Rapports/user-rapport/user-rapport.component';
+<<<<<<< HEAD
 import { InterventionsPreventivesPrecedentesComponent } from './components/Interventions/interventions-preventives-precedentes/interventions-preventives-precedentes.component';
 import { TachesPreventivesAffecteeComponent } from './components/Interventions/taches-preventives-affectee/taches-preventives-affectee.component';
+=======
+import {
+  HistoriqueMaintenancesCorrectivesComponent
+} from "./components/Maintenances/historique-maintenances-correctives/historique-maintenances-correctives.component";
+
+>>>>>>> 7d82ae8d930f451ff17c35dd76dcb796f3ad4fc4
 
 
 const routes: Routes = [
@@ -79,6 +86,7 @@ const routes: Routes = [
   { path: 'maintenances/correctives', component: MaintenancesCorrectivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/preventives', component: MaintenancesPreventivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/historique', component: HistoriqueMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
+  { path: 'maintenances/historique-maintenances-correctives', component: HistoriqueMaintenancesCorrectivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'interventions/taches', component: TachesAffecteesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
   { path: 'interventions/liste', component: InterventionsPrecedentesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
   { path: 'rapports/coutMaintenance', component: CoutMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },

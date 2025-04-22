@@ -23,6 +23,8 @@ export class InterventionsPrecedentesComponent implements OnInit {
   technicianId: number = 0;  // Variable to store the technician ID
   selectedPhotos: PhotosIntervention[] = [];
   showPhotoModal: boolean = false;
+  showPiecesModal: boolean = false;
+  selectedPieces: any[] = [];
 
   piecesByIntervention: { [key: number]: PieceDetachee[] } = {};
 
@@ -77,6 +79,11 @@ export class InterventionsPrecedentesComponent implements OnInit {
     } else {
       console.log("Aucune photo disponible");
     }
+  }
+
+  viewPieces(intervention: any): void {
+    this.selectedPieces = this.piecesByIntervention[intervention.id] || [];
+    this.showPiecesModal = true;
   }
 
   getImageUrl(imagePath: string): string {
