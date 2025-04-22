@@ -55,6 +55,23 @@ export class MaintenanceService {
     return this.http.post<maintenance>(`${this.apiUrl}/next-dates`, maintenance);
   }
 
+    // Fetch maintenances by technician ID
+// Dans MaintenanceService
+getMaintenancesByTechnicien(technicienId: number): Observable<maintenance[]> {
+  return this.http.get<maintenance[]>(`${this.apiUrl}/by-technicien/${technicienId}`);
+}
+ // Start a maintenance task
+  startTask(id: number): Observable<maintenance> {
+    return this.http.put<maintenance>(`${this.apiUrl}/${id}/start`, {});
+  }
+
+ 
+
+  // Mark a maintenance task as completed
+    markAsCompleted(id: number): Observable<maintenance> {
+      return this.http.put<maintenance>(`${this.apiUrl}/${id}/complete`, {});
+    }
+
 
 
   

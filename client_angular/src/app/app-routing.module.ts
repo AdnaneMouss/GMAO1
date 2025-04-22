@@ -54,7 +54,8 @@ import {
   MaintenancesCorrectivesComponent
 } from "./components/Maintenances/maintenances-correctives/maintenances-correctives.component";
 import { UserRapportComponent } from './components/Rapports/user-rapport/user-rapport.component';
-
+import { InterventionsPreventivesPrecedentesComponent } from './components/Interventions/interventions-preventives-precedentes/interventions-preventives-precedentes.component';
+import { TachesPreventivesAffecteeComponent } from './components/Interventions/taches-preventives-affectee/taches-preventives-affectee.component';
 
 
 const routes: Routes = [
@@ -84,7 +85,12 @@ const routes: Routes = [
   { path: 'rapports/statistiques', component: StatistiquesInterventionsComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'rapports/Utiliateurs', component: UserRapportComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/calendar', component: MaintenanceCalendarComponent , canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
+  { path: 'interventionsP/taches', component: TachesPreventivesAffecteeComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
+  { path: 'interventionsP/liste', component: InterventionsPreventivesPrecedentesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
+  
   { path: 'parametres', component: ParametresGenerauxComponent},
+
+
   { path: '**', redirectTo: '/login' }
 ];
 

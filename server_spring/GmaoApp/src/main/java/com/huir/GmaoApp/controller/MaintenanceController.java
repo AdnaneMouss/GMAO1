@@ -23,10 +23,12 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huir.GmaoApp.dto.IndicateurDTO;
+import com.huir.GmaoApp.dto.MaintenanceCorrectiveDTO;
 import com.huir.GmaoApp.dto.MaintenanceDTO;
 import com.huir.GmaoApp.dto.UserDTO;
 import com.huir.GmaoApp.model.Equipement;
 import com.huir.GmaoApp.model.Maintenance;
+import com.huir.GmaoApp.model.MaintenanceCorrective;
 import com.huir.GmaoApp.model.Priorite;
 import com.huir.GmaoApp.model.Statut;
 import com.huir.GmaoApp.model.User;
@@ -89,6 +91,28 @@ public class MaintenanceController {
     }
   
   //ethode de  batiment 
+    
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<Maintenance> markAsCompleted(@PathVariable Long id) {
+        Maintenance updatedMaintenance = maintenanceService.markAsCompleted(id);
+        if (updatedMaintenance != null) {
+            return ResponseEntity.ok(updatedMaintenance);
+        } else {
+            return ResponseEntity.status(400).body(null); // Si la maintenance n'est pas trouvée ou ne peut être terminée
+        }
+    }
+    
+    @PutMapping("/{id}/start")
+    public ResponseEntity<Maintenance> startTask(@PathVariable Long id) {
+        Maintenance updatedMaintenance = maintenanceService.startTask(id);
+        if (updatedMaintenance != null) {
+            return ResponseEntity.ok(updatedMaintenance);
+        } else {
+            return ResponseEntity.status(400).body(null); // Si la maintenance n'est pas trouvée ou ne peut être commencée
+        }
+    }
+    
+
 
         
          
@@ -149,9 +173,18 @@ public class MaintenanceController {
     public String verifierSeuil(@RequestParam String nomIndice) {
         return maintenanceService.verifierSeuilMaintenance(nomIndice);
     }
+    
+    @GetMapping("/Technicien/{technicien_maintenance_id_id}")
+    public List<MaintenanceDTO> getInterventionsByTechnicien(@PathVariable Long technicien_maintenance_id_id) {
+        return maintenanceService.getMaintenancesByTechnicien(technicien_maintenance_id_id);
+    }
 
-  
+    @GetMapping("/technician/workload/{id}")
+    public ResponseEntity<Integer> getTechnicianWorkload(@PathVariable("id") Long technicianId) {
+        int workload = maintenanceService.getTechnicianWorkload(technicianId);
+        return ResponseEntity.ok(workload);
+
+    }  }
 
     
  
-}

@@ -63,6 +63,7 @@ export class DetailsMaintenanceComponent implements OnInit {
       coutAchat: '',
       valeurSuivi: 0,
       labelSuivi: '',
+    
 
       typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Initial empty type
       service: {} as Service,
@@ -135,7 +136,8 @@ export class DetailsMaintenanceComponent implements OnInit {
 
     RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
     message: '',
-    NonSeuil: ''
+    NonSeuil: '',
+    equipementBatiment: "", equipementEtage: 0, equipementSalle: 0
   };
   errorMessage: string = '';
   isEditMode: boolean = false;  // Mode édition
@@ -163,19 +165,19 @@ constructor(
     const equipementId = Number(target.value);
   
     if (!equipementId) {
-      this.selectedAttributs = [];
+      this.selectedAttribut = [];
       return;
     }
   
     this.equipementService.getAttributsByEquipementId(equipementId).subscribe({
       next: (attributs) => {
         // Filter attributes where type === 'number'
-        this.selectedAttributs = attributs.filter(attr => attr.attributEquipementType === 'NUMBER');
-        console.log("attributs:", this.selectedAttributs);
+        this.selectedAttribut = attributs.filter(attr => attr.attributEquipementType === 'NUMBER');
+        console.log("attributs:", this.selectedAttribut);
       },
       error: (error) => {
         console.error('Erreur lors de la récupération des attributs', error);
-        this.selectedAttributs = [];
+        this.selectedAttribut = [];
       }
     });
   }
@@ -195,12 +197,25 @@ constructor(
     const valeurAttribut = this.selectedAttribut.valeur;
   
     this.messageSeuil = this.verifierSeuilMaintenance(seuil,valeurAttribut);
+    this.chargerEquipements();
 
     
    
     
     
    
+  }
+
+  chargerEquipements(): void {
+    this.equipementService.getAllEquipements().subscribe({
+      next: (data) => {
+        this.equipements = data;
+        console.log("Équipements chargés :", this.equipements); // Pour vérifier si les données arrivent bien
+      },
+      error: (err) => {
+        console.error("Erreur lors du chargement des équipements", err);
+      }
+    });
   }
 
 

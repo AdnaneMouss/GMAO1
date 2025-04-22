@@ -95,7 +95,7 @@ public class Equipement {
 
     // Maintenance préventive et autres maintenances liées à cet équipement
     @JsonManagedReference
-    @OneToMany(mappedBy = "equipement", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "equipement", fetch = FetchType.EAGER)
     private List<Maintenance> maintenances;
 
 	public Long getId() {

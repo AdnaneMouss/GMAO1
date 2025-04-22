@@ -4,11 +4,12 @@ package com.huir.GmaoApp.service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
+import java.util.stream.Collectors;
 import java.util.Date;
 import java.util.Calendar;
 
@@ -21,18 +22,26 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huir.GmaoApp.dto.EventDTO;
 import com.huir.GmaoApp.dto.IndicateurDTO;
+import com.huir.GmaoApp.dto.MaintenanceCorrectiveDTO;
 import com.huir.GmaoApp.dto.MaintenanceDTO;
 import com.huir.GmaoApp.model.AttributEquipementValeur;
 import com.huir.GmaoApp.model.AttributEquipements;
+import com.huir.GmaoApp.model.Equipement;
 import com.huir.GmaoApp.model.Event;
 import com.huir.GmaoApp.model.Indice;
 import com.huir.GmaoApp.model.Maintenance;
+import com.huir.GmaoApp.model.MaintenanceCorrective;
+import com.huir.GmaoApp.model.Priorite;
+import com.huir.GmaoApp.model.Statut;
+import com.huir.GmaoApp.model.User;
 import com.huir.GmaoApp.model.repetitiontype;
 import com.huir.GmaoApp.repository.AttributEquipementsRepository;
 import com.huir.GmaoApp.repository.AttributEquipementsValeursRepository;
+import com.huir.GmaoApp.repository.EquipementRepository;
 import com.huir.GmaoApp.repository.EventRepository;
 import com.huir.GmaoApp.repository.IndiceRepository;
 import com.huir.GmaoApp.repository.MaintenanceRepository;
+import com.huir.GmaoApp.repository.UserRepository;
 
 @Service
 public class MaintenanceService {
@@ -42,6 +51,15 @@ public class MaintenanceService {
     
     @Autowired
     private final EventRepository eventRepository;
+    
+    @Autowired
+    private final EquipementRepository equipementRepository;
+    
+    @Autowired
+    private final UserRepository userRepository;
+    
+    @Autowired
+    private final EmailService emailService;
     
     
     
@@ -56,10 +74,16 @@ public class MaintenanceService {
 	@Autowired
     private  IndiceRepository indiceRepository;
 
+	private EquipementRepository EquipementRepository;
+
     
-    public MaintenanceService(MaintenanceRepository maintenanceRepository , EventRepository eventRepository) {
+    public MaintenanceService(MaintenanceRepository maintenanceRepository , EventRepository eventRepository,EmailService emailService,EquipementRepository equipementRepository,UserRepository userRepository) {
         this.maintenanceRepository = maintenanceRepository;
         this.eventRepository  =  eventRepository;
+		this.equipementRepository = equipementRepository;
+        this.emailService=emailService;
+        this.userRepository =userRepository;
+     
     }
 
     // Méthode pour ajouter une maintenance  
@@ -211,7 +235,7 @@ public class MaintenanceService {
     
     // Méthode pour mettre à jour une maintenance
     @Transactional
-    public MaintenanceDTO updateMaintenance(Long id, MaintenanceDTO maintenancedto) {
+    public MaintenanceDTO updateMaintenancEe(Long id, MaintenanceDTO maintenancedto) {
         Optional<Maintenance> optionalMaintenance = maintenanceRepository.findById(id);
         if (optionalMaintenance.isPresent()) {
             Maintenance maintenance = optionalMaintenance.get();
@@ -328,10 +352,7 @@ public class MaintenanceService {
     
     ////////////////////////
     
-    public Maintenance getMaintenanceWithRepetitionDates(Maintenance maintenance) {
-        maintenance.calculateRepetitionDates(); // Calculer les dates de répétition
-        return maintenance;
-    }
+  
     
     /////////////////HADO////////////
 /////HADI/////////
@@ -381,7 +402,17 @@ public class MaintenanceService {
 
 		        return count; // Retourner le nombre de dates de maintenance
 		    }
-	
+		  
+		    public List<MaintenanceDTO> getMaintenancesByTechnicien(Long technicienId) {
+		        return maintenanceRepository.findByAffecteAId(technicienId).stream()
+		                .map(MaintenanceDTO::new)
+		                .collect(Collectors.toList());
+		    }
+		    
+		    public int getTechnicianWorkload(Long technicianId) {
+		        List<Maintenance> assignedTasks = maintenanceRepository.findByAffecteAIdAndStatutNotIn(technicianId, Arrays.asList(Statut.TERMINEE, Statut.ANNULEE));
+		        return assignedTasks.size();
+		    }
 		 
 		 
 		 public String verifierSeuilMaintenance(String nomIndice) {
@@ -428,11 +459,84 @@ public class MaintenanceService {
 		            return "Indice non trouvé.";
 		        }
 		    }
+		 
+		   public MaintenanceDTO updateMaintenance(Long maintenanceId, MaintenanceDTO dto) {
+		        // Retrieve the existing MaintenanceCorrective by its ID
+		        Optional<Maintenance> existingMaintenanceOptional = maintenanceRepository.findById(maintenanceId);
 
+		        if (!existingMaintenanceOptional.isPresent()) {
+		            System.out.println("Erreur");
+		        }
+		        Maintenance maintenance = existingMaintenanceOptional.get();
 
+		        // Update the fields
+		       
+		        maintenance.setCommentaires(dto.getCommentaires() != null ? dto.getCommentaires() : maintenance.getCommentaires());
+		       // maintenance.setStatut(dto.getStatut() != null ? Statut.valueOf(dto.getStatut()) : maintenance.getStatut());
+		        //maintenance.setPriorite(dto.getPriorite() != null ? Priorite.valueOf(dto.getPriorite()) : maintenance.getPriorite());
 
-		
+		        // Keep the original date if not provided
+		        maintenance.setDateDebutPrevue(dto.getDateDebutPrevue() != null ? dto.getDateDebutPrevue() : maintenance.getDateDebutPrevue());
 
+		        // Update the equipment if provided
+		        if (dto.getEquipementId() != null) {
+		            Optional<Equipement> equipementOptional = equipementRepository.findById(dto.getEquipementId());
+		            equipementOptional.ifPresent(maintenance::setEquipement);
+		       }
+
+		        // Update the technician if provided
+		       
+
+		       
+		        // Save the updated maintenance corrective
+		        maintenance = maintenanceRepository.save(maintenance);
+
+		        // Optionally, send an email to the technician if assigned
+		        if (maintenance.getUser() != null && maintenance.getUser().getId() != null) {
+		            String subject = "Mise à jour de la maintenance corrective assignée";
+		            String body = "Bonjour " + maintenance.getUser().getId() + ",\n\n"
+		                    + "Une maintenance corrective a été mise à jour.\n\n"
+		                    + "Titre: " + maintenance.getAction() + "\n"
+		                    + "Description: " + maintenance.getCommentaires() + "\n"
+		                    + "Priorité: " + maintenance.getPriorite() + "\n\n"
+		                    + "Merci de bien vouloir vérifier la mise à jour.\n\n"
+		                    + "Cordialement,\nL'équipe GMAO";
+
+		           // emailService.sendEmail(maintenance.getUser().getId(), subject, body);
+		        }
+
+		        // Return the updated MaintenanceCorrective as DTO
+		        return new MaintenanceDTO(maintenance);
+		    }
+
+		   
+		   
+		   
+		   
+		 
+		 
+		  public Maintenance markAsCompleted(Long id) {
+		        Optional<Maintenance> maintenanceOpt = maintenanceRepository.findById(id);
+		        if (maintenanceOpt.isPresent()) {
+		            Maintenance maintenance = maintenanceOpt.get();
+		            if (maintenance.getStatut() == Statut.EN_COURS) {
+		                maintenance.setStatut(Statut.TERMINEE);
+		                return maintenanceRepository.save(maintenance);
+		            }
+		        }
+		        return null;
+		    }
+		  
+		  
+		    public Maintenance startTask(Long id) {
+		        Optional<Maintenance> maintenanceOpt = maintenanceRepository.findById(id);
+		        if (maintenanceOpt.isPresent()) {
+		            Maintenance maintenance = maintenanceOpt.get();
+		            if (maintenance.getStatut() == Statut.EN_ATTENTE) {
+		                maintenance.setStatut(Statut.EN_COURS);
+		                return maintenanceRepository.save(maintenance);
+		            }
+		        }
+		        return null;
+		    }
 }
-
-    
