@@ -47,10 +47,15 @@ import {
 import {TypesEquipementsComponent} from "./components/Equipements/types-equipements/types-equipements.component";
 import {BatimentsListeComponent} from "./components/batiments/batiments-liste/batiments-liste.component";
 import {EquipementFormComponent} from "./equipement-form/equipement-form.component";
+
+import { MaintenanceCalendarComponent } from './components/Maintenances/maintenance-calendar/maintenance-calendar.component';
+
 import {
   MaintenancesCorrectivesComponent
 } from "./components/Maintenances/maintenances-correctives/maintenances-correctives.component";
-
+import { UserRapportComponent } from './components/Rapports/user-rapport/user-rapport.component';
+import { InterventionsPreventivesPrecedentesComponent } from './components/Interventions/interventions-preventives-precedentes/interventions-preventives-precedentes.component';
+import { TachesPreventivesAffecteeComponent } from './components/Interventions/taches-preventives-affectee/taches-preventives-affectee.component';
 
 
 const routes: Routes = [
@@ -78,7 +83,14 @@ const routes: Routes = [
   { path: 'interventions/liste', component: InterventionsPrecedentesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
   { path: 'rapports/coutMaintenance', component: CoutMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'rapports/statistiques', component: StatistiquesInterventionsComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
+  { path: 'rapports/Utiliateurs', component: UserRapportComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
+  { path: 'maintenances/calendar', component: MaintenanceCalendarComponent , canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
+  { path: 'interventionsP/taches', component: TachesPreventivesAffecteeComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
+  { path: 'interventionsP/liste', component: InterventionsPreventivesPrecedentesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
+  
   { path: 'parametres', component: ParametresGenerauxComponent},
+
+
   { path: '**', redirectTo: '/login' }
 ];
 

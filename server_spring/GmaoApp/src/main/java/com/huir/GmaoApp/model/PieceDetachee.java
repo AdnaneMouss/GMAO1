@@ -70,4 +70,147 @@ public class PieceDetachee {
         if (quantiteStock < quantiteMinimale) return "Stock bas";
         return "Disponible";
     }
+
+
+	public Long getId() {
+		return id;
+	}
+
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+
+	public String getNom() {
+		return nom;
+	}
+
+
+	public void setNom(String nom) {
+		this.nom = nom;
+	}
+
+
+	public String getDescription() {
+		return description;
+	}
+
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+
+	public String getReference() {
+		return reference;
+	}
+
+
+	public void setReference(String reference) {
+		this.reference = reference;
+	}
+
+
+	public String getFournisseur() {
+		return fournisseur;
+	}
+
+
+	public void setFournisseur(String fournisseur) {
+		this.fournisseur = fournisseur;
+	}
+
+
+	public double getCoutUnitaire() {
+		return coutUnitaire;
+	}
+
+
+	public void setCoutUnitaire(double coutUnitaire) {
+		this.coutUnitaire = coutUnitaire;
+	}
+
+
+	public int getQuantiteStock() {
+		return quantiteStock;
+	}
+
+
+	public void setQuantiteStock(int quantiteStock) {
+		this.quantiteStock = quantiteStock;
+	}
+
+
+	public int getQuantiteMinimale() {
+		return quantiteMinimale;
+	}
+
+
+	public void setQuantiteMinimale(int quantiteMinimale) {
+		this.quantiteMinimale = quantiteMinimale;
+	}
+
+
+	public String getImage() {
+		return image;
+	}
+
+
+	public void setImage(String image) {
+		this.image = image;
+	}
+
+
+	public LocalDate getDateAchat() {
+		return dateAchat;
+	}
+
+
+	public void setDateAchat(LocalDate dateAchat) {
+		this.dateAchat = dateAchat;
+	}
+
+
+	public LocalDate getDatePeremption() {
+		return datePeremption;
+	}
+
+
+	public void setDatePeremption(LocalDate datePeremption) {
+		this.datePeremption = datePeremption;
+	}
+
+
+	public List<String> getHistoriqueUtilisation() {
+		return historiqueUtilisation;
+	}
+
+
+	public void setHistoriqueUtilisation(List<String> historiqueUtilisation) {
+		this.historiqueUtilisation = historiqueUtilisation;
+	}
+
+
+	public List<Equipement> getEquipements() {
+		return equipements;
+	}
+
+
+	public void setEquipements(List<Equipement> equipements) {
+		this.equipements = equipements;
+	}
+
+
+	public List<Intervention> getInterventions() {
+		return interventions;
+	}
+
+
+	public void setInterventions(List<Intervention> interventions) {
+		this.interventions = interventions;
+	}
+    
+    
+    
 }

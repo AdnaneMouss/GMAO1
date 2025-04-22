@@ -2,9 +2,11 @@ import { ActionMaintenance } from "./ActionMaintenance";
 import { AttributEquipementValeur } from "./attribut-equipement-valeur";
 import { Batiment } from "./batiment";
 import { Equipement } from "./equipement";
+import { Etage } from "./etage";
 import { Indicateur } from "./Indicateur";
 import { indice } from "./indice";
 import { RepetitionType } from "./RepetitionType";
+import { Salle } from "./salle";
 import { User } from "./user";
 
 export interface maintenance{
@@ -22,6 +24,8 @@ export interface maintenance{
   user :User;
   frequence:'JOURNALIER' | 'HEBDOMADAIRE' | 'MENSUEL' | 'TRIMESTRIEL' | 'SEMESTRIEL' | 'ANNUEL' |''   |null ; 
   batiment:Batiment;
+  salle?:Salle;
+  etage?:Etage;
   indicateurs?: Indicateur[];
   action :  'VERIFICATION_PERFORMANCES' |'NETTOYAGE_EQUIPEMENTS' |'CALIBRATION_EQUIPEMENTS' |
   'TEST_SECURITE' |
@@ -49,6 +53,10 @@ export interface maintenance{
   message:'',
   type_maintenance?:string;
   equipementId: number | null ;
+
+  equipementBatiment: string;
+  equipementSalle: number;
+  equipementEtage: number;
 
   
    

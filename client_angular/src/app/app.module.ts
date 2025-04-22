@@ -1,4 +1,6 @@
 import { NgModule } from '@angular/core';
+
+
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
@@ -53,6 +55,10 @@ import {
   MaintenanceCalendarComponent
 } from "./components/Maintenances/maintenance-calendar/maintenance-calendar.component";
 
+import { InterventionsPreventivesPrecedentesComponent } from './components/Interventions/interventions-preventives-precedentes/interventions-preventives-precedentes.component';
+import { TachesPreventivesAffecteeComponent } from './components/Interventions/taches-preventives-affectee/taches-preventives-affectee.component';
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -80,6 +86,11 @@ import {
     EquipementFormComponent,
     MaintenanceCalendarComponent,
     UserRapportComponent,
+    InterventionsPreventivesPrecedentesComponent,
+    TachesPreventivesAffecteeComponent,
+
+ 
+
 
   ],
   imports: [

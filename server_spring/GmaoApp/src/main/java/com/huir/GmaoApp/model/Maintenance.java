@@ -22,11 +22,13 @@ import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.AssertTrue;
 
 import com.huir.GmaoApp.dto.IndicateurDTO;
 import com.huir.GmaoApp.model.*;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -40,6 +42,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -109,6 +112,19 @@ public class Maintenance {
 
 	private int seuil;
 	private  String nonSeuil;
+	
+	
+	// ✅ Ajout de noms uniques pour éviter le conflit Jackson
+    @JsonBackReference("user-creePar")
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User creePar;
+
+    @JsonBackReference("user-affecteA")
+    @ManyToOne
+    @JoinColumn(name = "technicien_id")
+    private User affecteA;
+	
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonManagedReference // Gestion de la relation parent
@@ -176,20 +192,53 @@ public class Maintenance {
 	    private String selectedjours;	
 	    private String selectedmois;
 	    
+	    @Column(name = "next_repetition_dates")
+	    private String nextRepetitionDates; // stockée comme "2024-04-25,2024-05-01"
 	    
-	    private List<Date> nextRepetitionDates;
+	    @Transient
+	    public List<Date> getNextRepetitionDatesAsList() {
+	        if (nextRepetitionDates == null || nextRepetitionDates.isEmpty()) {
+	            return new ArrayList<>();
+	        }
+	        return Arrays.stream(nextRepetitionDates.split(","))
+	                .map(dateStr -> {
+	                    try {
+	                        return new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
+	                    } catch (ParseException e) {
+	                        return null;
+	                    }
+	                })
+	                .filter(Objects::nonNull)
+	                .collect(Collectors.toList());
+	    }
+
+	    public void setNextRepetitionDatesAsList(List<Date> dates) {
+	        if (dates == null || dates.isEmpty()) {
+	            this.nextRepetitionDates = "";
+	        } else {
+	            this.nextRepetitionDates = dates.stream()
+	                    .map(date -> new SimpleDateFormat("yyyy-MM-dd").format(date))
+	                    .collect(Collectors.joining(","));
+	        }
+	    }
+
+
+	    
+	    
+	  //  @Column(name = "next_repetition_dates")
+	    //private List<Date> nextRepetitionDates;
 	    
 	    
 	    ///////////////
 	   
 	    
-	    public List<Date> getNextRepetitionDates() {
-	        return nextRepetitionDates;
-	    }
+	   // public List<Date> getNextRepetitionDates() {
+	     //   return nextRepetitionDates;
+	    //}
 
-	    public void setNextRepetitionDates(List<Date> nextRepetitionDates) {
-	        this.nextRepetitionDates = nextRepetitionDates;
-	    }
+	   // public void setNextRepetitionDates(List<Date> nextRepetitionDates) {
+	     //   this.nextRepetitionDates = nextRepetitionDates;
+	    //}
 	  
 
 	    
@@ -398,94 +447,12 @@ public class Maintenance {
 	//public void setDaterepetition(Date daterepetition) {
 		//this.daterepetition = daterepetition;
 	//}
-	 public void calculateRepetitionDates() {
-	        if (startDaterep == null || endDaterep == null || repetitiontype == null) {
-	            this.nextRepetitionDates = null; // Si les données sont manquantes
-	            return;
-	        }
-
-	        List<Date> repetitionDates = new ArrayList<>();
-	        Calendar calendar = Calendar.getInstance();
-	        calendar.setTime(startDaterep);
-
-	        // Ajouter la première date de répétition
-	        repetitionDates.add(calendar.getTime());
-
-	        // Calculer les dates de répétition
-	        while (calendar.getTime().before(endDaterep)) {
-	            switch (repetitiontype) {
-	                case TOUS_LES_JOURS:
-	                    calendar.add(Calendar.DAY_OF_MONTH, 1);
-	                    break;
-	                case TOUS_LES_SEMAINES:
-	                    calendar.add(Calendar.WEEK_OF_YEAR, 1);
-	                    break;
-	                case MENSUEL:
-	                    calendar.add(Calendar.MONTH, 1);
-	                    break;
-	                case ANNUEL:
-	                    calendar.add(Calendar.YEAR, 1);
-	                    break;
-	                case Ne_pas_repeter:
-	                default:
-	                    this.nextRepetitionDates = repetitionDates;
-	                    return;
-	            }
-
-	            if (!calendar.getTime().after(endDaterep)) {
-	                repetitionDates.add(calendar.getTime());
-	            }
-	        }
-
-	        this.nextRepetitionDates = repetitionDates;
-	    }
-	 
-	 
-	 ///////////HHHADDII///////////////
-	 
-	 public Date getRepetition() {
-	        if (startDaterep == null || endDaterep == null || repetitiontype == null) {
-	            return null; // Si les données sont manquantes
-	        }
-
-	        // Si la répétition est désactivée, retourner null
-	        if (repetitiontype == repetitiontype.Ne_pas_repeter) {
-	            return null;
-	        }
-
-	        // Créer une instance de Calendar pour manipuler les dates
-	        Calendar calendar = Calendar.getInstance();
-	        calendar.setTime(startDaterep);
-
-	        // Calculer la prochaine date en fonction du type de répétition
-	        switch (repetitiontype) {
-	            case TOUS_LES_JOURS:
-	                calendar.add(Calendar.DAY_OF_MONTH, 1); // Ajouter 1 jour
-	                break;
-	            case TOUS_LES_SEMAINES:
-	                calendar.add(Calendar.WEEK_OF_YEAR, 1); // Ajouter 1 semaine
-	                break;
-	            case MENSUEL:
-	                calendar.add(Calendar.MONTH, 1); // Ajouter 1 mois
-	                break;
-	            case ANNUEL:
-	                calendar.add(Calendar.YEAR, 1); // Ajouter 1 an
-	                break;
-	            default:
-	                return null; // Cas par défaut (Ne_pas_repeter déjà géré)
-	        }
-
-	        // Vérifier que la date calculée ne dépasse pas endDaterep
-	        Date nextDate = calendar.getTime();
-	        if (nextDate.after(endDaterep)) {
-	            return null; // Si la date dépasse endDaterep, retourner null
-	        }
-
-	        return nextDate; // Retourner la prochaine date de maintenance
-	    }
 	
-	 //////////////////////////
+	 
+	 
 	
+	 
+
 	
 	
 	

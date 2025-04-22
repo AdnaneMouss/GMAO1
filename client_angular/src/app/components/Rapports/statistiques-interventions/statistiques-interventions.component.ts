@@ -18,6 +18,10 @@ import jsPDF from 'jspdf';
 })
 export class StatistiquesInterventionsComponent implements OnInit {
   // Pagination
+
+  customReportStart: string | null = null;
+  customReportEnd: string | null = null;
+
  
   currentPage: number = 0;
 pageSize: number = 10;
@@ -93,6 +97,11 @@ nextPage(): void {
     this.loadMaintenances();
     this.filteredMaintenace;
     this.allMaintenances;
+
+    setInterval(() => {
+      this.generateWeeklyReportIfScheduled();
+      this.generateMonthlyReportIfScheduled();
+    }, 60 * 1000); // Vérifie chaque minute
   }
 
   loadMaintenances(): void {
@@ -583,4 +592,205 @@ if (maintenance.nextRepetitionDates && maintenance.nextRepetitionDates.length > 
     };
     return priorityLabels[priority] || priority;
   }
+
+  generateWeeklyReportIfScheduled(): void {
+    const now = new Date();
+  
+    // Vérifie si on est lundi à 8h00 (heure exacte)
+    const isMonday = now.getDay() === 1; // 1 = Lundi
+    const is8AM = now.getHours() === 8 && now.getMinutes() === 0;
+  
+    if (!isMonday || !is8AM) {
+      return; // Ce n’est pas le moment de générer
+    }
+  
+    const today = new Date();
+    const startOfLastWeek = new Date(today);
+    const endOfLastWeek = new Date(today);
+  
+    // Début de la semaine passée (lundi précédent)
+    startOfLastWeek.setDate(today.getDate() - 7 - (today.getDay() - 1));
+    startOfLastWeek.setHours(0, 0, 0, 0);
+  
+    // Fin de la semaine passée (dimanche précédent)
+    endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
+    endOfLastWeek.setHours(23, 59, 59, 999);
+  
+    // Filtrage des maintenances réalisées la semaine passée (sur dateFinPrevue)
+    const filtered = this.allMaintenances.filter(m => {
+      const dateFinPrevue = new Date(m.dateFinPrevue);
+      return dateFinPrevue >= startOfLastWeek && dateFinPrevue <= endOfLastWeek;
+    });
+  
+    if (filtered.length === 0) {
+      console.log("Aucune maintenance clôturée la semaine passée.");
+      return;
+    }
+  
+    let content = `Rapport Hebdomadaire - ${startOfLastWeek.toLocaleDateString()} au ${endOfLastWeek.toLocaleDateString()}\n\n`;
+    filtered.forEach((m, i) => {
+      content += `${i + 1}. ${m.equipement} - ${m.repetitiontype} - ${m.commentaires} (Clôturé le ${new Date(m.dateFinPrevue).toLocaleDateString()})\n`;
+    });
+  
+    content += `\nGénéré automatiquement le ${now.toLocaleString()}`;
+  
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const filename = `rapport-hebdo-${startOfLastWeek.toISOString().split('T')[0]}.txt`;
+    saveAs(blob, filename);
+  
+    console.log("✅ Rapport hebdomadaire généré automatiquement.");
+  }
+  
+  generateMonthlyReportIfScheduled(): void {
+    const now = new Date();
+  
+    // Vérifie si on est le 1er jour du mois à 8h00 (heure exacte)
+    const isFirstDayOfMonth = now.getDate() === 1;
+    const is8AM = now.getHours() === 8 && now.getMinutes() === 0;
+  
+    if (!isFirstDayOfMonth || !is8AM) {
+      return; // Ce n’est pas le moment de générer
+    }
+  
+    const today = new Date();
+    const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0); // 0 = dernier jour du mois précédent
+  
+    startOfLastMonth.setHours(0, 0, 0, 0);
+    endOfLastMonth.setHours(23, 59, 59, 999);
+  
+    // Filtrage des maintenances réalisées le mois passé
+    const filtered = this.allMaintenances.filter(m => {
+      const dateFinPrevue = new Date(m.dateFinPrevue);
+      return dateFinPrevue >= startOfLastMonth && dateFinPrevue <= endOfLastMonth;
+    });
+  
+    if (filtered.length === 0) {
+      console.log("Aucune maintenance clôturée le mois dernier.");
+      return;
+    }
+  
+    const monthName = startOfLastMonth.toLocaleString('fr-FR', { month: 'long' });
+    const year = startOfLastMonth.getFullYear();
+  
+    let content = `Rapport Mensuel - ${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}\n\n`;
+    filtered.forEach((m, i) => {
+      content += `${i + 1}. ${m.equipement} - ${m.repetitiontype} - ${m.commentaires} (Clôturé le ${new Date(m.dateFinPrevue).toLocaleDateString()})\n`;
+    });
+  
+    content += `\nGénéré automatiquement le ${now.toLocaleString()}`;
+  
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const filename = `rapport-mensuel-${year}-${(startOfLastMonth.getMonth() + 1).toString().padStart(2, '0')}.txt`;
+    saveAs(blob, filename);
+  
+    console.log("✅ Rapport mensuel généré automatiquement.");
+  }
+  
+
+
+ 
+
+  
+
+
+  getNextMonday(): Date {
+    const today = new Date();
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + ((1 + 7 - today.getDay()) % 7));
+    return nextMonday;
+  }
+  
+  getFirstDayNextMonth(): Date {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  }
+  
+
+  downloadReport(maintenances: any[]): void {
+    if (!maintenances || maintenances.length === 0) {
+      console.warn('Aucune maintenance à traiter.');
+      return;
+    }
+  
+    // Filtrer les maintenances du mois de mars
+    const marsMaintenances = maintenances.filter(m => {
+      const dateFin = new Date(m.dateFinPrevue);
+      return dateFin.getMonth() === 2 && dateFin.getFullYear() === 2025; // Mars = 2
+    });
+  
+    const doc = new jsPDF();
+  
+    // Titre
+    doc.setFontSize(16);
+    doc.setTextColor(40);
+    doc.text('Rapport des Maintenances - Mars 2025', 15, 15);
+  
+    // Sous-titre
+    doc.setFontSize(12);
+    doc.setTextColor(80);
+    doc.text(`Nombre de maintenances prévues : ${marsMaintenances.length}`, 15, 25);
+  
+    // En-tête du tableau
+    let y = 40;
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ID', 15, y);
+    doc.text('Description', 40, y);
+    doc.text('Date Fin Prévue', 120, y);
+    doc.text('Statut', 170, y);
+  
+    // Corps du tableau
+    y += 10;
+    doc.setFont('helvetica', 'normal');
+  
+    marsMaintenances.forEach((m, i) => {
+      if (y > 280) {
+        doc.addPage();
+        y = 20;
+      }
+  
+      const dateFinFormatted = new Date(m.dateFinPrevue).toLocaleDateString('fr-FR');
+      doc.text(m.id?.toString() || '-', 15, y);
+      doc.text((m.commentaires || '').substring(0, 40), 40, y);
+      doc.text(dateFinFormatted, 120, y);
+      doc.text(m.statut || '-', 170, y);
+  
+      y += 10;
+    });
+  
+    // Pied de page
+    const dateGeneration = new Date().toLocaleDateString('fr-FR');
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text(`Généré le ${dateGeneration}`, 150, 290);
+  
+    // Sauvegarde
+    const fileDate = dateGeneration.replace(/\//g, '-');
+    doc.save(`Rapport_Maintenances_Mars_${fileDate}.pdf`);
+  }
+   
+  
+  generatedReports: any[] = [
+    {
+      type: 'weekly',
+      period: 'Lundi 14 Avril 2025  au Dimanche 20 Avril 2025',
+      generatedDate: new Date('2025-04-14T08:00:00'),
+      filePath: '/reports/weekly-2024-04-15.txt'
+    },
+    {
+      type: 'monthly',   
+      period: 'Avril 2025',
+      generatedDate: new Date('2025-04-01T08:00:00'),
+      filePath: '/reports/monthly-2024-04.txt'
+    }
+  ];
+  
+
+
+
+
+  
 }
+
