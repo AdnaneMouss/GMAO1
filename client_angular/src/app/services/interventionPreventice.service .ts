@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Intervention } from '../models/intervention';
 import {PieceDetachee} from "../models/piece-detachee";
+import { maintenance } from '../models/maintenance';
 
 @Injectable({
   providedIn: 'root'
@@ -44,6 +45,9 @@ export class InterventionPreventiceService {
   getPiecesByInterventionId(interventionId: number): Observable<PieceDetachee[]> {
     return this.http.get<PieceDetachee[]>(`${this.apiUrl}/${interventionId}/pieces`);
   }
+
+ 
+  
 
 
 }

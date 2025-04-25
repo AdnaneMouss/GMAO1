@@ -20,7 +20,7 @@
     <div class="bg-white shadow-md rounded-xl p-6">
       <ng-container [ngSwitch]="selectedParam">
         <app-notifications *ngSwitchCase="'notifications'"></app-notifications>
-        <app-infos-utilisateurs *ngSwitchCase="'compte'"></app-infos-utilisateurs>
+      
         <app-change-password *ngSwitchCase="'securite'"></app-change-password>
         <div *ngSwitchDefault class="text-gray-500 text-sm">Sélectionnez un paramètre à gauche pour commencer.</div>
       </ng-container>

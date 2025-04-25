@@ -57,6 +57,7 @@ export interface maintenance{
   equipementBatiment: string;
   equipementSalle: number;
   equipementEtage: number;
+  nextRepetitionDatesAsList?: string[];
 
   
    

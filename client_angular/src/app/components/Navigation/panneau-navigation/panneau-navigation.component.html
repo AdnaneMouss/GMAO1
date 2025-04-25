@@ -51,6 +51,7 @@
             <i class="fas fa-user-edit text-sm"></i>
             <span *ngIf="!isSidebarCollapsed">Rôles et permissions</span>
           </a>
+        
         </div>
       </div>
       <!-- Separator -->
@@ -233,6 +234,9 @@
               </a>
             </div>
           </div>
+        
+
+          
       <!-- Separator -->
       <div *ngIf="user?.role === 'ADMIN' || user?.role === 'RESPONSABLE'" class="border-t border-gray-200 my-2"></div>
 
@@ -246,6 +250,7 @@
         <i class="fas fa-tachometer-alt text-xl"></i>
         <span *ngIf="!isSidebarCollapsed">Dashboard</span>
       </a>
+     
       </div>
       <div *ngIf="user?.role === 'TECHNICIEN'" class="h-[20px]"></div>
 
