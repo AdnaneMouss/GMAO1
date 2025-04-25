@@ -7,8 +7,7 @@ import { AppComponent } from './app.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
+
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
@@ -54,6 +53,10 @@ import {UserRapportComponent} from "./components/Rapports/user-rapport/user-rapp
 import {
   MaintenanceCalendarComponent
 } from "./components/Maintenances/maintenance-calendar/maintenance-calendar.component";
+import { NotificationsComponent } from './components/Parametres/notifications/notifications.component';
+import { InfosUtilisateursComponent } from './components/Parametres/infos-utilisateurs/infos-utilisateurs.component';
+import { ChangePasswordComponent } from './components/Parametres/change-password/change-password.component';
+import { HistoriqueMaintenancesCorrectivesComponent } from './components/Maintenances/historique-maintenances-correctives/historique-maintenances-correctives.component';
 
 import { InterventionsPreventivesPrecedentesComponent } from './components/Interventions/interventions-preventives-precedentes/interventions-preventives-precedentes.component';
 import { TachesPreventivesAffecteeComponent } from './components/Interventions/taches-preventives-affectee/taches-preventives-affectee.component';
@@ -88,13 +91,14 @@ import { TachesPreventivesAffecteeComponent } from './components/Interventions/t
     UserRapportComponent,
     InterventionsPreventivesPrecedentesComponent,
     TachesPreventivesAffecteeComponent,
-
- 
-
-
+    NotificationsComponent,
+    InfosUtilisateursComponent,
+    ChangePasswordComponent,
+    HistoriqueMaintenancesCorrectivesComponent,
   ],
   imports: [
     AppRoutingModule,
+   
     ToastrModule.forRoot(),
     ListeEquipementsComponent,
     LoginComponent,
@@ -105,8 +109,9 @@ import { TachesPreventivesAffecteeComponent } from './components/Interventions/t
     BrowserAnimationsModule,
     MatSidenavModule,
     MatToolbarModule,
-    MatIconModule,
-    MatButtonModule,
+    ReactiveFormsModule, // Required for formGroup
+   
+   
     MatCardModule,
     MatListModule,
     MatDividerModule,

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Pipe } from '@angular/core';
 import { maintenance } from '../../../models/maintenance';
 import { PieceDetachee } from '../../../models/piece-detachee';
 import { MaintenanceService } from '../../../services/maintenance.service';
@@ -35,21 +35,21 @@ import { Intervention } from '../../../models/intervention';
   styleUrls: ['./taches-preventives-affectee.component.css']
 })
 export class TachesPreventivesAffecteeComponent implements OnInit{
-
+  expandedMaintenances: any[] = []
   technicienId: number = 0;
 
   maintenance: maintenance[] = [];
   selectedFilter: string = '';
   isSortedAZ: boolean = true;
   errorMessage: string = '';
-  isSearchOpen = false;  
+  isSearchOpen = false;
   searchTerm = '';
   message: string = '';
   filteredMaintenace = [...this.maintenance];
   equipements: Equipement[] = [];
   typesEquipements: TypesEquipements[] = []
   users  :User[]  =[];
-  selectedFile: File | null = null;  // Déclarer selectedFile ici ICI 
+  selectedFile: File | null = null;  // Déclarer selectedFile ici ICI
   isValid: boolean = true;
   batiments:Batiment[]=[];
   indicateurs: [] = [];
@@ -58,15 +58,15 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
   dropdownOpen: boolean = false;
   selectedForm: string| null = null;
   selectedAction: string = '';
-  customAction: string = '';  
+  customAction: string = '';
   filteredResponsableUsers: any[] = [];
-  filteredTechnicienUsers: any[] = []; 
+  filteredTechnicienUsers: any[] = [];
   selectedStatus: string = '';
   selectedPriorite: string = '';
 
   currentPage: number = 0;
   pageSize: number = 15 // 20 éléments par page
- 
+
   selectedAttribut: any;
   selectedEquipementId: number | null = null;
 
@@ -84,7 +84,7 @@ dateFinFiltre: string | null = null;
   technicianId: number | null = null;
   interventions: Intervention[] = [];
   piecesByIntervention: { [key: number]: PieceDetachee[] } = {};
-  
+
 
   filters = {
     typeIntervention: '',
@@ -120,24 +120,30 @@ dateFinFiltre: string | null = null;
     piecesDetachees: []
   };
 
-
-
-
-
   
-  
-  
+
+
+
+
+
+
+
 
 
 generatedDates: Date[] = [];
+showEmptyPage = false; // Contrôle l'affichage de la page vide
 
 
 
- 
 
 
 
- 
+
+
+
+
+
+
 
 
 
@@ -145,13 +151,13 @@ generatedDates: Date[] = [];
 // Méthode appelée lors du changement d'attribut
 onAttributChange(attribut: any) {
   this.selectedAttribut = attribut;
- 
+
 }
 
 
- 
 
- 
+
+
   selectedMois: { [key: string]: boolean } = {
     Janvier: false,
     Février: false,
@@ -165,13 +171,13 @@ onAttributChange(attribut: any) {
     Octobre: false,
     Novembre: false,
     Décembre: false,
-   
-    
+
+
   };
   getMois(): string[] {
     return Object.keys(this.selectedMois);
   }
- 
+
 
 
   joursSemaine: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -179,7 +185,7 @@ onAttributChange(attribut: any) {
     "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
     "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
   ];
-  
+
 
   selectedAttributs: AttributEquipements[] = [];
 
@@ -235,22 +241,7 @@ onAttributChange(attribut: any) {
       role: 'ADMIN',
       actif: true,
       dateInscription: '',
-      Intervention: {
-        id: 0,
-        technicienId: 0,
-        typeIntervention: 'PREVENTIVE',
-        description: '',
-        duree: 0,
-        maintenanceId: 0,
-        maintenanceStatut: 'EN_ATTENTE',
-        maintenancePriorite: 'NORMALE',
-        dateCommencement: undefined,
-        dateCloture: undefined,
-        dateCreation: undefined,
-        equipementMaintenu: '',
-        remarques: '',
-        photos: []
-      }
+      Intervention: {} as Intervention
     },
     id: 0,
     dureeIntervention: 0,
@@ -296,12 +287,12 @@ onAttributChange(attribut: any) {
   onEquipementChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const equipementId = Number(target.value);
-  
+
     if (!equipementId) {
       this.selectedAttributs = [];
       return;
     }
-  
+
     this.equipementService.getAttributsByEquipementId(equipementId).subscribe({
       next: (attributs) => {
         // Filter attributes where type === 'number'
@@ -314,24 +305,31 @@ onAttributChange(attribut: any) {
       }
     });
   }
-  
-  
 
 
 
-  nextRepetitionDates: Date[] = [];
-  
-  
+
+
+  nextRepetitionDates:  string | Date[] = [];
+
+
+ 
+
+
+
+
+
   showPanel = false; // Controls the panel visibility
   searchVisible: boolean = false;
   maintenances: any[] = []; // Tableau pour stocker les maintenances
-  
-  
+
+
   constructor(private maintenanceService: MaintenanceService, private cdr: ChangeDetectorRef,private equipementService: EquipementService,private userService: UserService, batimentservice:BatimentService,  private route: ActivatedRoute,private toastr: ToastrService,private http: HttpClient,private notificationService: NotificationService, private authService: AuthService,  private interventionService: InterventionService,
     private PieceDetacheeService: PieceDetacheeService,
     private InterventionPreventiceService:InterventionPreventiceService,
 
     private router: Router ) { }
+ 
 
   validateDates() {
     if (this.newMaintenance.dateDebutPrevue && this.newMaintenance.dateFinPrevue) {
@@ -348,12 +346,40 @@ onAttributChange(attribut: any) {
     }
   }
 
-  filtrerParDateAujourdhui() {
-    const aujourdhui = new Date().toISOString().split('T')[0];
-    this.filteredMaintenace = this.maintenances.filter(m =>
-      m.dateDebutPrevue?.startsWith(aujourdhui)
-    );
+  trackByDate(index: number, date: string | Date): number {
+    return index; 
   }
+
+  
+
+
+
+  
+
+
+
+  filtrerParDateAujourdhui() {
+    const aujourdhui = new Date();  // Obtenir la date complète d'aujourd'hui
+    
+    this.filteredMaintenace = this.maintenances.filter(m => {
+      // 1. Filtre pour la date de début prévue aujourd'hui
+      const debutAujourdhui = m.dateDebutPrevue?.startsWith(aujourdhui.toISOString().split('T')[0]);
+  
+      // 2. Filtre pour les dates de répétition aujourd'hui
+      const repetitionAujourdhui = m.nextRepetitionDatesAsList?.some((date: string | Date) => {
+        // Convertit la date en string si c'est un objet Date
+        const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
+        
+        // Comparer la date complète (année, mois, jour)
+        return dateStr === aujourdhui.toISOString().split('T')[0];
+      });
+  
+      // Retourne true si l'une ou l'autre condition est vraie
+      return debutAujourdhui || repetitionAujourdhui;
+    });
+  }
+  
+  
   getNextRepetitionDates(dates: Date[]): Date[] {
     if (!dates) return [];
     const today = new Date();
@@ -367,14 +393,33 @@ onAttributChange(attribut: any) {
     }
     return null;
   }
-    
+
+  parseDate(date: any): Date {
+    return typeof date === 'string' ? new Date(date) : date;
+  }
+
+  // Initialisation de nextRepetitionDates comme un tableau de Date
+
+
+// Vérifie si les données dans startDaterep et endDaterep sont des chaînes ou des objets Date
+
+
+
+
 
   
+
+
+
+  
+
+
+
   filtrerParPlageDate() {
     if (this.dateDebutFiltre && this.dateFinFiltre) {
       const debut = new Date(this.dateDebutFiltre);
       const fin = new Date(this.dateFinFiltre);
-  
+
       this.filteredMaintenace = this.maintenances.filter(m => {
         const date = new Date(m.dateDebutPrevue);
         return date >= debut && date <= fin;
@@ -386,7 +431,7 @@ onAttributChange(attribut: any) {
     this.dateFinFiltre = null;
     this.filteredMaintenace = [...this.maintenances]; // ou juste this.maintenances si tu n’as pas besoin de copie
   }
-  
+
 
 
   get paginatedMaintenances() {
@@ -400,15 +445,15 @@ onAttributChange(attribut: any) {
   getTotalPages(): number {
     return Math.ceil(this.filteredMaintenace.length / this.pageSize);
   }
-  
-  
+
+
 
   submitForm() {
     this.validateDates(); // Vérifie les dates avant d'envoyer
     if (!this.isValid) {
       return; // Stoppe la soumission si les dates sont incorrectes
     }
-    
+
     // Ici, tu peux ajouter la logique d'ajout (envoi des données au backend)
     console.log('Maintenance ajoutée', this.newMaintenance);
   }
@@ -423,14 +468,14 @@ onAttributChange(attribut: any) {
   }
   filterTechnicienUsers(users: any[]): any[] {
     return users.filter(user => user.role?.trim().toLowerCase() === 'technicien');
-  }  
+  }
   trackByFn(index: number, user: any): any {
     return user.id; // Utilise un identifiant unique pour chaque utilisateur
   }
 
 
 
-  
+
   filterMaintenancesByStatus() {
     console.log("Maintenances Data:", this.maintenances);  // Vérifier si la donnée des maintenances est correcte
 
@@ -445,8 +490,8 @@ onAttributChange(attribut: any) {
       console.log("No status selected, showing all maintenances:", this.filteredMaintenace);
     }
   }
-  
-  
+
+
   filterMaintenancesByPriorite() {
     console.log("Maintenances Data:", this.maintenances);  // Vérifier si la donnée des maintenances est correcte
 
@@ -467,24 +512,97 @@ onAttributChange(attribut: any) {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.technicienId = user.id;
     console.log("ID user connecté:", this.technicienId);
-  
+
     // 2. Ensuite charger les maintenances pour cet utilisateur
     this.getMaintenancesByTechnicien(this.technicienId);
-  
+
     // 3. Charger les autres données (optionnel)
     this.chargerEquipements();
     this.chargerUsers();
     //this.filteredMaintenace = this.maintenances;
     this.loadPiecesDetachees();
     this.loadTechnicianInterventions();
+    // Dans la subscription
+
+    this.expandMaintenances();
+
+
+
+
+ 
+
+  
+    
+
+    
+
+    
+
+   
 
 
   }
 
+  expandMaintenances() {
+    this.expandedMaintenances = [];
+  
+    this.filteredMaintenace.forEach((maintenance) => {
+      if (maintenance.nextRepetitionDatesAsList?.length) {
+        maintenance.nextRepetitionDatesAsList.forEach((date: string) => {
+          this.expandedMaintenances.push({
+            ...maintenance,
+            singleRepetitionDate: date
+          });
+        });
+      } else {
+        this.expandedMaintenances.push({
+          ...maintenance,
+          singleRepetitionDate: null
+        });
+      }
+    });
+  }
+
+  
+
+
+
+ 
+
+
+  calculateRepetitionDates(
+    startDate: Date,
+    endDate: Date,
+    repetitionType: string,
+    selectedJours: number[],
+    selectedMois: number[]
+  ): Date[] {
+    const dates: Date[] = [];
+    const currentDate = new Date(startDate);
+  
+    while (currentDate <= endDate) {
+      const day = currentDate.getDay();
+      const month = currentDate.getMonth() + 1; // 0-based
+  
+      if (
+        (repetitionType === 'HEBDOMADAIRE' && selectedJours.includes(day)) ||
+        (repetitionType === 'MENSUEL' && selectedMois.includes(month))
+      ) {
+        dates.push(new Date(currentDate));
+      }
+  
+      // Avancer d’un jour
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  
+    return dates;
+  }
+  
+
   loadTechnicianInterventions(): void {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.technicianId = user.id;
-    
+
     if (!this.technicianId) {
       console.error('ID technicien non trouvé');
       return;
@@ -492,10 +610,10 @@ onAttributChange(attribut: any) {
     this.InterventionPreventiceService.getInterventionsByTechnician(this.technicianId)
     .subscribe({
       next: (data: Intervention[]) => {
-        this.interventions = data.filter(intervention => 
+        this.interventions = data.filter(intervention =>
           intervention.maintenanceId && intervention.maintenanceStatut === 'TERMINEE'
         );
-        
+
         // Charge les pièces pour chaque intervention
         this.interventions.forEach(intervention => {
           this.loadPiecesForIntervention(intervention.id);
@@ -519,14 +637,14 @@ loadPiecesForIntervention(interventionId: number): void {
 }
 filteredInterventions(): Intervention[] {
   return this.interventions.filter(intervention => {
-    const matchesEquipement = this.filters.equipementMaintenu 
+    const matchesEquipement = this.filters.equipementMaintenu
       ? intervention.equipementMaintenu.toLowerCase().includes(this.filters.equipementMaintenu.toLowerCase())
       : true;
-    
+
     const matchesPriorite = this.filters.priorite
       ? intervention.maintenancePriorite === this.filters.priorite
       : true;
-    
+
     const matchesType = this.filters.typeIntervention
       ? intervention.typeIntervention === this.filters.typeIntervention
       : true;
@@ -552,15 +670,15 @@ filteredInterventions(): Intervention[] {
       console.error("Aucun ID technicien fourni");
       return;
     }
-  
+
     this.maintenanceService.getAllMaintenances().subscribe({
       next: (data) => {
         // Filtrage côté frontend
-        this.maintenances = data.filter(m => 
-          m.user?.id === technicienId && 
+        this.maintenances = data.filter(m =>
+          m.user?.id === technicienId &&
           !['ANNULEE', 'TERMINEE'].includes(m.statut)
         );
-        
+
         this.filteredMaintenace = [...this.maintenances];
         console.log("Maintenances filtrées:", this.maintenances);
       },
@@ -573,14 +691,14 @@ filteredInterventions(): Intervention[] {
   loadTechnicienMaintenances(): void {
     // 1. Récupérer l'ID du technicien connecté
     this.currentTechnicienId = this.authService.getCurrentUser()?.id || null;
-    
+
     if (!this.currentTechnicienId) {
       console.error('Aucun technicien connecté identifié');
       return;
     }
   }
 
- 
+
   getPaginatedMaintenances(): any[] {
     const startIndex = this.currentPage * this.pageSize;
     return this.filteredMaintenace.slice(startIndex, startIndex + this.pageSize);
@@ -596,44 +714,44 @@ filteredInterventions(): Intervention[] {
       this.currentPage--;
     }
   }
-  
+
   nextPage(): void {
     if (this.currentPage < this.getTotalPages() - 1) {
       this.currentPage++;
     }
-  }  
-  
-
-
- 
-  
+  }
 
 
 
-  
 
-  
+
+
+
+
+
+
+
   checkUpcomingMaintenances(): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-  
 
-  
-    
-        
-  
+
+
+
+
+
         // Vérifier les répétitions de maintenance
-     
-  
-  }
-  
- 
-  
-  
- 
- 
 
- 
+
+  }
+
+
+
+
+
+
+
+
   onActionChange() {
     console.log('Action sélectionnée :', this.newMaintenance.action);
 
@@ -673,7 +791,7 @@ filteredInterventions(): Intervention[] {
     this.userService.getAllUsers().subscribe({
       next: (data) => {
         this.users = data;
-        console.log("users chargés :", this.users); 
+        console.log("users chargés :", this.users);
       },
       error: (err) => {
         console.error("Erreur lor s du chargement des users", err);
@@ -681,23 +799,23 @@ filteredInterventions(): Intervention[] {
     });
   }
 
-  
 
 
 
-  
-  
-   
-  
-  
 
-  
-  
- 
-  
-  
- 
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -712,21 +830,21 @@ filteredInterventions(): Intervention[] {
         this.errorMessage = "Erreur lors du chargement des maintenances.";
         console.error(err);
       }
-    });      
+    });
   }
 
 
-  
-    
-  
-
-  
- 
-  
 
 
 
-  
+
+
+
+
+
+
+
+
 togglePanel(): void {
   this.showPanel = !this.showPanel; // Toggle the panel visibility
 }
@@ -734,7 +852,7 @@ togglePanel(): void {
 
 
 
-   
+
 
 
 
@@ -801,7 +919,11 @@ onSubmit(): void {
     }
   );
 }
- 
+// maintenance-list.component.ts
+convertToDate(dateStr: string | Date): Date {
+  if (dateStr instanceof Date) return dateStr;
+  return new Date(dateStr);
+}
 
 
 onFileSelected(event: any) {
@@ -844,11 +966,11 @@ showDetails(maintenance: any) {
   //if (this.selectedFilter) {
    // this.filteredMaintenace = this.maintenance.filter(e => e.statut === this.selectedFilter);
   ///} else {
-    //this.filteredMaintenace = [...this.maintenance]; 
+    //this.filteredMaintenace = [...this.maintenance];
   //}
 //}
 
-//dat de la prpchaine  maittenance 
+//dat de la prpchaine  maittenance
 
 
 daysOfWeek = [
@@ -865,7 +987,7 @@ daysOfWeek = [
 eventTime: string = '';
   eventDate: string = '';
   repeatCount: number = 1;
- 
+
   endDate: string = '';
 
 
@@ -885,7 +1007,7 @@ showForm(formId: string): void {
 
 toggleJourSelection(jour: string, event: Event): void {
   const checkbox = event.target as HTMLInputElement;
-  
+
   // Vérifie si `selectedjours` existe, sinon l'initialise
   if (!this.newMaintenance.selectedjours) {
     this.newMaintenance.selectedjours = [];
@@ -945,9 +1067,9 @@ showNotification(message: string): void {
 onNotificationClick(notification: any): void {
   // Ici, tu peux décider de l'action à effectuer quand une notification est cliquée.
   // Par exemple, naviguer vers une page de détails, afficher un modal, etc.
-  
+
   console.log('Notification cliquée:', notification);
-  
+
 
 
 
@@ -1082,6 +1204,7 @@ onPiecesChange(event: Event): void {
   const selectedOptions = (event.target as HTMLSelectElement).selectedOptions;
   this.selectedPieces = Array.from(selectedOptions).map(opt => Number(opt.value));
 }
+}
 
 
 
@@ -1091,4 +1214,6 @@ onPiecesChange(event: Event): void {
 
 
 
-}  
+
+
+

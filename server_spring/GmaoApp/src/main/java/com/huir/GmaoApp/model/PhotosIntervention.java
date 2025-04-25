@@ -20,13 +20,13 @@ public class PhotosIntervention {
     private String url;
 
     @ManyToOne
-    @JoinColumn(name = "intervention_id", nullable = false)
+    @JoinColumn(name = "intervention_id")
     private Intervention intervention;
     
     
     
     @ManyToOne
-    @JoinColumn(name = "intervention_preventive_id" , nullable = false)
+    @JoinColumn(name = "intervention_preventive_id")
     private InterventionPreventive interventionPreventive;
 
 

@@ -1,26 +1,26 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MaintenanceService } from '../../../services/maintenance.service';
-import { Service } from '../../../models/service';
-import { ServiceService } from '../../../services/service.service';
 import { User } from '../../../models/user';
-import { UserService } from '../../../services/user.service';
-import { maintenance } from '../../../models/maintenance';
-import { Salle } from '../../../models/salle';
-import { Batiment } from '../../../models/batiment';
-import { Etage } from '../../../models/etage';
-import { RepetitionType } from '../../../models/RepetitionType';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Equipement } from '../../../models/equipement';
-import { AttributEquipements } from '../../../models/attribut-equipement';
+import { maintenance } from '../../../models/maintenance';
+import { Service } from '../../../models/service';
+import { Salle } from '../../../models/salle';
+import { Etage } from '../../../models/etage';
+import { Batiment } from '../../../models/batiment';
+import { MaintenanceService } from '../../../services/maintenance.service';
+import { ServiceService } from '../../../services/service.service';
+import { UserService } from '../../../services/user.service';
 import { EquipementService } from '../../../services/equipement.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { RepetitionType } from '../../../models/RepetitionType';
 
 @Component({
-  selector: 'app-details-maintenance',
-  templateUrl: './details-maintenance.component.html',
-  styleUrl: './details-maintenance.component.css'
+  selector: 'app-details',
+  templateUrl: './details.component.html',
+  styleUrl: './details.component.css'
 })
-export class DetailsMaintenanceComponent implements OnInit {
+export class DetailsComponent implements OnInit{
+
   users  :User[]  =[];
   equipement :Equipement[]  =[];
   filteredTechnicienUsers: any[] = [];
@@ -35,7 +35,6 @@ export class DetailsMaintenanceComponent implements OnInit {
   messageSeuil: string = '';
   AttributEquipementValeur :any[]  =[];
 
-  selectedAttributs: AttributEquipements[] = [];
 
 
 
@@ -63,7 +62,7 @@ export class DetailsMaintenanceComponent implements OnInit {
       coutAchat: '',
       valeurSuivi: 0,
       labelSuivi: '',
-    
+
 
       typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Initial empty type
       service: {} as Service,
@@ -135,10 +134,11 @@ export class DetailsMaintenanceComponent implements OnInit {
     seuil: 0,
     equipementId: 0,
 
-    RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
+
     message: '',
     NonSeuil: '',
-    equipementBatiment: "", equipementEtage: 0, equipementSalle: 0
+    equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
+    RepetitionType: RepetitionType.NE_SE_REPETE_PAS
   };
   errorMessage: string = '';
   isEditMode: boolean = false;  // Mode édition
@@ -358,9 +358,6 @@ constructor(
 
 
 
-
-
-
   onSubmit(): void {
     // Convertir les dates si elles sont des strings
     const startDate = this.maintenance.startDaterep instanceof Date
@@ -378,7 +375,6 @@ constructor(
       this.maintenance.selectedjours || [],
       this.maintenance.selectedmois || []
     );
-    this.maintenance.nextRepetitionDates=this.nextRepetitionDates;
 
     this.maintenanceService.createMaintenance(this.maintenance).subscribe({
       next: (response) => {
@@ -689,6 +685,7 @@ constructor(
 
 
 }
+
 
 
 

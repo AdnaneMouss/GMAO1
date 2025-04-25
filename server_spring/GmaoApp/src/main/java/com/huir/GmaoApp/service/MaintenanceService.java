@@ -109,10 +109,9 @@ public class MaintenanceService {
         maintenance.setSeuil(maintenancedto.getSeuil());
         maintenance.setEquipementId(maintenancedto.getEquipementId()); 
         maintenance.setNonSeuil(maintenancedto.getNonSeuil());
+        //maintenance.setNextRepetitionDatesAsList(maintenancedto.getNextRepetitionDatesAsList());
         
-       
-        
-        
+
 
         // Sérialisation des indicateurs sous forme JSON  ajouter date start et add aend des aintenance
      //   if (maintenancedto.getIndicateurs() != null && !maintenancedto.getIndicateurs().isEmpty()) {
@@ -539,4 +538,9 @@ public class MaintenanceService {
 		        }
 		        return null;
 		    }
+		    
+		    
+		    
+		   
+
 }

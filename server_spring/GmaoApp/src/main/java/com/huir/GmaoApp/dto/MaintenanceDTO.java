@@ -4,17 +4,22 @@ import lombok.Data;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -74,6 +79,10 @@ private long repetition;
 private int seuil; // et non pas "double"
 private  String nonSeuil;
 
+@JsonProperty("next_repetition_dates")
+private  List<LocalDate> nextRepetitionDates;
+
+
 
 // Listes prédéfinies
 private List<String> availableDays = DaysOfWeek.DAYS; // Jours de la semaine
@@ -89,7 +98,7 @@ public MaintenanceDTO(Maintenance maintenance ) {
 				this.documentPath=  maintenance.getDocumentPath();
 				this.frequence=maintenance.getFrequence();
 				this.dureeIntervention = calculerDureeIntervention(this.dateDebutPrevue, this.dateFinPrevue);
-				this.repetition = calculerRepetition(this.startDaterep, this.endDaterep, this.repetitiontype);
+			
 				this.action = maintenance.getAction();  // Assurez-vous que l'objet Maintenance a ce champ.
 		        this.autreAction = maintenance.getAutreAction();  
 		        this.user=maintenance.getUser();
@@ -98,11 +107,16 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		         this.equipementId=maintenance.getEquipementId();
 		         this.valeursuivie=maintenance.getValeurSuivi();
 		         this.labelsuivie=maintenance.getLabelSuivi();
+		         this.nextRepetitionDates = calculateRepetitionDates(startDaterep, endDaterep, repetitiontype, selectedjours, selectedmois);
+
+		       
+
+		         this.selectedjours = maintenance.getSelectedjours();
+		         this.selectedmois = maintenance.getSelectedmois();
 		         
 
 		         this.endDaterep=maintenance.getEndDaterep();
-		         this.selectedjours=maintenance.getSelectedjours(); 
-		         this.selectedmois=maintenance.getSelectedmois();
+		         
 		         this.daterepetition = calculerDateRepetition(this.startDaterep,this.endDaterep,this.repetitiontype);
 		         this.seuil=maintenance.getSeuil();
 		         this.nonSeuil=maintenance.getNonSeuil();
@@ -116,9 +130,21 @@ public MaintenanceDTO(Maintenance maintenance ) {
 					}  
 		public MaintenanceDTO() {}
 		
-		////////////HADI///////////////
+	
 		
 		
+		
+
+		
+		 
+		
+		
+		public List<LocalDate> getNextRepetitionDates() {
+			return nextRepetitionDates;
+		}
+		public void setNextRepetitionDates( List<LocalDate> nextRepetitionDates) {
+			this.nextRepetitionDates = nextRepetitionDates;
+		}
 		// Getter et setter
 	    public Long getEquipementId() {
 	        return equipementId;
@@ -146,111 +172,17 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		public void setSeuil(int seuil) {
 			this.seuil = seuil;
 		}
-		public long getRepetition() {
-			
-			        if (startDaterep == null || endDaterep == null || repetitiontype == null) {
-			            return 0; // Si les données sont manquantes, retourner 0
-			        }
-
-			        // Si la répétition est désactivée, retourner 1 (seulement la date de début)
-			        if (repetitiontype == repetitiontype.Ne_pas_repeter) {
-			            return 1;
-			        }
-
-			        // Créer une instance de Calendar pour manipuler les dates
-			        Calendar calendar = Calendar.getInstance();
-			        calendar.setTime(startDaterep);
-
-			        long count = 1; // Commencer à 1 pour inclure la date de début
-
-			        // Calculer les dates de répétition en fonction du type de répétition
-			        while (true) {
-			            switch (repetitiontype) {
-			                case TOUS_LES_JOURS:
-			                    calendar.add(Calendar.DAY_OF_MONTH, 1); // Ajouter 1 jour
-			                    break;
-			                case TOUS_LES_SEMAINES:
-			                    calendar.add(Calendar.WEEK_OF_YEAR, 1); // Ajouter 1 semaine
-			                    break;
-			                case MENSUEL:
-			                    calendar.add(Calendar.MONTH, 1); // Ajouter 1 mois
-			                    break;
-			                case ANNUEL:
-			                    calendar.add(Calendar.YEAR, 1); // Ajouter 1 an
-			                    break;
-			                default:
-			                    return count; // Cas par défaut (Ne_pas_repeter déjà géré)
-			            }
-
-			            // Vérifier que la date calculée ne dépasse pas endDaterep
-			            Date nextDate = calendar.getTime();
-			            if (nextDate.after(endDaterep)) {
-			                break; // Si la date dépasse endDaterep, arrêter la boucle
-			            }
-
-			            count++; // Incrémenter le compteur
-			        }
-
-			        return count; // Retourner le nombre de dates de maintenance
-			    
-		}
-		public void setRepetition(long repetition) {
-			this.repetition = repetition;
-			
-			
-			
-			
-		}
+		
+		
+		
 		public void setId(Long id) {
 			this.id = id;
 		}
-		/////HADI////   /////
-		 private long calculerRepetition( Date startDaterep, Date endDaterep,repetitiontype repetitiontype) {
-		        if (startDaterep == null || endDaterep == null || repetitiontype == null) {
-		            return 0; // Si les données sont manquantes, retourner 0
-		        }
-
-		        // Si la répétition est désactivée, retourner 1 (seulement la date de début)
-		        if (repetitiontype == repetitiontype.Ne_pas_repeter) {
-		            return 1;
-		        }
-
-		        // Créer une instance de Calendar pour manipuler les dates
-		        Calendar calendar = Calendar.getInstance();
-		        calendar.setTime(startDaterep);
-
-		        long count = 1; // Commencer à 1 pour inclure la date de début
-
-		        // Calculer les dates de répétition en fonction du type de répétition
-		        while (true) {
-		            switch (repetitiontype) {
-		                case TOUS_LES_JOURS:
-		                    calendar.add(Calendar.DAY_OF_MONTH, 1); // Ajouter 1 jour
-		                    break;
-		                case TOUS_LES_SEMAINES:
-		                    calendar.add(Calendar.WEEK_OF_YEAR, 1); // Ajouter 1 semaine
-		                    break;
-		                case MENSUEL:
-		                    calendar.add(Calendar.MONTH, 1); // Ajouter 1 mois
-		                    break;
-		                case ANNUEL:
-		                    calendar.add(Calendar.YEAR, 1); // Ajouter 1 an
-		                    break;
-		                default:
-		                    return count; // Cas par défaut (Ne_pas_repeter déjà géré)
-		            }
-
-		            // Vérifier que la date calculée ne dépasse pas endDaterep
-		            Date nextDate = calendar.getTime();
-		            if (nextDate.after(endDaterep)) {
-		                break; // Si la date dépasse endDaterep, arrêter la boucle
-		            }
-
-		            count++; // Incrémenter le compteur
-		        }
-
-		        return count; // Retourner le nombre de dates de maintenance
-		    }
+		
+		
+		
+		
+		
 		
 		
 		
@@ -259,9 +191,8 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		public List<String> getSelectedjours() {
 			return selectedjours;
 		}
-		public void setSelectedjours(List<String> selectedjours) {
-			this.selectedjours = selectedjours;
-		}
+		
+		
 		public String getDocumentPath() {
 			return documentPath;
 		}
@@ -322,8 +253,125 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		    }
 		    return 0; // Si l'une des dates est nulle, retourner 0
 		}
+		  private static final Map<String, Integer> MOIS_MAP = Map.ofEntries(
+			        Map.entry("janvier", 0),
+			        Map.entry("fevrier", 1),
+			        Map.entry("mars", 2),
+			        Map.entry("avril", 3),
+			        Map.entry("mai", 4),
+			        Map.entry("juin", 5),
+			        Map.entry("juillet", 6),
+			        Map.entry("aout", 7),
+			        Map.entry("septembre", 8),
+			        Map.entry("octobre", 9),
+			        Map.entry("novembre", 10),
+			        Map.entry("decembre", 11)
+			    );
 
-	
+			    private static final Map<String, Integer> DAY_MAP = Map.ofEntries(
+			        Map.entry("dimanche", 0),
+			        Map.entry("lundi", 1),
+			        Map.entry("mardi", 2),
+			        Map.entry("mercredi", 3),
+			        Map.entry("jeudi", 4),
+			        Map.entry("vendredi", 5),
+			        Map.entry("samedi", 6)
+			    );
+			    public List<LocalDate> calculateRepetitionDates(
+			    	    Date startDaterep,
+			    	    Date endDaterep,
+			    	    repetitiontype repetitiontype,
+			    	    List<String> selectedjours,
+			    	    List<String> selectedmois
+			    	) {
+			    	    if (startDaterep == null || endDaterep == null || repetitiontype == null) {
+			    	        System.out.println("Données manquantes pour calculer les dates de répétition.");
+			    	        return Collections.emptyList();
+			    	    }
+
+			    	    List<LocalDate> repetitionDates = new ArrayList<>();
+			    	    Calendar currentDate = Calendar.getInstance();
+			    	    currentDate.setTime(startDaterep);
+			    	    Calendar endDate = Calendar.getInstance();
+			    	    endDate.setTime(endDaterep);
+
+			    	    // Convertir les mois sélectionnés en numéros
+			    	    List<Integer> selectedMoisNumbers = selectedmois != null ? 
+			    	        selectedmois.stream()
+			    	            .map(String::toLowerCase)
+			    	            .map(MOIS_MAP::get)
+			    	            .filter(Objects::nonNull)
+			    	            .collect(Collectors.toList()) : 
+			    	        Collections.emptyList();
+
+			    	    System.out.println("Mois sélectionnés convertis: " + selectedMoisNumbers);
+
+			    	    // Convertir les jours sélectionnés en numéros
+			    	    List<Integer> selectedDaysNumbers = selectedjours != null ? 
+			    	        selectedjours.stream()
+			    	            .map(String::toUpperCase)
+			    	            .map(DAY_MAP::get)
+			    	            .filter(Objects::nonNull)
+			    	            .collect(Collectors.toList()) : 
+			    	        Collections.emptyList();
+
+			    	    System.out.println("Jours sélectionnés convertis: " + selectedDaysNumbers);
+
+			    	    if (repetitiontype == repetitiontype.TOUS_LES_SEMAINES && !selectedDaysNumbers.isEmpty()) {
+			    	        // Cas des répétitions hebdomadaires avec jours spécifiques
+			    	        while (!currentDate.after(endDate)) {
+			    	            int currentDay = currentDate.get(Calendar.DAY_OF_WEEK) - 1;
+
+			    	            if (selectedDaysNumbers.contains(currentDay)) {
+			    	             //   repetitionDates.add((Collection<? extends String>) currentDate.getTime());
+			    	            }
+
+			    	            currentDate.add(Calendar.DATE, 1);
+			    	        }
+			    	    } else if (repetitiontype == repetitiontype.MENSUEL && !selectedMoisNumbers.isEmpty()) {
+			    	        // Cas des répétitions mensuelles avec jours spécifiques
+			    	        while (!currentDate.after(endDate)) {
+			    	            int currentMonth = currentDate.get(Calendar.MONTH);
+
+			    	            if (selectedMoisNumbers.contains(currentMonth)) {
+			    	                int currentDay = currentDate.get(Calendar.DAY_OF_WEEK) - 1;
+
+			    	                if (selectedDaysNumbers.isEmpty() || selectedDaysNumbers.contains(currentDay)) {
+			    	             //       repetitionDates.add((Collection<? extends String>) currentDate.getTime());
+			    	                }
+			    	            }
+
+			    	            currentDate.add(Calendar.MONTH, 1);
+			    	        }
+			    	    } else {
+			    	        // Pour les autres types de répétitions
+			    	        while (!currentDate.after(endDate)) {
+			    	           // repetitionDates.addAll((Collection<? extends String>) currentDate.getTime());
+
+			    	            switch (repetitiontype) {
+			    	                case TOUS_LES_JOURS:
+			    	                    currentDate.add(Calendar.DATE, 1);
+			    	                    break;
+			    	                case TOUS_LES_SEMAINES:
+			    	                    currentDate.add(Calendar.DATE, 7);
+			    	                    break;
+			    	                case MENSUEL:
+			    	                    currentDate.add(Calendar.MONTH, 1);
+			    	                    break;
+			    	                case ANNUEL:
+			    	                    currentDate.add(Calendar.YEAR, 1);
+			    	                    break;
+			    	               
+			    	            }
+			    	        }
+			    	    }
+						return repetitionDates;
+
+			    	    
+			    	}
+		
+		
+		
 		
 		 private long calculerDureeIntervention(LocalDate debut, LocalDate fin) {
 			    if (debut != null && fin != null) {
@@ -405,10 +453,26 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		public List<String> getSelectedmois() {
 			return selectedmois;
 		}
-		public void setSelectedmois(List<String> selectedmois) {
-			this.selectedmois = selectedmois;
-		}
 		
+		
+		// Dans MaintenanceDTO
+		public void setSelectedjours(List<String> selectedjours) {
+		    this.selectedjours = selectedjours != null ?
+		        selectedjours.stream()
+		                    .map(String::trim)
+		                    .map(String::toUpperCase)
+		                    .collect(Collectors.toList()) :
+		        new ArrayList<>();
+		}
+
+		public void setSelectedmois(List<String> selectedmois) {
+		    this.selectedmois = selectedmois != null ?
+		        selectedmois.stream()
+		                   .map(String::trim)
+		                   .map(String::toUpperCase)
+		                   .collect(Collectors.toList()) :
+		        new ArrayList<>();
+		}
 		
 		
 		
@@ -475,6 +539,23 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		    public void setDaterepetition(Date daterepetition) {
 		        this.daterepetition = daterepetition;
 		    }
+		    
+		    public List<LocalDate> parseNextRepetitionDates(String raw) {
+		        if (raw == null || raw.isBlank()) return Collections.emptyList();
+		        return Arrays.stream(raw.split(","))
+		                     .map(String::trim)
+		                     .map(LocalDate::parse)
+		                     .collect(Collectors.toList());
+		    }
+		    public String stringifyDates(List<LocalDate> dates) {
+		        return dates.stream()
+		                    .map(LocalDate::toString)
+		                    .collect(Collectors.joining(","));
+		    }
+		    
+		    
+
+
 			
 		    
 		    
