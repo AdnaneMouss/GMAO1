@@ -1,5 +1,6 @@
 package com.huir.GmaoApp.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,6 +18,7 @@ public class InterventionPieceDetachee {
     private Long id;
 
     @ManyToOne
+    @JsonBackReference(value = "intervention-piece1")
     @JoinColumn(name = "intervention_id", nullable = false)
     private Intervention intervention;
 

@@ -1,6 +1,8 @@
 export interface InterventionPieceDetachee {
-  id: number;
+  id?: number;
   interventionId: number;
   pieceDetacheeId: number;
+  pieceNom: string;
+  pieceReference: string;
   quantiteUtilisee: number;
 }

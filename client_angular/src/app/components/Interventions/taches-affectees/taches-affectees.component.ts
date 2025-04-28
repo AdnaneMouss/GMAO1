@@ -31,7 +31,8 @@ export class TachesAffecteesComponent implements OnInit {
   confirmationMessage: string = '';
   technicienId: number = 0;
   selectedFiles: File[] = [];
-  selectedPieces: { id: number; quantite: number }[] = [];
+  selectedPieces: { id: number; nom: string; quantite: number }[] = [];
+  pieceSearch: string = '';
 
 
   // For intervention form
@@ -110,7 +111,7 @@ export class TachesAffecteesComponent implements OnInit {
         (this.filters.equipementBatiment ? maintenance.equipementBatiment.toLowerCase().includes(this.filters.equipementBatiment.toLowerCase()) : true) &&
         (this.filters.statut ? maintenance.statut.toLowerCase().includes(this.filters.statut.toLowerCase()) : true) &&
         (this.filters.priorite ? maintenance.priorite.toLowerCase().includes(this.filters.priorite.toLowerCase()) : true) &&
-        dateInRange // Check if the intervention date is in the selected range   
+        dateInRange // Check if the intervention date is in the selected range
       );
     });
   }
@@ -128,6 +129,12 @@ export class TachesAffecteesComponent implements OnInit {
       }
     );
   }
+
+  getMaxQuantite(pieceId: number): number {
+    const piece = this.piecesList.find(p => p.id === pieceId);
+    return piece ? piece.quantiteStock : 1;
+  }
+
 
   markAsCompleted(id: number): void {
     this.maintenanceService.markAsCompleted(id).subscribe(
@@ -209,9 +216,21 @@ export class TachesAffecteesComponent implements OnInit {
   }
 
 
+
   removePiece(index: number): void {
     this.selectedPieces.splice(index, 1);
   }
+
+
+  getFilteredPieces(): any[] {
+    if (!this.pieceSearch) return this.piecesList;
+
+    const lowerSearch = this.pieceSearch.toLowerCase();
+    return this.piecesList.filter(piece =>
+      piece.nom.toLowerCase().includes(lowerSearch)
+    );
+  }
+
 
   submitIntervention(): void {
     if (!this.selectedPieces || this.selectedPieces.length === 0) {
@@ -234,6 +253,10 @@ export class TachesAffecteesComponent implements OnInit {
       return;
     }
 
+    // 🔍 Log des IDs et quantités avant l'envoi
+    console.log('ID des pièces détachées:', pieceDetacheeIds);
+    console.log('Quantités des pièces détachées:', quantites);
+
     // 🛠️ Envoi au service
     this.interventionService.createIntervention(
       this.selectedFiles || null,
@@ -254,7 +277,6 @@ export class TachesAffecteesComponent implements OnInit {
       }
     });
   }
-
 
   formatDateWithIntl(date: string | undefined): string {
     if (!date) {

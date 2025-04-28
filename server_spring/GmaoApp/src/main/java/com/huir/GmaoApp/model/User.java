@@ -89,7 +89,7 @@ public class User {
     private List<Equipement> equipementsSousResponsabilite;
     
     @JsonIgnore // Empêche la sérialisation pour éviter les boucles infinies
-    @JsonManagedReference("user-intervention")
+    @JsonManagedReference("user-intervention1")
     @OneToMany(mappedBy = "technicien", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Intervention> interventions;
 

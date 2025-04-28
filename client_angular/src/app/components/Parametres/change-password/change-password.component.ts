@@ -1,93 +1,133 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { PasswordService } from "../../../services/password-change.service";
-
+import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-change-password',
   templateUrl: './change-password.component.html',
 })
-export class ChangePasswordComponent {
-  oldPassword: string = '';
+export class ChangePasswordComponent implements OnInit {
+
+  email: string = '';
+  currentPassword: string = '';  // Add currentPassword field
   newPassword: string = '';
-  confirmPassword: string = '';
-  verificationCode: string = ''; // Added for verification code
+  verificationCode: string = '';
+  isCodeSent: boolean = false;
+  isPasswordChanged: boolean = false;
   errorMessage: string = '';
+  showCurrentPassword: boolean = false;
   successMessage: string = '';
-  isLoading: boolean = false;
-  isCodeSent: boolean = false; // Track if the code has been sent
+  isLoading = false;
+  passwordInvalid: boolean = false;
+  currentPasswordIncorrect=false;
+  constructor(private passwordService: PasswordService, private router: Router) {}
 
-  constructor(private passwordService: PasswordService) {}
+  ngOnInit() {
+    // Retrieve user object from localStorage and extract the email
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    this.email = user.email;
 
-  // Send verification code to user's email
-  sendVerificationCode() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');  // Retrieve user object from localStorage
-    const email = user?.email;  // Get the email from the user object
-
-    console.log('User from localStorage:', user); // Log the full user object
-    console.log('Email retrieved:', email);  // Log the email to verify it's being fetched
-
-    if (email) {
-      this.passwordService.sendVerificationCode(email).subscribe({
-        next: (res) => {
-          console.log('Response from backend:', res);  // Log the response from backend for better debugging
-          this.successMessage = 'Code envoyé à votre email!';
-          this.isCodeSent = true;
-        },
-        error: (err) => {
-          this.isCodeSent = true;
-          console.error('Error while sending code:', err);  // Log the error if any
-          this.errorMessage = err.error || "Une erreur s'est produite.";
-        },
-      });
-    } else {
-      console.error('Utilisateur introuvable.');  // If email is not found, log an error
-      this.errorMessage = 'Utilisateur introuvable.';
+    if (!this.email) {
+      // Handle the case if the email is not found in the user object
+      this.errorMessage = 'Email not found. Please log in again.';
     }
   }
 
+  sendVerificationCode() {
+    console.log('📨 Email entered:', this.email);
 
-  // Change password after verifying the code
-  changePassword() {
-    if (!this.oldPassword || !this.newPassword || !this.confirmPassword || !this.verificationCode) {
-      this.errorMessage = 'Veuillez remplir tous les champs.';
-      return;
-    }
-
-    if (this.newPassword.length < 6) {
-      this.errorMessage = 'Le mot de passe doit contenir au moins 6 caractères.';
-      return;
-    }
-
-    if (this.newPassword !== this.confirmPassword) {
-      this.errorMessage = 'Les mots de passe ne correspondent pas.';
-      return;
-    }
 
     this.isLoading = true;
+    this.errorMessage='';
+    if (this.email && this.currentPassword && this.newPassword) {
+      this.passwordService.checkCurrentPassword(this.currentPassword, this.email).subscribe({
+        next: (response) => {
+          if (response === 'Mot de passe vérifié avec succès.') {
+            console.log('✅ Current password is correct, sending verification code.');
 
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const email = user?.email;
-
-    if (email) {
-      this.passwordService
-        .verifyCodeAndChangePassword(email, this.verificationCode, this.newPassword)
-        .subscribe({
-          next: (res) => {
-            this.successMessage = res.message;
-            this.oldPassword = '';
-            this.newPassword = '';
-            this.confirmPassword = '';
-            this.verificationCode = '';
-          },
-          error: (err) => {
-            this.errorMessage = err.error || "Une erreur s'est produite.";
-          },
-          complete: () => {
+            this.passwordService.sendVerificationCode(this.email).subscribe({
+              next: (verificationResponse) => {
+                console.log('📩 Verification code sent:', verificationResponse);
+                this.currentPasswordIncorrect=false;
+                this.isCodeSent = true;
+                this.errorMessage = '';
+                this.isLoading = false;
+                this.passwordInvalid=false;
+              },
+              error: (verificationError: HttpErrorResponse) => {
+                console.error('❌ Error while sending verification code:', verificationError);
+                this.isLoading = false; // Stop loader
+                if (verificationError.status && verificationError.error) {
+                  this.errorMessage = `Error: ${verificationError.status} - ${verificationError.error.message || verificationError.message}`;
+                } else {
+                  this.errorMessage = 'An error occurred while sending the verification code.';
+                }
+              }
+            });
+          } else {
             this.isLoading = false;
-          },
-        });
+            this.currentPasswordIncorrect = true;
+            this.errorMessage = response || 'Le mot de passe actuel est incorrect.';
+          }
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('❌ Error while checking the current password:', error);
+          this.isLoading = false; // Stop loader
+          if (error.status && error.error) {
+            this.errorMessage = `Error: ${error.status} - ${error.error.message || error.message}`;
+          } else {
+            this.errorMessage = 'An error occurred while verifying the current password.';
+          }
+        }
+      });
     } else {
-      this.errorMessage = 'Utilisateur introuvable.';
+      this.isLoading = false; // Stop loader
+      this.errorMessage = 'Please enter your email, current password, and new password before requesting the verification code.';
     }
   }
+
+  changePassword() {
+
+    if ( this.email && this.currentPassword && this.newPassword) {
+      this.passwordService.verifyCodeAndChangePassword(
+        this.email,
+        this.verificationCode,
+        this.currentPassword,
+        this.newPassword
+      ).subscribe({
+        next: (response) => {
+          console.log('🔒 Password changed successfully:', response);
+          this.isPasswordChanged = true;
+          this.successMessage = 'Votre mot de passe a été mis à jour avec succès.';
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 5000);
+          this.errorMessage = '';
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('❌ Error while verifying code/changing password:', error);
+          if (error.status === 400 && error.error) {
+            this.errorMessage = error.error.message || 'Code de vérification invalide ou échec de la modification.';
+          } else {
+            this.errorMessage = 'Une erreur est survenue lors du changement de mot de passe.';
+          }
+        }
+      });
+    } else {
+      this.errorMessage = 'Veuillez remplir tous les champs avant de soumettre.';
+    }
+  }
+
+  validatePassword(password: string) {
+
+    const passwordRegex = /^(?=.*[0-9])(?=.*[\W_]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      this.passwordInvalid = true;
+      this.errorMessage = "Le mot de passe doit contenir 8 caractères, dont un caractère spécial et un chiffre.";
+    } else {
+      this.passwordInvalid = false;
+    }
+  }
+
 
 }

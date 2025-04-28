@@ -5,6 +5,7 @@ import { PhotosIntervention } from '../../../models/photos-intervention';
 import {environment} from "../../../../environments/environment";
 import {PieceDetachee} from "../../../models/piece-detachee";
 import { CommonModule } from '@angular/common';
+import {InterventionPieceDetachee} from "../../../models/intervention-pieces";
 
 @Component({
   selector: 'app-interventions-precedentes',
@@ -24,9 +25,10 @@ export class InterventionsPrecedentesComponent implements OnInit {
   selectedPhotos: PhotosIntervention[] = [];
   showPhotoModal: boolean = false;
   showPiecesModal: boolean = false;
-  selectedPieces: any[] = [];
+  selectedPieces: InterventionPieceDetachee[] = [];
 
-  piecesByIntervention: { [key: number]: PieceDetachee[] } = {};
+
+  piecesByIntervention: { [key: number]: InterventionPieceDetachee[] } = {};
 
 
   constructor(private interventionService: InterventionService) {}
@@ -45,8 +47,8 @@ export class InterventionsPrecedentesComponent implements OnInit {
         this.interventions = data.filter(intervention =>
           intervention.maintenanceId && intervention.maintenanceStatut === 'TERMINEE'
         );
- 
-        // 👇 For each intervention, fetch its pieces    
+
+        // 👇 For each intervention, fetch its pieces
         this.interventions.forEach(intervention => {
           this.getPiecesForIntervention(intervention.id);
         });
@@ -59,13 +61,13 @@ export class InterventionsPrecedentesComponent implements OnInit {
 
 
   getPiecesForIntervention(interventionId: number): void {
-    this.interventionService.getPiecesByInterventionId(interventionId).subscribe({
+    this.interventionService.getPiecesDetachees(interventionId).subscribe({
       next: (pieces) => {
         this.piecesByIntervention[interventionId] = pieces;
-        console.log('pieces:', this.piecesByIntervention);
+        console.log(`✅ Pièces pour l'intervention ${interventionId} récupérées avec succès:`, pieces);
       },
       error: (err) => {
-        console.error('Erreur lors de la récupération des pièces détachées :', err);
+        console.error(`Erreur lors de la récupération des pièces pour l'intervention ${interventionId} :`, err);
       }
     });
   }

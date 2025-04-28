@@ -22,7 +22,7 @@ public class Intervention {
 
 
     // L'intervention est réalisée par un technicien spécifique
-    @JsonBackReference("user-intervention")
+    @JsonBackReference("user-intervention1")
     @ManyToOne
     @JoinColumn(name = "technicien_id", nullable = false)
     private User technicien;
@@ -47,7 +47,7 @@ public class Intervention {
 
 
     // Lien avec la maintenance corrective si applicable
-    @JsonBackReference("maintenance-intervention")
+    @JsonBackReference("maintenance-interventions1")
     @ManyToOne
     @JoinColumn(name = "maintenance_id", nullable = false)
     private MaintenanceCorrective maintenanceCorrective;
@@ -61,7 +61,7 @@ public class Intervention {
     private List<PhotosIntervention> photos;
 
     @OneToMany(mappedBy = "intervention", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JsonManagedReference(value = "intervention-piece")
+    @JsonManagedReference(value = "intervention-piece1")
     private List<InterventionPieceDetachee> interventionPieces;
 
 

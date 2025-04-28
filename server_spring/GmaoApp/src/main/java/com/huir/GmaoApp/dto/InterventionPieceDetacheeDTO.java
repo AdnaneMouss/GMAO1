@@ -29,4 +29,11 @@ public class InterventionPieceDetacheeDTO {
         this.quantiteUtilisee = entity.getQuantiteUtilisee();
     }
 
+    public InterventionPieceDetacheeDTO(Long pieceId, String nom, String reference, int quantiteUtilisee) {
+        this.id = pieceId;
+        this.pieceNom = nom;
+        this.pieceReference = reference;
+        this.quantiteUtilisee = quantiteUtilisee;
+    }
+
 }
