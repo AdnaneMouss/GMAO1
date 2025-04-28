@@ -57,6 +57,7 @@ import { UserRapportComponent } from './components/Rapports/user-rapport/user-ra
 import { InterventionsPreventivesPrecedentesComponent } from './components/Interventions/interventions-preventives-precedentes/interventions-preventives-precedentes.component';
 import { TachesPreventivesAffecteeComponent } from './components/Interventions/taches-preventives-affectee/taches-preventives-affectee.component';
 import { HistoriqueMaintenancesCorrectivesComponent } from './components/Maintenances/historique-maintenances-correctives/historique-maintenances-correctives.component';
+import { ChatComponent } from './chat/chat.component';
 
 
 
@@ -90,7 +91,7 @@ const routes: Routes = [
   { path: 'maintenances/calendar', component: MaintenanceCalendarComponent , canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'interventionsP/taches', component: TachesPreventivesAffecteeComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
   { path: 'interventionsP/liste', component: InterventionsPreventivesPrecedentesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
-
+  //{ path: 'CHAT', component: ChatComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN','RESPONSABLE','MAGASINIER','TECHNICIEN'] } },
   { path: 'parametres', component: ParametresGenerauxComponent},
 
 

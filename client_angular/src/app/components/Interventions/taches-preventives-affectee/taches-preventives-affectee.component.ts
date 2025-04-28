@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Pipe } from '@angular/core';
 import { maintenance } from '../../../models/maintenance';
 import { PieceDetachee } from '../../../models/piece-detachee';
 import { MaintenanceService } from '../../../services/maintenance.service';
@@ -35,7 +35,7 @@ import { Intervention } from '../../../models/intervention';
   styleUrls: ['./taches-preventives-affectee.component.css']
 })
 export class TachesPreventivesAffecteeComponent implements OnInit{
-
+  expandedMaintenances: any[] = []
   technicienId: number = 0;
 
   maintenance: maintenance[] = [];
@@ -120,6 +120,7 @@ dateFinFiltre: string | null = null;
     piecesDetachees: []
   };
 
+  
 
 
 
@@ -130,6 +131,11 @@ dateFinFiltre: string | null = null;
 
 
 generatedDates: Date[] = [];
+showEmptyPage = false; // Contrôle l'affichage de la page vide
+
+
+
+
 
 
 
@@ -304,7 +310,13 @@ onAttributChange(attribut: any) {
 
 
 
-  nextRepetitionDates: Date[] = [];
+  nextRepetitionDates:  string | Date[] = [];
+
+
+ 
+
+
+
 
 
   showPanel = false; // Controls the panel visibility
@@ -317,6 +329,7 @@ onAttributChange(attribut: any) {
     private InterventionPreventiceService:InterventionPreventiceService,
 
     private router: Router ) { }
+ 
 
   validateDates() {
     if (this.newMaintenance.dateDebutPrevue && this.newMaintenance.dateFinPrevue) {
@@ -333,12 +346,40 @@ onAttributChange(attribut: any) {
     }
   }
 
-  filtrerParDateAujourdhui() {
-    const aujourdhui = new Date().toISOString().split('T')[0];
-    this.filteredMaintenace = this.maintenances.filter(m =>
-      m.dateDebutPrevue?.startsWith(aujourdhui)
-    );
+  trackByDate(index: number, date: string | Date): number {
+    return index; 
   }
+
+  
+
+
+
+  
+
+
+
+  filtrerParDateAujourdhui() {
+    const aujourdhui = new Date();  // Obtenir la date complète d'aujourd'hui
+    
+    this.filteredMaintenace = this.maintenances.filter(m => {
+      // 1. Filtre pour la date de début prévue aujourd'hui
+      const debutAujourdhui = m.dateDebutPrevue?.startsWith(aujourdhui.toISOString().split('T')[0]);
+  
+      // 2. Filtre pour les dates de répétition aujourd'hui
+      const repetitionAujourdhui = m.nextRepetitionDatesAsList?.some((date: string | Date) => {
+        // Convertit la date en string si c'est un objet Date
+        const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
+        
+        // Comparer la date complète (année, mois, jour)
+        return dateStr === aujourdhui.toISOString().split('T')[0];
+      });
+  
+      // Retourne true si l'une ou l'autre condition est vraie
+      return debutAujourdhui || repetitionAujourdhui;
+    });
+  }
+  
+  
   getNextRepetitionDates(dates: Date[]): Date[] {
     if (!dates) return [];
     const today = new Date();
@@ -352,6 +393,25 @@ onAttributChange(attribut: any) {
     }
     return null;
   }
+
+  parseDate(date: any): Date {
+    return typeof date === 'string' ? new Date(date) : date;
+  }
+
+  // Initialisation de nextRepetitionDates comme un tableau de Date
+
+
+// Vérifie si les données dans startDaterep et endDaterep sont des chaînes ou des objets Date
+
+
+
+
+
+  
+
+
+
+  
 
 
 
@@ -462,9 +522,82 @@ onAttributChange(attribut: any) {
     //this.filteredMaintenace = this.maintenances;
     this.loadPiecesDetachees();
     this.loadTechnicianInterventions();
+    // Dans la subscription
+
+    this.expandMaintenances();
+
+
+
+
+ 
+
+  
+    
+
+    
+
+    
+
+   
 
 
   }
+
+  expandMaintenances() {
+    this.expandedMaintenances = [];
+  
+    this.filteredMaintenace.forEach((maintenance) => {
+      if (maintenance.nextRepetitionDatesAsList?.length) {
+        maintenance.nextRepetitionDatesAsList.forEach((date: string) => {
+          this.expandedMaintenances.push({
+            ...maintenance,
+            singleRepetitionDate: date
+          });
+        });
+      } else {
+        this.expandedMaintenances.push({
+          ...maintenance,
+          singleRepetitionDate: null
+        });
+      }
+    });
+  }
+
+  
+
+
+
+ 
+
+
+  calculateRepetitionDates(
+    startDate: Date,
+    endDate: Date,
+    repetitionType: string,
+    selectedJours: number[],
+    selectedMois: number[]
+  ): Date[] {
+    const dates: Date[] = [];
+    const currentDate = new Date(startDate);
+  
+    while (currentDate <= endDate) {
+      const day = currentDate.getDay();
+      const month = currentDate.getMonth() + 1; // 0-based
+  
+      if (
+        (repetitionType === 'HEBDOMADAIRE' && selectedJours.includes(day)) ||
+        (repetitionType === 'MENSUEL' && selectedMois.includes(month))
+      ) {
+        dates.push(new Date(currentDate));
+      }
+  
+      // Avancer d’un jour
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  
+    return dates;
+  }
+  
 
   loadTechnicianInterventions(): void {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -786,7 +919,11 @@ onSubmit(): void {
     }
   );
 }
-
+// maintenance-list.component.ts
+convertToDate(dateStr: string | Date): Date {
+  if (dateStr instanceof Date) return dateStr;
+  return new Date(dateStr);
+}
 
 
 onFileSelected(event: any) {
@@ -1067,13 +1204,16 @@ onPiecesChange(event: Event): void {
   const selectedOptions = (event.target as HTMLSelectElement).selectedOptions;
   this.selectedPieces = Array.from(selectedOptions).map(opt => Number(opt.value));
 }
-
-
-
-
-
-
-
-
-
 }
+
+
+
+
+
+
+
+
+
+
+
+

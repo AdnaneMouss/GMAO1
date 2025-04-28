@@ -1,0 +1,730 @@
+<div class="container mx-auto p-8">
+
+ 
+    <button
+      class="flex items-center space-x-2 bg-green-700 hover:bg-green-900 text-white hover:text-gray-900 font-medium px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:-translate-x-1"
+      [routerLink]="'/maintenances/preventives'"
+    >
+      <i class="fas fa-arrow-left"></i>
+      <span>Retour à la page précédente</span>
+    </button>
+  
+    <div class="container py-10 position-relative">
+      <!-- Message d'erreur -->
+      <div *ngIf="errorMessage" class="alert alert-danger text-center">{{ errorMessage }}</div>
+  
+      <div *ngIf="maintenance">
+        <div class="row">
+          <!-- Left card with avatar and name -->
+          <div class="col-md-3 mb-6">
+            <div class="bg-white shadow-lg rounded-xl overflow-hidden flex flex-col border border-gray-200 hover:shadow-2xl transition duration-300">
+              <!-- Action Buttons -->
+              <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-center space-x-2">
+                <button class="flex-1 text-white bg-yellow-500 hover:bg-yellow-600 rounded-lg py-2 text-sm font-semibold transition duration-300 flex items-center justify-center"
+                        (click)="enableEditMode()">
+                  <i class="bi bi-pencil-fill mr-2"></i> Modifier
+                </button>
+              </div>
+  
+              <!-- Edit Mode Buttons -->
+              <div class="flex justify-center items-center space-x-3 py-4 bg-white border-t border-gray-200" *ngIf="isEditMode">
+                <button class="px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg text-sm font-semibold transition-all duration-300"
+                        (click)="saveChanges()">💾 Sauvegarder</button>
+                <button class="px-4 py-2 text-white bg-gray-400 hover:bg-gray-500 rounded-lg text-sm font-semibold transition-all duration-300"
+                        (click)="isEditMode = false">❌ Annuler</button>
+              </div>
+            </div>
+          </div>
+  
+          <div class="col-md-9">
+            <div class="row">
+  
+  
+        
+           
+  
+         
+  
+              <!-- Commentaires Display -->
+              <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+                    <div>
+                      <h5 class="card-title">Commentaires</h5>
+                      <p class="card-text">{{ maintenance.commentaires }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+  
+            
+            
+  
+              
+  
+              <!-- Commentaires Edit -->
+              <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+                    <div>
+                      <h5 class="card-title">Commentaires</h5>
+                      <input type="text" class="form-control" [(ngModel)]="maintenance.commentaires" required>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Statut Display -->
+              <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-info-circle fs-3 me-3" [ngClass]="{
+                      'text-warning': maintenance.statut === 'EN_ATTENTE'
+                      
+                    }"></i>
+                    <div>
+                      <h5 class="card-title" [ngClass]="{
+                        'text-warning': maintenance.statut === 'EN_ATTENTE'
+                       
+                      }">Statut</h5>
+                      <p class="card-text" [ngClass]="{
+                        'text-warning': maintenance.statut === 'EN_ATTENTE'
+                       
+                      }">{{ maintenance.statut }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Statut Edit -->
+              <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-info-circle fs-3 me-3" style="color: #006400;"></i>
+                    <div>
+                      <h5 class="card-title">Statut</h5>
+                      <select class="form-control" [(ngModel)]="maintenance.statut" required>
+                        <option value="EN_ATTENTE">EN_ATTENTE</option>
+                        <option value="EN_COURS">EN_COURS</option>
+                        <option value="TERMINEE">TERMINEE</option>
+                        <option value="ANNULEE">ANNULEE</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+  
+  
+               
+  
+              <!-- Priorité Display -->
+              <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-exclamation-triangle fs-3 me-3"
+                       [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}"></i>
+                    <div>
+                      <h5 class="card-title" [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}">Priorité</h5>
+                      <p class="card-text" [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}">
+                        {{ maintenance.priorite }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+  
+               
+  
+              <!-- Priorité Edit -->
+              <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-exclamation-triangle fs-3 me-3"
+                       [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}"></i>
+                    <div>
+                      <h5 class="card-title" [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}">Priorité</h5>
+                      <select class="form-select" [(ngModel)]="maintenance.priorite" required
+                              [ngStyle]="{'color': getPriorityColor(maintenance.priorite)}">
+                        <option value="FAIBLE">FAIBLE</option>
+                        <option value="NORMALE">NORMALE</option>
+                        <option value="URGENTE">URGENTE</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+               <!-- frequence Display  -->
+               <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-clock-history fs-3 me-3" style="color: #00008B;"></i>
+  
+                    <div>
+                      <h5 class="card-title">Frequence maintenance</h5>
+                      <p class="card-text">{{ maintenance.repetitiontype }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+                <!-- frequence Edit  -->
+             
+                <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                  <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex align-items-center bg-white">
+                      <i class="bi bi-clock-history fs-3 me-3" style="color: #00008B;"></i>
+  
+                      <div>
+                        <h5 class="card-title">frequence maintenance</h5>
+                        <select class="form-select" [(ngModel)]="maintenance.repetitiontype" required
+                        ="maintenance.repetitionType">
+                        <option value="Ne_pas_repeter">Ne_pas_repeter</option>
+                        <option value="TOUS_LES_JOURS">TOUS_LES_JOURS</option>
+                        <option value="TOUS_LES_SEMAINES">TOUS_LES_SEMAINES</option>
+                        <option value="MENSUEL">MENSUEL</option>
+                        <option value="ANNUEL">ANNUEL</option>
+                     
+                </select>
+                      </div>
+                    </div>   
+                  </div>
+                </div>
+                <!-- Indicateur Display --> 
+                <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                  <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex align-items-center bg-white">
+                      <i class="bi bi-gear fs-3 me-3" style="color: #00008B;"></i>
+                      <div>
+                        <h5 class="card-title">Indicateur maintenance</h5>
+                        <p class="card-text">{{ maintenance.indicateurs }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+  
+                  <!-- Indicateur   Edit -->
+              <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-gear fs-3 me-3" style="color: #00008B;"></i>
+                    <div>
+                      <h5 class="card-title">indicateur maintenance</h5>
+                      <input type="text" class="form-control" [(ngModel)]="maintenance.indicateurs" required>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+               <!-- action Display --> 
+               <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-play-circle fs-3 me-3" style="color: #00008B;"></i>
+                    <div>
+                      <h5 class="card-title">Action maintenance</h5>
+                      <p class="card-text">{{ maintenance.action }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+                <!-- action   Edit -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-play-circle fs-3 me-3" style="color: #00008B;"></i>
+                  <div>
+                    <h5 class="card-title">Action maintenance</h5>
+                    <select class="form-select" [(ngModel)]="maintenance.action" required
+                        ="maintenance.action">
+                        <option value="VERIFICATION_PERFORMANCES">VERIFICATION_PERFORMANCES</option>
+                        <option value="NETTOYAGE_EQUIPEMENTS">NETTOYAGE_EQUIPEMENTS</option>
+                        <option value="CALIBRATION_EQUIPEMENTS">CALIBRATION_EQUIPEMENTS</option>
+                        <option value="TEST_SECURITE">TEST_SECURITE</option>
+                        <option value="MISE_A_JOUR">MISE_A_JOUR</option>
+                        <option value="REMPLACEMENT_PIECES">REMPLACEMENT_PIECES</option>
+                        <option value="INSPECTION_VISUELLE">INSPECTION_VISUELLE</option>
+                        <option value="CONTROLE_CONNECTIVITE">CONTROLE_CONNECTIVITE</option>
+                        <option value="VERIFICATION_SAUVEARDES">VERIFICATION_SAUVEARDES</option>
+                        <option value="FORMATION_ENTRETIEN">FORMATION_ENTRETIEN</option>
+                        <option value="AUTRE">AUTRE</option>
+                      </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+  
+              <!--  autre action Display --> 
+              <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-three-dots fs-3 me-3" style="color: #00008B;"></i>
+                    <div>
+                      <h5 class="card-title"> Autre Action maintenance</h5>
+                      <p class="card-text">{{ maintenance.autreAction }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+                <!--  autre action   Edit -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-three-dots fs-3 me-3" style="color: #00008B;"></i>
+                  <div>
+                    <h5 class="card-title">Autre Action maintenance</h5>
+                    <input type="text" class="form-control" [(ngModel)]="maintenance.autreAction" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+              <!-- jours Display -->
+              <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-calendar-day fs-3 me-3" style="color: #006400;"></i>
+                    <div>
+                      <h5 class="card-title">jours selectionee</h5>
+                      <p class="card-text">{{ maintenance.selectedjours }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- jours Edit -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar-day fs-3 me-3" style="color: #006400;"></i>
+                  <div>
+                    <h5 class="card-title">jours selectionne</h5>
+                    <input type="text" class="form-control" [(ngModel)]="maintenance.selectedjours" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+    <!-- SEUIL  -->
+  
+            <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-speedometer2 fs-3 me-2" style="color: #006400;"></i> 
+                  <div>
+                    <h5 class="card-title">Seuil </h5>
+                    <p class="card-text">{{ maintenance.seuil }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+  
+  
+  
+            <!-- SEUIL Edit -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-speedometer2 fs-3 me-2" style="color: #006400;"></i>  
+                  <div>
+                    <h5 class="card-title">Seuil</h5>
+                    <input type="text" class="form-control" [(ngModel)]="maintenance.seuil" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+  
+                          <!-- Valeur NonSeuil Display -->
+               <!-- Valeur NonSeuil Display -->
+  
+             <!-- Sélection de l’attribut (objet entier) -->
+             <p class="text-sm text-gray-500 mt-2">
+              Type : {{ selectedAttribut?.attributEquipementType  }}
+            </p>
+            
+  
+              
+  
+  
+  
+  
+  
+            <!-- mois  Display -->
+            <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar3-range fs-3 me-3" style="color: #006400;"></i>
+  
+  
+  
+  
+                  <div>
+                    <h5 class="card-title"> Mois selectionee</h5>
+                    <p class="card-text">{{ maintenance.selectedmois }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+  
+  
+  
+  
+            <!-- mois  Edit -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-calendar3-range fs-3 me-3" style="color: #006400;"></i>
+  
+  
+  
+                  <div>
+                    <h5 class="card-title">Mois selectionne</h5>
+                    <input type="text" class="form-control" [(ngModel)]="maintenance.selectedmois" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+  
+  
+        <!-- equipement num serie Display -->
+  <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body d-flex align-items-center bg-white">
+        <i class="bi bi-hdd fs-3 me-3" style="color: #006400;"></i>
+        <div>
+          <h5 class="card-title">Équipement</h5>
+          <p class="card-text">{{ maintenance.equipementId }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- equipement num serie Display -->
+  <div class="col-md-6 mb-4" *ngIf="isEditMode">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body d-flex align-items-center bg-white">
+        <i class="bi bi-hdd fs-3 me-3" style="color: #006400;"></i>
+        <div>
+          <h5 class="card-title">Équipement</h5>
+          <p class="card-text">{{ maintenance.equipementId }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+  <!-- Label suivie Display 
+  <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body d-flex align-items-center bg-white">
+        <i class="bi bi-tag fs-3 me-3" style="color: #006400;"></i>
+        <div>
+          <h5 class="card-title">Label suivie</h5>
+          <p class="card-text">{{ maintenance.labelSuivi || 'Non spécifié' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Valeur suivie Display 
+  <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body d-flex align-items-center bg-white">
+        <i class="bi bi-speedometer2 fs-3 me-3" style="color: #006400;"></i>
+        <div>
+          <h5 class="card-title">Valeur suivie</h5>
+          <p class="card-text">{{ maintenance.valeurSuivi || 'Non spécifié' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+   -->
+  
+  
+  
+            <!-- equipement num  serie  Edi  ajouter num  set    -->
+            <div class="col-md-6 mb-4" *ngIf="isEditMode">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex align-items-center bg-white">
+                  <i class="bi bi-chat-dots fs-3 me-3" style="color: #006400;"></i>
+                  <div>
+                    <h5 class="card-title">equipement</h5>
+                    <input type="text" class="form-control" [(ngModel)]="maintenance.equipementId " required>
+                  </div>
+                </div>
+              </div>
+            </div>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+            <!-- Sélection de l’équipement -->
+  
+  
+  
+  
+  
+               <!-- user Display --> 
+               <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-person fs-3 me-3" style="color: #00008B;"></i>
+  
+                    <div>
+                      <h5 class="card-title">user maintenance</h5>
+                      <p class="card-text">{{ maintenance.user.id}}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+               <!-- user Edit -->
+               <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-person fs-3 me-3" style="color: #00008B;"></i>
+                    <div class="w-100">
+                      <h5 class="card-title">User Maintenance</h5>
+                      <select
+                        class="form-control"
+                        [(ngModel)]="maintenance.user"
+                        name="user"
+                        required
+                      >
+                        <option *ngFor="let user of filteredTechnicienUsers" [ngValue]="user">
+                          {{ maintenance.user.id }} - {{ maintenance.user.role }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Date de Péremption Display -->
+              <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                    <div>
+                      <h5 class="card-title">Date prochaine maintenance</h5>
+                      <p class="card-text">{{ maintenance.dateProchainemaintenance }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Date de Péremption Edit -->
+                  <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                    <div class="card shadow-sm border-0 h-100">
+                      <div class="card-body d-flex align-items-center bg-white">
+                        <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                        <div>
+                          <h5 class="card-title">Date prochaine maintenance</h5>
+                          <input type="date" class="form-control" [(ngModel)]="maintenance.dateProchainemaintenance" required>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+  
+  
+  
+                    <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                      <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body d-flex align-items-center bg-white">
+                          <i class="bi bi-stopwatch-fill fs-3 me-3" style="color: #00008B;"></i>
+                          <div>
+                            <h5 class="card-title">Durée maintenance en jours</h5>
+                            <p class="card-text">{{ maintenance.dureeIntervention }}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+  
+                  
+  
+              
+  
+                  <!-- Date de Péremption Display -->
+                  <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                    <div class="card shadow-sm border-0 h-100">
+                      <div class="card-body d-flex align-items-center bg-white">
+                        <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                        <div>
+                          <h5 class="card-title">Date debut maintenance</h5>
+                          <p class="card-text">{{ maintenance.dateDebutPrevue }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+      
+                  <!-- Date de Péremption Edit -->
+                  <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                    <div class="card shadow-sm border-0 h-100">
+                      <div class="card-body d-flex align-items-center bg-white">
+                        <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i> <!-- Icône pour la fin -->
+                        <div>
+                          <h5 class="card-title">Date debut maintenance</h5>
+                          <input type="date" class="form-control" [(ngModel)]="maintenance.dateDebutPrevue" required>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                      <!-- Date de Péremption Display -->
+              <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+                    <div>
+                      <h5 class="card-title">Date fin maintenance</h5>
+                      <p class="card-text">{{ maintenance.dateFinPrevue }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  
+                <!-- start -->
+                <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                  <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex align-items-center bg-white">
+                      <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i>
+  
+  
+                      <div>
+                        <h5 class="card-title">start date maintenance </h5>
+                        <p class="card-text">{{ maintenance.startDaterep }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+  
+                
+                
+    
+                <!-- end -->
+                <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                  <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex align-items-center bg-white">
+                      <i class="bi bi-calendar-x fs-3 me-3" style="color: #00008B;"></i>
+                      <div>
+                        <h5 class="card-title">end date maintenance </h5>
+                        <p class="card-text">{{ maintenance.endDaterep}}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+  
+  
+  
+  
+  
+  
+  
+  
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-calendar-x fs-3 me-3" style="color: #00008B;"></i>
+                    <div>
+                      <h5 class="card-title mb-1">Détail de l'attribut sélectionné</h5>
+                
+                      <!-- Affichage de la valeur de l'attribut si elle est définie -->
+                      <h5 class="card-title mb-1" *ngIf="selectedAttribut?.valeur">
+                        {{ selectedAttribut.valeur }}
+                      </h5>
+                      
+                      <!-- Affichage du seuil de maintenance si la valeur existe -->
+                      <h5 class="card-title mb-1" *ngIf="maintenance?.seuil">
+                        {{ maintenance.seuil }}
+                      </h5>
+                
+                      <!-- Affichage du message si "messageSeuil" existe -->
+                      <div *ngIf="messageSeuil" class="mt-3 p-3 rounded-lg bg-yellow-100 text-yellow-900 border-l-4 border-yellow-500">
+                        {{ messageSeuil }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                
+  
+               
+  
+              
+  
+  
+  
+              <!-- Date de Péremption Edit -->
+              <div class="col-md-6 mb-4" *ngIf="isEditMode">
+                <div class="card shadow-sm border-0 h-100">
+                  <div class="card-body d-flex align-items-center bg-white">
+                    <i class="bi bi-calendar-event fs-3 me-3" style="color: #00008B;"></i> <!-- Icône pour la fin -->
+                    <div>
+                      <h5 class="card-title">Date fin maintenance</h5>
+                      <input type="date" class="form-control" [(ngModel)]="maintenance.dateFinPrevue" required>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+                            <!-- Repetition -->
+                <div class="col-md-6 mb-4" *ngIf="!isEditMode">
+                  <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body d-flex align-items-center bg-white">
+                      <i class="bi bi-repeat fs-3 me-3" style="color: #00008B;"></i> <!-- Icône de répétition -->
+                      <div>
+                        <h5 class="card-title">Jours de Répétition</h5>
+                        <ul class="list-unstyled">
+                          <li *ngFor="let date of nextRepetitionDates">
+                            {{ date | date:'dd/MM/yyyy' }}
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+  
+  
+               
+  
+  
+             
+           
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+             
+              
+  
+            
+              
+            
+           
+             
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Ajout du support Bootstrap et des icônes Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">

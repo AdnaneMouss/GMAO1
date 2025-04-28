@@ -20,6 +20,8 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
@@ -30,14 +32,17 @@ import com.huir.GmaoApp.model.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +54,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -193,52 +199,194 @@ public class Maintenance {
 	    private String selectedmois;
 	    
 	    @Column(name = "next_repetition_dates")
-	    private String nextRepetitionDates; // stockée comme "2024-04-25,2024-05-01"
+	    private String nextRepetitionDates;
+	    
 	    
 	    @Transient
-	    public List<Date> getNextRepetitionDatesAsList() {
-	        if (nextRepetitionDates == null || nextRepetitionDates.isEmpty()) {
+	    public List<LocalDate> getNextRepetitionDatesAsList() {
+	        if (nextRepetitionDates == null || nextRepetitionDates.trim().isEmpty()) {
 	            return new ArrayList<>();
 	        }
 	        return Arrays.stream(nextRepetitionDates.split(","))
-	                .map(dateStr -> {
-	                    try {
-	                        return new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
-	                    } catch (ParseException e) {
-	                        return null;
-	                    }
-	                })
-	                .filter(Objects::nonNull)
-	                .collect(Collectors.toList());
+	                     .map(LocalDate::parse)
+	                     .collect(Collectors.toList());
 	    }
 
-	    public void setNextRepetitionDatesAsList(List<Date> dates) {
+	    public void setNextRepetitionDatesAsList(List<LocalDate> dates) {
 	        if (dates == null || dates.isEmpty()) {
-	            this.nextRepetitionDates = "";
+	            this.nextRepetitionDates = null;
 	        } else {
 	            this.nextRepetitionDates = dates.stream()
-	                    .map(date -> new SimpleDateFormat("yyyy-MM-dd").format(date))
-	                    .collect(Collectors.joining(","));
+	                                          .map(LocalDate::toString)
+	                                          .collect(Collectors.joining(","));
+	        }
+	    }
+	    
+	    private List<LocalDate> calculateRepetitionDates(
+	    	    LocalDate start,
+	    	    LocalDate end,
+	    	    repetitiontype repetitiontype,
+	    	    List<String> selectedjours,
+	    	    List<String> selectedmois) {
+	    	    
+	    	    List<LocalDate> result = new ArrayList<>();
+	    	    if (start == null || repetitiontype == null) {
+	    	        return result;
+	    	    }
+	    	    
+	    	    // Convertir et normaliser les listes de jours/mois
+	    	    List<String> joursList = selectedjours != null ? 
+	    	    	    selectedjours.stream()
+	    	    	                 .map(String::trim)
+	    	    	                 .map(String::toUpperCase)
+	    	    	                 .collect(Collectors.toList()) : 
+	    	    	    Collections.emptyList();
+
+	    	    	List<String> moisList = selectedmois != null ? 
+	    	    	    selectedmois.stream()
+	    	    	                .map(String::trim)
+	    	    	                .map(String::toUpperCase)
+	    	    	                .collect(Collectors.toList()) : 
+	    	    	    Collections.emptyList();
+
+
+	    	    LocalDate current = start;
+	    	    
+	    	    switch (repetitiontype) {
+	    	        case TOUS_LES_JOURS:
+	    	            while (end == null || !current.isAfter(end)) {
+	    	                result.add(current);
+	    	                current = current.plusDays(1);
+	    	            }
+	    	            break;
+	    	            
+	    	        case TOUS_LES_SEMAINES:
+	    	            while (end == null || !current.isAfter(end)) {
+	    	                // Convertir le jour de la semaine en français pour la comparaison
+	    	                String jourSemaine = convertDayToFrench(current.getDayOfWeek());
+	    	                if (joursList.contains(jourSemaine)) {
+	    	                    result.add(current);
+	    	                }
+	    	                current = current.plusDays(1);
+	    	            }
+	    	            break;
+	    	            
+	    	        case MENSUEL:
+	    	            while (end == null || !current.isAfter(end)) {
+	    	                // Convertir le mois en français pour la comparaison
+	    	                String mois = convertMonthToFrench(current.getMonth());
+	    	                if (moisList.contains(mois)) {
+	    	                    result.add(current);
+	    	                }
+	    	                current = current.plusMonths(1);
+	    	            }
+	    	            break;
+	    	            
+	    	        case ANNUEL:
+	    	            while (end == null || !current.isAfter(end)) {
+	    	                result.add(current);
+	    	                current = current.plusYears(1);
+	    	            }
+	    	            break;
+	    	            
+	    	        case Ne_pas_repeter:
+	    	        default:
+	    	            result.add(start);
+	    	            break;
+	    	    }
+	    	    
+	    	    return result;
+	    	}
+	    
+	    public void setSelectedjours(List<String> jours) {
+	        this.selectedjours = jours != null ? 
+	            String.join(",", jours.stream()
+	                                 .map(String::trim)
+	                                 .map(String::toUpperCase)
+	                                 .collect(Collectors.toList())) : 
+	            null;
+	    }
+
+	    public List<String> getSelectedjours() {
+	        if (this.selectedjours == null || this.selectedjours.isEmpty()) {
+	            return new ArrayList<>();
+	        }
+	        return Arrays.stream(this.selectedjours.split(","))
+	                    .map(String::trim)
+	                    .map(String::toUpperCase)
+	                    .collect(Collectors.toList());
+	    }
+
+	    // Faites de même pour selectedmois
+	    public void setSelectedmois(List<String> mois) {
+	        this.selectedmois = mois != null ? 
+	            String.join(",", mois.stream()
+	                               .map(String::trim)
+	                               .map(String::toUpperCase)
+	                               .collect(Collectors.toList())) : 
+	            null;
+	    }
+
+	    public List<String> getSelectedmois() {
+	        if (this.selectedmois == null || this.selectedmois.isEmpty()) {
+	            return new ArrayList<>();
+	        }
+	        return Arrays.stream(this.selectedmois.split(","))
+	                    .map(String::trim)
+	                    .map(String::toUpperCase)
+	                    .collect(Collectors.toList());
+	    }
+	    @PrePersist
+	    @PreUpdate
+	    private void calculateNextRepetitionDates() {
+	        if (this.repetitiontype != null && this.startDaterep != null) {
+	            List<LocalDate> dates = calculateRepetitionDates(
+	                startDaterep.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+	                endDaterep != null ? endDaterep.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() : null,
+	                repetitiontype,
+	                getSelectedjours(),
+	                getSelectedmois()
+	            );
+	            this.setNextRepetitionDatesAsList(dates);
+	        }
+	    }
+	    
+	    private String convertDayToFrench(DayOfWeek day) {
+	        switch (day) {
+	            case MONDAY:    return "LUNDI";
+	            case TUESDAY:   return "MARDI";
+	            case WEDNESDAY: return "MERCREDI";
+	            case THURSDAY: return "JEUDI";
+	            case FRIDAY:    return "VENDREDI";
+	            case SATURDAY:  return "SAMEDI";
+	            case SUNDAY:    return "DIMANCHE";
+	            default:        return "";
 	        }
 	    }
 
+	    private String convertMonthToFrench(Month month) {
+	        switch (month) {
+	            case JANUARY:   return "JANVIER";
+	            case FEBRUARY:  return "FÉVRIER";
+	            case MARCH:    return "MARS";
+	            case APRIL:    return "AVRIL";
+	            case MAY:      return "MAI";
+	            case JUNE:     return "JUIN";
+	            case JULY:     return "JUILLET";
+	            case AUGUST:   return "AOÛT";
+	            case SEPTEMBER: return "SEPTEMBRE";
+	            case OCTOBER:  return "OCTOBRE";
+	            case NOVEMBER: return "NOVEMBRE";
+	            case DECEMBER: return "DÉCEMBRE";
+	            default:       return "";
+	        }
+	    }
 
 	    
-	    
-	  //  @Column(name = "next_repetition_dates")
-	    //private List<Date> nextRepetitionDates;
-	    
-	    
-	    ///////////////
+	
 	   
 	    
-	   // public List<Date> getNextRepetitionDates() {
-	     //   return nextRepetitionDates;
-	    //}
-
-	   // public void setNextRepetitionDates(List<Date> nextRepetitionDates) {
-	     //   this.nextRepetitionDates = nextRepetitionDates;
-	    //}
+	 
 	  
 
 	    
@@ -281,28 +429,11 @@ public class Maintenance {
 		public void setEquipement(Equipement equipement) {
 			this.equipement = equipement;
 		}
-		public List<String> getSelectedjours() {
-	        if (this.selectedjours != null && !this.selectedjours.isEmpty()) {
-	            return Arrays.asList(this.selectedjours.split(",")); // Convertir en liste
-	        }
-	        return new ArrayList<>();
-	    }
-	    // Setter qui transforme la liste en chaîne
-	    public void setSelectedjours(List<String> selectedjours) {
-	        this.selectedjours = String.join(",", selectedjours); // Convertir en string
-	    }
+		
+	   
 	    
 	    
-	    public List<String> getSelectedmois() {
-	        if (this.selectedmois != null && !this.selectedmois.isEmpty()) {
-	            return Arrays.asList(this.selectedmois.split(",")); // Convertir en liste
-	        }
-	        return new ArrayList<>();
-	    }
-	    // Setter qui transforme la liste en chaîne
-	    public void setSelectedmois(List<String> selectedmois) {
-	        this.selectedmois = String.join(",", selectedmois); // Convertir en string
-	    }
+	    
 
 	
 		
@@ -397,43 +528,7 @@ public class Maintenance {
 	}
 	
 	
-	////////////////////////
 	
-	// public Date getDateRepetition() {
-	  //      if (startDaterep == null || repetitiontype == null) {
-	    //        return null; // Aucune répétition si la date de début ou le type de répétition est manquant
-	      //  }
-	        
-	       // Calendar calendar = Calendar.getInstance();
-	       // calendar.setTime(startDaterep);
-	        
-	        //switch (repetitiontype) {
-	          //  case TOUS_LES_JOURS:
-	            //    calendar.add(Calendar.DAY_OF_MONTH, 1);
-	              //  break;
-	            //case TOUS_LES_SEMAINES:
-	              //  calendar.add(Calendar.WEEK_OF_YEAR, 1);
-	               // break;
-	            //case MENSUEL:
-	              //  calendar.add(Calendar.MONTH, 1);
-	               // break;
-	            //case ANNUEL:
-	              //  calendar.add(Calendar.YEAR, 1);
-	               // break;
-	            //case Ne_pas_repeter:
-	            //default:
-	              //  return null; // Pas de répétition
-	        //}
-	        
-	     //   Date daterepetition = calendar.getTime();
-	        
-	        // Vérifier si la date de répétition dépasse la date de fin
-	       // if (endDaterep != null && daterepetition.after(endDaterep)) {
-	         //   return null; // La répétition ne doit pas dépasser la date de fin
-	        //}
-	        
-	       // return daterepetition;
-	    //}
 	    
 	
 	
@@ -444,9 +539,6 @@ public class Maintenance {
 	public void setDureeIntervention(long dureeIntervention) {
 		this.dureeIntervention = dureeIntervention;
 	}
-	//public void setDaterepetition(Date daterepetition) {
-		//this.daterepetition = daterepetition;
-	//}
 	
 	 
 	 
