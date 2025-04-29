@@ -56,7 +56,7 @@ public class MaintenanceCorrective {
     @JoinColumn(name = "equipement_id")
     private Equipement equipement;
 
-    @JsonManagedReference("maintenance-interventions")
+    @JsonManagedReference("maintenance-interventions1")
     @OneToMany(mappedBy = "maintenanceCorrective", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Intervention> interventions;
 

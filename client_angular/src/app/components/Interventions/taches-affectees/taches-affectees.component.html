@@ -207,15 +207,23 @@
                 class="flex items-center justify-between bg-gray-100 p-2 rounded-lg"
               >
                 <div class="flex flex-col">
-                  <span class="font-medium"></span>
-                  <input
-                    type="number"
-                    min="1"
-                    [(ngModel)]="piece.quantite"
-                    class="mt-1 w-24 p-1 text-sm border rounded"
-                    placeholder="Quantité"
-                  />
+                  <!-- Displaying the piece name -->
+                  <span class="font-medium text-gray-800">{{ piece.nom }}</span>
+
+                  <!-- Quantity input with label -->
+                  <label class="text-sm text-gray-600 mt-1">
+                    Quantité :
+                    <input
+                      type="number"
+                      min="1"
+                      [(ngModel)]="piece.quantite"
+                      class="ml-2 w-24 p-1 text-sm border rounded"
+                      placeholder="Quantité"
+                    />
+                  </label>
                 </div>
+
+                <!-- Remove button -->
                 <button
                   type="button"
                   (click)="removePiece(i)"

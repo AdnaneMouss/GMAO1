@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Intervention } from '../models/intervention';
 import {PieceDetachee} from "../models/piece-detachee";
+import {InterventionPieceDetachee} from "../models/intervention-pieces";
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,6 @@ export class InterventionService {
     return this.http.get<Intervention[]>(`${this.apiUrl}/technicien/${technicianId}`);
   }
 
-  // Updated createIntervention method to handle file upload and PieceDetachee
   createIntervention(
     files: File[] | null,
     description: string,
@@ -28,29 +28,40 @@ export class InterventionService {
   ): Observable<any> {
     const formData: FormData = new FormData();
 
-    // Append files to FormData if any
+    // 📸 Append files
     if (files) {
-      files.forEach((file, index) => {
-        formData.append('files', file, file.name);
+      files.forEach(file => {
+        formData.append('files', file);
       });
     }
 
-    // Append other form data
+    // 📑 Append scalar fields
     formData.append('description', description);
     if (remarques) {
       formData.append('remarques', remarques);
     }
     formData.append('maintenanceId', maintenanceId.toString());
     formData.append('technicienId', technicienId.toString());
-    formData.append('piecesDetachees', JSON.stringify(pieceDetacheesIds));
-    formData.append('quantites', JSON.stringify(quantites));
 
-    // Make the HTTP request to the backend
+    // 🔩 Append piecesDetachees and quantites as individual values
+    pieceDetacheesIds.forEach(id => {
+      formData.append('piecesDetachees', id.toString());
+    });
+    quantites.forEach(qty => {
+      formData.append('quantites', qty.toString());
+    });
+
+    // 🚀 Send the form data
     return this.http.post(`${this.apiUrl}/create`, formData);
   }
 
+
   getPiecesByInterventionId(interventionId: number): Observable<PieceDetachee[]> {
     return this.http.get<PieceDetachee[]>(`${this.apiUrl}/${interventionId}/pieces`);
+  }
+
+  getPiecesDetachees(interventionId: number): Observable<InterventionPieceDetachee[]> {
+    return this.http.get<InterventionPieceDetachee[]>(`${this.apiUrl}/${interventionId}/pieces-detachees`);
   }
 
 

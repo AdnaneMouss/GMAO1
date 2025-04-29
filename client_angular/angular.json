@@ -16,7 +16,7 @@
           "standalone": false
         }
       },
-      
+
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -38,7 +38,8 @@
             "styles": [
               "@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.css",
-            
+              "node_modules/swiper/swiper-bundle.min.css",
+
   "node_modules/ngx-toastr/toastr.css"
             ],
             "allowedCommonJsDependencies": [

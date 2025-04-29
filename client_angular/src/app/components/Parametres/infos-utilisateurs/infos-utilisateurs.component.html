@@ -54,7 +54,7 @@
     <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
       <div class="flex justify-between items-center mb-1">
         <p class="text-xs text-gray-500 uppercase">Email</p>
-        <button class="text-green-700 hover:text-green-900" (click)="startEditing('email')">
+        <button *ngIf="user?.role==='ADMIN'" class="text-green-700 hover:text-green-900" (click)="startEditing('email')">
           <i class="fas fa-pencil-alt"></i>
         </button>
       </div>
@@ -154,7 +154,7 @@
   </div>
 
   <!-- Deactivation of account -->
-  <div class="bg-red-50 border border-red-200 rounded-xl p-6 shadow-inner">
+  <div class="bg-red-50 border border-red-200 rounded-xl p-6 shadow-inner" *ngIf="user?.role!=='ADMIN'">
     <h3 class="text-lg font-semibold text-red-700 mb-2">Désactivation du compte</h3>
     <p class="text-sm text-red-600 mb-4">
       ⚠️ Cette action est irréversible. Une fois désactivé, votre compte ne sera pas accessible jusqu'à sa réactivation par l'administration.
