@@ -69,7 +69,8 @@ private List<String> selectedjours;
 private List<String> selectedmois;
 private Date  daterepetition;
 
-private Long equipementId;  
+private Long equipementId; 
+private String equipementNom; 
 private String labelsuivie;
 private Double valeursuivie;
 
@@ -108,7 +109,7 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		         this.valeursuivie=maintenance.getValeurSuivi();
 		         this.labelsuivie=maintenance.getLabelSuivi();
 		         this.nextRepetitionDates = calculateRepetitionDates(startDaterep, endDaterep, repetitiontype, selectedjours, selectedmois);
-
+                 this.equipementNom=maintenance.getEquipementNom();
 		       
 
 		         this.selectedjours = maintenance.getSelectedjours();
@@ -139,6 +140,14 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		 
 		
 		
+		
+		
+		public String getEquipementNom() {
+			return equipementNom;
+		}
+		public void setEquipementNom(String equipementNom) {
+			this.equipementNom = equipementNom;
+		}
 		public List<LocalDate> getNextRepetitionDates() {
 			return nextRepetitionDates;
 		}

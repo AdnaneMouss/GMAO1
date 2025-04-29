@@ -15,6 +15,7 @@ export interface maintenance{
  dureeIntervention: number;
   dateDebutPrevue: Date;
   dateFinPrevue: Date;
+  equipementNom: string;
   dateProchainemaintenance: Date;
   documentPath: File | null;
   commentaires: string;

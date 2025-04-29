@@ -63,10 +63,7 @@
         <h3 class="text-sm font-semibold text-orange-800">Correctives</h3>
         <p class="text-2xl font-bold text-orange-600">{{ stats.maintenancesPreventives || 0 }}</p>
       </div>
-      <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
-        <h3 class="text-sm font-semibold text-purple-800">Coût Total</h3>
-      
-      </div>
+     
     </div>
 
 
@@ -212,7 +209,7 @@ class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm flex i
         <tr *ngFor="let maintenance of filteredMaintenances | slice: (currentPage * pageSize):(currentPage + 1) * pageSize; let i = index" 
             class="hover:bg-blue-50 transition duration-200">
           <td class="px-6 py-2">{{ maintenance.id }}</td>
-          <td class="px-6 py-2">{{ maintenance.equipementId }}</td>
+          <td class="px-6 py-2">{{ maintenance.equipementNom }}</td>
           <td class="px-6 py-2">{{ maintenance.dateDebutPrevue | date:'dd/MM/yyyy' }}</td>
           <td class="px-6 py-2">
             <span [ngClass]="{

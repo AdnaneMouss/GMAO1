@@ -46,16 +46,61 @@ showAll: boolean = false; // Contrôle l'affichage complet ou partiel
   loadEquipements(): void {
     this.equipementService.getAllEquipements().subscribe({
       next: (data) => {
+        console.log('Données reçues:', data);
         this.equipements = data;
-        this.calculateStats();
-        this.filterCriticalEquipments();
-        this.cd.detectChanges();
-        this.initStatutChart();
+        this.calculateStats(); // Ajouté
+        this.filterCriticalEquipments(); // Ajouté
+        this.initChart(); // Ajouté pour initialiser le graphique
       },
       error: (err) => {
         console.error('Error loading equipment:', err);
       }
     });
+  }
+  
+  // Ajoutez cette méthode pour initialiser le graphique
+  initChart(): void {
+    if (this.statutChartRef) {
+      const ctx = this.statutChartRef.nativeElement.getContext('2d');
+      
+      // Détruire le graphique existant s'il y en a un
+      if (this.statutChart) {
+        this.statutChart.destroy();
+      }
+  
+      this.statutChart = new Chart(ctx, {
+        type: 'bar', // ou 'pie' selon ce que vous voulez
+        data: {
+          labels: ['Actif', 'En panne', 'Hors service', 'En maintenance'],
+          datasets: [{
+            label: 'Statut des équipements',
+            data: this.prepareChartData(),
+            backgroundColor: [
+              'rgba(75, 192, 192, 0.2)',
+              'rgba(255, 206, 86, 0.2)',
+              'rgba(255, 99, 132, 0.2)',
+              'rgba(54, 162, 235, 0.2)'
+            ],
+            borderColor: [
+              'rgba(75, 192, 192, 1)',
+              'rgba(255, 206, 86, 1)',
+              'rgba(255, 99, 132, 1)',
+              'rgba(54, 162, 235, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
   }
 
   calculateStats(): void {
@@ -85,126 +130,7 @@ showAll: boolean = false; // Contrôle l'affichage complet ou partiel
       .slice(0, 10);
   }
 
-  initStatutChart(): void {
-    if (!this.statutChartRef?.nativeElement) {
-      console.error('Canvas element not found');
-      return;
-    }
   
-    if (this.statutChart) {
-      this.statutChart.destroy();
-    }
-  
-    const ctx = this.statutChartRef.nativeElement.getContext('2d');
-    if (!ctx) return;
-  
-    const labels = ['Actif', 'En panne', 'Hors service', 'En maintenance'];
-    const data = this.prepareChartData();
-  
-    this.statutChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Nombre d\'équipements',
-          data: data,
-          backgroundColor: [
-            '#10B981', // Vert - Actif
-            '#F59E0B', // Orange - En panne
-            '#EF4444', // Rouge - Hors service
-            '#3B82F6'  // Bleu - En maintenance
-          ],
-          borderColor: [
-            '#059669', // Vert foncé
-            '#D97706', // Orange foncé
-            '#DC2626', // Rouge foncé
-            '#2563EB'  // Bleu foncé
-          ],
-          borderWidth: 1,
-          borderRadius: 8,
-          barPercentage: 0.6,
-          categoryPercentage: 0.5
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'bottom',
-            labels: {
-              color: '#111',
-              font: {
-                size: 14,
-                weight: 'bold'
-              }
-            }
-          },
-          title: {
-            display: true,
-            text: 'Répartition des équipements par statut',
-            font: {
-              size: 18,
-              weight: 'bold'
-            },
-            color: '#1F2937'
-          },
-          tooltip: {
-            backgroundColor: '#f9fafb',
-            titleColor: '#111827',
-            bodyColor: '#1F2937',
-            borderColor: '#E5E7EB',
-            borderWidth: 1
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              stepSize: 1,
-              color: '#374151',
-              font: {
-                size: 13
-              }
-            },
-            title: {
-              display: true,
-              text: 'Nombre',
-              color: '#1F2937',
-              font: {
-                size: 14,
-                weight: 'bold'
-              }
-            },
-            grid: {
-              color: '#E5E7EB'
-            }
-          },
-          x: {
-            ticks: {
-              color: '#374151',
-              font: {
-                size: 13
-              }
-            },
-            title: {
-              display: true,
-              text: 'Statut',
-              color: '#1F2937',
-              font: {
-                size: 14,
-                weight: 'bold'
-              }
-            },
-            grid: {
-              color: '#F3F4F6'
-            }
-          }
-        }
-      }
-    });
-  }
 
   prepareChartData(): number[] {
     return [

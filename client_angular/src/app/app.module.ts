@@ -13,7 +13,11 @@ import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { DetailsUtilisateursComponent } from './components/Utilisateurs/details-utilisateurs/details-utilisateurs.component';
-import {MatFormField} from "@angular/material/form-field";
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+
+
 import {MatOption} from "@angular/material/autocomplete";
 import {MatSelect} from "@angular/material/select";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
@@ -62,9 +66,16 @@ import { InterventionsPreventivesPrecedentesComponent } from './components/Inter
 import { TachesPreventivesAffecteeComponent } from './components/Interventions/taches-preventives-affectee/taches-preventives-affectee.component';
 
 
+
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common'; // <- pour les pipes slice, uppercase, date
+
+import { MatInputModule } from '@angular/material/input';
+import { DetailsHistoComponent } from './details-histo/details-histo.component'; // <- pour input matInput
 @NgModule({
   declarations: [
     AppComponent,
+    
     DetailsUtilisateursComponent,
     GestionAccesUtilisateursComponent,
     ListeUtilisateursComponent,
@@ -95,10 +106,14 @@ import { TachesPreventivesAffecteeComponent } from './components/Interventions/t
     InfosUtilisateursComponent,
     ChangePasswordComponent,
     HistoriqueMaintenancesCorrectivesComponent,
+    DetailsHistoComponent,
   ],
   imports: [
     AppRoutingModule,
-   
+    MatFormFieldModule,
+    MatInputModule,
+  MatSelectModule,
+  MatAutocompleteModule,
     ToastrModule.forRoot(),
     ListeEquipementsComponent,
     LoginComponent,
@@ -110,12 +125,14 @@ import { TachesPreventivesAffecteeComponent } from './components/Interventions/t
     MatSidenavModule,
     MatToolbarModule,
     ReactiveFormsModule, // Required for formGroup
-   
-   
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatCardModule,
     MatListModule,
     MatDividerModule,
-    MatFormField,
+  
     MatOption,
     MatSelect,
     FormsModule,

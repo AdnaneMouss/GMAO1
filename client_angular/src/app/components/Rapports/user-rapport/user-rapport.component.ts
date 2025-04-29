@@ -8,6 +8,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { maintenance } from '../../../models/maintenance';
 import { MaintenanceService } from '../../../services/maintenance.service';
+import { Intervention } from '../../../models/intervention';
 
 // Enregistrer tous les composants de Chart.js
 Chart.register(...registerables);
@@ -23,6 +24,7 @@ export class UserRapportComponent implements AfterViewInit {
   @ViewChild('monthlyChart') monthlyChartRef!: ElementRef;
   maintenance: maintenance[] = [];
   users: User[] = [];
+  intervention:Intervention[]=[];
   filteredUsers: User[] = [];
   stats = {
     totalUtilisateurs: 0,
@@ -426,6 +428,24 @@ export class UserRapportComponent implements AfterViewInit {
         doc.setFont('helvetica', 'normal');
         doc.text(new Date(user.dateInscription).toLocaleDateString(), 60, yPosition);
         yPosition += 12;
+
+        doc.setFont('helvetica', 'bold');
+        doc.text('intervention:', 20, yPosition);
+        doc.setFont('helvetica', 'normal');
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text('intervention:', 20, yPosition);
+        doc.setFont('helvetica', 'normal');
+        
+        // Vérification si interventionss est un tableau et s'il contient des éléments
+        const interventionsText = Array.isArray(user.interventionss) && user.interventionss.length > 0
+          ? user.interventionss.map((intervention) => intervention.toString()).join(', ') 
+          : 'Non renseigné';
+        
+        doc.text(interventionsText, 60, yPosition);
+        yPosition += 7;
+        
+        
         
 
 

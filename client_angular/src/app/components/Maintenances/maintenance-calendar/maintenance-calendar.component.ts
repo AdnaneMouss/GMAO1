@@ -7,9 +7,12 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import jsPDF from 'jspdf';
+import { format, startOfMonth } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface CalendarEventMeta {
   maintenance: maintenance;
+
 }
 
 @Component({
@@ -20,14 +23,41 @@ interface CalendarEventMeta {
 export class MaintenanceCalendarComponent implements OnInit {
   maintenances: maintenance[] = [];
   filteredMaintenances: maintenance[] = [];
-  calendarOptions!: CalendarOptions;
+  
+  currentMonth: string = '';
+
+  calendarOptions: CalendarOptions = {
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+    initialView: 'dayGridMonth',
+    events: [],
+    eventClick: this.handleEventClick.bind(this),
+    eventContent: this.customEventContent.bind(this),
+    height: 'auto',
+    locale: 'fr',
+    firstDay: 1,
+    weekends: true,
+    editable: false,
+    selectable: false,
+    dayMaxEvents: true,
+    headerToolbar: {
+      left: '',
+      center: 'title',
+      right: 'prev,next today'
+    },
+    datesSet: (dateInfo) => {
+      this.updateCurrentMonth(dateInfo.start);
+    }
+  };
  
   
   legendItems = [
     { color: '#FFC107', label: 'En attente' },
     { color: '#2196F3', label: 'En cours' }
   ];
-
+  private updateCurrentMonth(date: Date): void {
+    this.currentMonth = format(startOfMonth(date), 'MMMM yyyy', { locale: fr });
+    this.currentMonth = this.currentMonth.charAt(0).toUpperCase() + this.currentMonth.slice(1);
+  }
   constructor(private maintenanceService: MaintenanceService) {
     this.initCalendarOptions();
   }

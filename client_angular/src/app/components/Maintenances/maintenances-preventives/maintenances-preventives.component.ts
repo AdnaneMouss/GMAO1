@@ -16,7 +16,7 @@ import { Etage } from '../../../models/etage';
 import { Service } from '../../../models/service';
 import { RepetitionType } from '../../../models/RepetitionType';
 import { interval, Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../../../services/NotificationService';
@@ -44,7 +44,12 @@ export class MaintenancesPreventivesComponent implements OnInit {
   users  :User[]  =[];
   selectedFile: File | null = null;  // Déclarer selectedFile ici ICI
   isValid: boolean = true;
+  updateSuccessful: boolean = false;
+  addSuccessful: boolean = false;
+  successMessage:string= '';
 
+  dateDebutPrevue: string = '';     // Filtre sur la date de début prévue
+  dateFinPrevue: string = '';       // Filtre sur la date de fin prévue
 
   batiments: any[] = [];
   indicateurs: [] = [];
@@ -74,6 +79,7 @@ export class MaintenancesPreventivesComponent implements OnInit {
   selectedSalle: number = 0;
   etages: any[] = [];
   salles: any[] = [];
+  unreadMessages: number = 3; // À remplacer par votre vraie logique de comptage
 
 
 
@@ -121,6 +127,38 @@ updateSeuilFromAttribut() {
 onAttributChange(attribut: any) {
   this.selectedAttribut = attribut;
   this.updateSeuilFromAttribut();
+}
+
+
+  // Implémentez ici la logique de filtrage de vos données en fonction des valeurs de `selectedEquipement`, `dateDebutPrevue`, et `dateFinPrevue`
+  filteredMaintenances = this.maintenance;
+
+applyFilters(): void {
+  const filteredMaintenances = this.maintenances.filter(maintenance => {
+    let match = true;
+
+    // Filtrage par équipement
+    if (this.selectedEquipement && !maintenance.equipement.toLowerCase().includes(this.selectedEquipement.toLowerCase())) {
+      match = false;
+    }
+
+    // Filtrage par date de début prévue
+    if (this.dateDebutPrevue && new Date(maintenance.dateDebutPrevue) < new Date(this.dateDebutPrevue)) {
+      match = false;
+    }
+
+    // Filtrage par date de fin prévue
+    if (this.dateFinPrevue && new Date(maintenance.dateFinPrevue) > new Date(this.dateFinPrevue)) {
+      match = false;
+    }
+
+    return match;
+  });
+
+  // Mettre à jour la liste filtrée
+  this.filteredMaintenances = filteredMaintenances;
+  // Réinitialiser la pagination à la première page
+  this.currentPage = 0;
 }
 
 
@@ -256,6 +294,7 @@ onAttributChange(attribut: any) {
     seuil: 0,
     endDaterep: new Date(''),
     equipementId: null,
+    equipementNom:'',
 
 
     indicateurs: [],
@@ -326,10 +365,12 @@ onAttributChange(attribut: any) {
   constructor(private maintenanceService: MaintenanceService,
     private cdr: ChangeDetectorRef,private equipementService: EquipementService,
     private userService: UserService, batimentservice:BatimentService,
+    private router: Router,
      private route: ActivatedRoute,private toastr: ToastrService,
      private http: HttpClient,private notificationService: NotificationService,
      private batimentService: BatimentService ,
       private etageService: EtageService,) { }
+      
 
 
   validateDates() {
@@ -390,6 +431,54 @@ onAttributChange(attribut: any) {
     }
   }
 
+  filterMaintenancesByEquipement(){
+    console.log("Maintenances Data:", this.equipements); 
+    
+    if (this.selectedEquipement) {
+      // Filtrer en fonction de la priorité sélectionnée
+      this.filteredMaintenace = this.maintenances.filter(e => e.equipementNom === this.selectedEquipement);
+      console.log("Filtered Maintenances:", this.filteredMaintenace);  // Afficher les maintenances filtrées
+      console.log("Selected equipement:", this.selectedEquipement);  // Afficher la priorité sélectionnée
+    } else {
+      // Réinitialiser la liste filtrée si aucune priorité n'est sélectionnée
+      this.filteredMaintenace = [...this.maintenances];
+      console.log("No priorite selected, showing all maintenances:", this.filteredMaintenace);
+    }
+  }
+
+  filterMaintenancesBydateDebutPrevue(){
+    console.log("Maintenances Data:", this.maintenances); 
+    
+    if (this.dateDebutPrevue) {
+      // Filtrer en fonction de la priorité sélectionnée
+      this.filteredMaintenace = this.maintenances.filter(e => e.dateDebutPrevue === this.dateDebutPrevue);
+      console.log("Filtered Maintenances:", this.filteredMaintenace);  // Afficher les maintenances filtrées
+      console.log("Selected date:", this.dateDebutPrevue);  // Afficher la priorité sélectionnée
+    } else {
+      // Réinitialiser la liste filtrée si aucune priorité n'est sélectionnée
+      this.filteredMaintenace = [...this.maintenances];
+      console.log("No priorite selected, showing all maintenances:", this.filteredMaintenace);
+    }
+
+  }
+
+  filterMaintenancesBydatedateFinPrevue(){
+    console.log("Maintenances Data:", this.maintenances); 
+    
+    if (this.dateFinPrevue) {
+      // Filtrer en fonction de la priorité sélectionnée
+      this.filteredMaintenace = this.maintenances.filter(e => e.dateFinPrevue === this.dateFinPrevue);
+      console.log("Filtered Maintenances:", this.filteredMaintenace);  // Afficher les maintenances filtrées
+      console.log("Selected date:", this.dateFinPrevue);  // Afficher la priorité sélectionnée
+    } else {
+      // Réinitialiser la liste filtrée si aucune priorité n'est sélectionnée
+      this.filteredMaintenace = [...this.maintenances];
+      console.log("No priorite selected, showing all maintenances:", this.filteredMaintenace);
+    }
+
+  }
+
+
 
   filterMaintenancesByPriorite() {
     console.log("Maintenances Data:", this.maintenances);  // Vérifier si la donnée des maintenances est correcte
@@ -405,6 +494,15 @@ onAttributChange(attribut: any) {
       console.log("No priorite selected, showing all maintenances:", this.filteredMaintenace);
     }
   }
+
+
+  
+
+
+
+
+
+
   calculateRepetitionDates(startDate: Date, endDate: Date, repetitionType: string, selectedDays: string[]): Date[] {
     let dates: Date[] = [];
 
@@ -1079,6 +1177,7 @@ addMaintenance() {
       this.fetchMaintenances();  // Rafraîchir la liste
       this.resetForm();
       this.showPanel = false;
+      this.successMessage = "Maintenance ajoutée avec succès";
     },
     error: (err) => {
       console.error("Erreur lors de l'ajout de la maintenance", err);
@@ -1125,6 +1224,7 @@ resetForm() {
       RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
       equipementId:  null,
       equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
+      equipementNom:'',
 
       equipement: {
         id: 0,
@@ -1221,6 +1321,9 @@ deleteMaintenance(id: number) {
       console.error("Erreur lors de la suppression de la maintenance", err);
     }
   });
+}
+navigateToChat() {
+  this.router.navigate(['/CHAT']);
 }
 
 

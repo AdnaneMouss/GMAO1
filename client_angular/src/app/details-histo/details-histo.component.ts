@@ -1,26 +1,29 @@
+
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MaintenanceService } from '../../../services/maintenance.service';
-import { Service } from '../../../models/service';
-import { ServiceService } from '../../../services/service.service';
-import { User } from '../../../models/user';
-import { UserService } from '../../../services/user.service';
-import { maintenance } from '../../../models/maintenance';
-import { Salle } from '../../../models/salle';
-import { Batiment } from '../../../models/batiment';
-import { Etage } from '../../../models/etage';
-import { RepetitionType } from '../../../models/RepetitionType';
+import { User } from '../models/user';
+import { Equipement } from '../models/equipement';
+import { AttributEquipements } from '../models/attribut-equipement';
+import { maintenance } from '../models/maintenance';
+import { Service } from '../models/service';
+import { Salle } from '../models/salle';
+import { Etage } from '../models/etage';
+import { Batiment } from '../models/batiment';
+import { MaintenanceService } from '../services/maintenance.service';
+import { ServiceService } from '../services/service.service';
+import { UserService } from '../services/user.service';
+import { EquipementService } from '../services/equipement.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Equipement } from '../../../models/equipement';
-import { AttributEquipements } from '../../../models/attribut-equipement';
-import { EquipementService } from '../../../services/equipement.service';
+import { RepetitionType } from '../models/RepetitionType';
+
+
 
 @Component({
-  selector: 'app-details-maintenance',
-  templateUrl: './details-maintenance.component.html',
-  styleUrl: './details-maintenance.component.css'
+  selector: 'app-details-histo',
+  templateUrl: './details-histo.component.html',
+  styleUrl: './details-histo.component.css'
 })
-export class DetailsMaintenanceComponent implements OnInit {
+export class DetailsHistoComponent  implements OnInit {
   users  :User[]  =[];
   equipement :Equipement[]  =[];
   filteredTechnicienUsers: any[] = [];

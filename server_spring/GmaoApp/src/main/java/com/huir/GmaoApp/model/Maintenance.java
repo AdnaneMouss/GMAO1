@@ -170,6 +170,7 @@ public class Maintenance {
     @JsonBackReference // Référence bidirectionnelle évitée ici
     private Equipement equipement;
 
+    
     @JsonIgnore
     private String documentPath;
 
@@ -394,10 +395,22 @@ public class Maintenance {
 	        this.equipement = new Equipement();
 	        this.equipement.setId(equipementId);  // Lier uniquement l'ID
 	    }
-
 	    public Long getEquipementId() {
 	        return equipement != null ? equipement.getId() : null;
 	    }
+
+	    public String getEquipementNom() {
+	        return equipement != null ? equipement.getNom() : null;
+	    }
+	    
+	    public void setEquipementNom(String equipementNom) {
+	        this.equipement = new Equipement();
+	        this.equipement.setNom(equipementNom);  // Lier uniquement l'ID
+	    }
+
+	   
+	    
+	    
 	    
 	    public void setValeurSuivi(double valeurSuivi) {
 	        this.equipement = new Equipement();
