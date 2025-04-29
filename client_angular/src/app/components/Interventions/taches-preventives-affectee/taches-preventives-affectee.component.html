@@ -66,7 +66,6 @@
             <th class="px-6 py-3 text-sm font-semibold">Date Fin</th>
             <th class="px-6 py-3 text-sm font-semibold">Statut</th>
             <th class="px-6 py-3 text-sm font-semibold">Priorité</th>
-            <th class="px-6 py-3 text-sm font-semibold">Équipement</th>
             <th class="px-6 py-3 text-sm font-semibold">Action</th>
             <th class="px-6 py-3 text-sm font-semibold">Type Maintenance</th>
             <th class="px-6 py-3 text-sm font-semibold">Durée</th>
@@ -77,26 +76,36 @@
         </thead>
         <tbody>
           <ng-container *ngFor="let maintenance of filteredMaintenace; let i = index">
-            <tr *ngFor="let date of maintenance!.nextRepetitionDatesAsList!; let isFirst = first" 
-                class="border-b hover:bg-gray-50"
-                [ngClass]="{'bg-gray-50': !isFirst}"> <!-- Fond légèrement différent pour les lignes suivantes -->
+    
+            <!-- Cas : maintenance sans répétition -->
+            <tr *ngIf="!maintenance.nextRepetitionDatesAsList || maintenance.nextRepetitionDatesAsList.length === 0"
+                class="border-b hover:bg-gray-50">
               
-              <!-- Numéro de ligne -->
-              <td class="px-6 py-4">{{ isFirst ? i + 1 : '' }}</td>
+              <td class="px-6 py-4">{{ i + 1 }}</td>
               
-              <!-- Indicateur de groupe -->
               <td class="px-6 py-4">
-                <span *ngIf="isFirst" class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">
-                  Groupe {{i+1}}
+                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">
+                  Maintenance {{ i + 1 }}
                 </span>
-                <span *ngIf="!isFirst" class="text-gray-400 px-2 py-1 text-xs">
-                  ↳
+                <!-- Indicateur de date -->
+             
+              </td>
+              
+              <td class="px-6 py-4">
+                {{ maintenance.dateDebutPrevue | date:'dd/MM/yyyy' }}
+                <!-- Alternative: Indicateur à côté de la date -->
+                <span *ngIf="getDateStatus(maintenance.dateDebutPrevue) as dateStatus" 
+                      class="ml-2 px-2 py-1 rounded-full text-xs font-semibold"
+                      [ngClass]="{
+                        'bg-orange-500 text-white': dateStatus === 'today',
+                        'bg-yellow-500 text-white': dateStatus.startsWith('in')
+                      }">
+                  {{ getDateMessage(maintenance.dateDebutPrevue) }}
                 </span>
               </td>
               
-              <!-- Informations de maintenance -->
-              <td class="px-6 py-4">{{ maintenance.dateDebutPrevue | date:'dd/MM/yyyy' }}</td>
               <td class="px-6 py-4">{{ maintenance.dateFinPrevue | date:'dd/MM/yyyy' }}</td>
+              
               <td class="px-6 py-4">
                 <span class="px-3 py-1 rounded-full text-xs font-semibold"
                       [ngClass]="{
@@ -108,6 +117,7 @@
                   {{ maintenance.statut }}
                 </span>
               </td>
+              
               <td class="px-6 py-4">
                 <span class="px-3 py-1 rounded-full text-xs font-semibold"
                       [ngClass]="{
@@ -118,35 +128,109 @@
                   {{ maintenance.priorite }}
                 </span>
               </td>
-              <td class="px-6 py-4">{{ maintenance.equipementId }}</td>
+              
               <td class="px-6 py-4">{{ maintenance.action }}</td>
               <td class="px-6 py-4">{{ maintenance.repetitiontype }}</td>
               <td class="px-6 py-4">{{ maintenance.dureeIntervention }}</td>
               <td class="px-6 py-4">Salle : {{ maintenance.salle?.num }}</td>
               
-              <!-- Date de répétition -->
-              <td class="px-6 py-4 font-medium">
-                {{ date | date:'dd/MM/yyyy' }}
-              </td>
+              <!-- Date répétition vide -->
+              <td class="px-6 py-4 font-medium">—</td>
               
-              <!-- Actions -->
               <td class="px-6 py-4 text-sm">
-                <div *ngIf="maintenance.statut === 'EN_ATTENTE'">
-                  <button
-                    (click)="openConfirmationDialog('start', maintenance.id)"
-                    class="bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
-                    title="Commencer la tâche">
+                <ng-container *ngIf="maintenance.statut === 'EN_ATTENTE'">
+                  <button (click)="openConfirmationDialog('start', maintenance.id)"
+                          class="bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
+                          title="Commencer la tâche">
                     <i class="fas fa-play"></i>
                   </button>
-                </div>
-                <div *ngIf="maintenance.statut === 'EN_COURS'">
-                  <button
-                    (click)="openConfirmationDialog('complete', maintenance.id)"
-                    class="bg-green-600 text-white p-3 rounded-lg shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105"
-                    title="Marquer comme terminé">
+                </ng-container>
+                <ng-container *ngIf="maintenance.statut === 'EN_COURS'">
+                  <button (click)="openConfirmationDialog('complete', maintenance.id)"
+                          class="bg-green-600 text-white p-3 rounded-lg shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105"
+                          title="Marquer comme terminé">
                     <i class="fas fa-check"></i>
                   </button>
-                </div>
+                </ng-container>
+              </td>
+            </tr>
+    
+            <!-- Cas : maintenance avec répétitions -->
+            <tr *ngFor="let date of maintenance.nextRepetitionDatesAsList; let isFirst = first"
+                class="border-b hover:bg-gray-50"
+                [ngClass]="{ 'bg-gray-50': !isFirst }">
+              
+              <td class="px-6 py-4">{{ isFirst ? i + 1 : '' }}</td>
+              
+              <td class="px-6 py-4">
+                <span *ngIf="isFirst" class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">
+                  Maintenance {{ i + 1 }}
+                </span>
+                <span *ngIf="!isFirst" class="text-gray-400 px-2 py-1 text-xs">↳</span>
+                <!-- Indicateur de date -->
+            
+              </td>
+              
+              <td class="px-6 py-4">{{ maintenance.dateDebutPrevue | date:'dd/MM/yyyy' }}</td>
+              <td class="px-6 py-4">{{ maintenance.dateFinPrevue | date:'dd/MM/yyyy' }}</td>
+              
+              <td class="px-6 py-4">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                      [ngClass]="{
+                        'bg-gray-200 text-gray-700': maintenance.statut === 'EN_ATTENTE',
+                        'bg-yellow-300 text-yellow-800': maintenance.statut === 'EN_COURS',
+                        'bg-green-300 text-green-800': maintenance.statut === 'TERMINEE',
+                        'bg-red-300 text-red-800': maintenance.statut === 'ANNULEE'
+                      }">
+                  {{ maintenance.statut }}
+                </span>
+              </td>
+              
+              <td class="px-6 py-4">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                      [ngClass]="{
+                        'bg-green-500 text-white': maintenance.priorite === 'FAIBLE',
+                        'bg-yellow-500 text-white': maintenance.priorite === 'NORMALE',
+                        'bg-red-500 text-white': maintenance.priorite === 'URGENTE'
+                      }">
+                  {{ maintenance.priorite }}
+                </span>
+              </td>
+              
+              <td class="px-6 py-4">{{ maintenance.action }}</td>
+              <td class="px-6 py-4">{{ maintenance.repetitiontype }}</td>
+              <td class="px-6 py-4">{{ maintenance.dureeIntervention }}</td>
+              <td class="px-6 py-4">Salle : {{ maintenance.salle?.num }}</td>
+              
+              <!-- Affichage de la date de répétition -->
+              <td class="px-6 py-4 font-medium">
+                {{ date | date:'dd/MM/yyyy' }}
+                <!-- Alternative: Indicateur à côté de la date de répétition -->
+                <span *ngIf="getDateStatus(date) as dateStatus" 
+                      class="ml-2 px-2 py-1 rounded-full text-xs font-semibold"
+                      [ngClass]="{
+                        'bg-orange-500 text-white': dateStatus === 'today',
+                        'bg-yellow-500 text-white': dateStatus.startsWith('in')
+                      }">
+                  {{ getDateMessage(date) }}
+                </span>
+              </td>
+              
+              <td class="px-6 py-4 text-sm">
+                <ng-container *ngIf="maintenance.statut === 'EN_ATTENTE'">
+                  <button (click)="openConfirmationDialog('start', maintenance.id)"
+                          class="bg-blue-600 text-white p-3 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
+                          title="Commencer la tâche">
+                    <i class="fas fa-play"></i>
+                  </button>
+                </ng-container>
+                <ng-container *ngIf="maintenance.statut === 'EN_COURS'">
+                  <button (click)="openConfirmationDialog('complete', maintenance.id)"
+                          class="bg-green-600 text-white p-3 rounded-lg shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105"
+                          title="Marquer comme terminé">
+                    <i class="fas fa-check"></i>
+                  </button>
+                </ng-container>
               </td>
             </tr>
           </ng-container>

@@ -60,6 +60,7 @@ export class MaintenanceService {
 getMaintenancesByTechnicien(technicienId: number): Observable<maintenance[]> {
   return this.http.get<maintenance[]>(`${this.apiUrl}/by-technicien/${technicienId}`);
 }
+
  // Start a maintenance task
   startTask(id: number): Observable<maintenance> {
     return this.http.put<maintenance>(`${this.apiUrl}/${id}/start`, {});

@@ -21,6 +21,11 @@ export class StatistiquesInterventionsComponent implements OnInit {
 
   customReportStart: string | null = null;
   customReportEnd: string | null = null;
+  generatedReports: any[] = [];
+ 
+  
+
+
 
  
   currentPage: number = 0;
@@ -63,7 +68,7 @@ nextPage(): void {
 
 
   
-  // Tri
+ 
   sortColumn: string = 'dateDebutPrevue';
   sortDirection: 'asc' | 'desc' = 'desc';
   
@@ -91,6 +96,7 @@ nextPage(): void {
   prioriteChart!: Chart;
 
   constructor(private maintenanceService: MaintenanceService) {
+    this.generateReports();
   }
 
   ngOnInit(): void {
@@ -375,8 +381,8 @@ nextPage(): void {
             // Informations de base
             addField('ID Maintenance', maintenance.id.toString());
             
-            if (maintenance.equipementId != null) {
-                addField('Équipement', maintenance.equipementId.toString());
+            if (maintenance.equipementNom != null) {
+                addField('Équipement', maintenance.equipementNom.toString());
             }
 
             // Type de maintenance
@@ -415,6 +421,21 @@ nextPage(): void {
             if (maintenance.repetitiontype) {
                 addField('Type de répétition', maintenance.repetitiontype);
             }
+            if (Array.isArray(maintenance.nextRepetitionDatesAsList)) {
+              maintenance.nextRepetitionDatesAsList.forEach((date) => {
+                  // ton traitement ici
+              });
+          } else if (typeof maintenance.nextRepetitionDatesAsList === 'string') {
+              // Si c'est une seule date sous forme de string, traite-la autrement
+              // Par exemple :
+              // - Soit tu la mets dans un tableau pour uniformiser :
+              [maintenance.nextRepetitionDatesAsList].forEach((date) => {
+                  // même traitement que si c'était un tableau
+              });
+          }
+          
+          
+          
 
             // Jours/Mois de répétition
             if (maintenance.selectedjours?.length > 0) {
@@ -426,29 +447,40 @@ nextPage(): void {
             }
 
           // Section Dates de Répétition
-if (maintenance.nextRepetitionDates && maintenance.nextRepetitionDates.length > 0) {
-  yPosition += sectionSpacing;
-  addSectionHeader('Jours de Répétition', repetitionColor);
+// Section Dates de Répétition
+if (maintenance.nextRepetitionDatesAsList) {
+  let repetitionDates: string[] = [];
 
-  // Icône de répétition 
-  doc.setTextColor(repetitionColor);
-  doc.setFontSize(bodyFontSize + 2);
-  doc.text('↻', 20, yPosition);
+  if (Array.isArray(maintenance.nextRepetitionDatesAsList)) {
+      repetitionDates = maintenance.nextRepetitionDatesAsList;
+  } else if (typeof maintenance.nextRepetitionDatesAsList === 'string') {
+      repetitionDates = [maintenance.nextRepetitionDatesAsList];
+  }
 
-  // Liste des dates
-  doc.setFontSize(bodyFontSize);
-  doc.setTextColor(textColor);
-  doc.setFont('helvetica', 'normal');
+  if (repetitionDates.length > 0) {
+      yPosition += sectionSpacing;
+      addSectionHeader('Jours de Répétition', repetitionColor);
 
-  let datesY = yPosition;
-  maintenance.nextRepetitionDates.forEach(date => {
-      const formattedDate = new Date(date).toLocaleDateString();
-      doc.text(formattedDate, 30, datesY);
-      datesY += lineHeight;
-  });
+      // Icône de répétition
+      
+    
 
-  yPosition = datesY;
+      // Liste des dates
+      doc.setFontSize(bodyFontSize);
+      doc.setTextColor(textColor);
+      doc.setFont('helvetica', 'normal');
+
+      let datesY = yPosition;
+      repetitionDates.forEach(date => {
+          const formattedDate = new Date(date).toLocaleDateString();
+          doc.text(formattedDate, 30, datesY);
+          datesY += lineHeight;
+      });
+
+      yPosition = datesY;
+  }
 }
+
 
 
             // Section Technicien
@@ -770,22 +802,91 @@ if (maintenance.nextRepetitionDates && maintenance.nextRepetitionDates.length > 
     const fileDate = dateGeneration.replace(/\//g, '-');
     doc.save(`Rapport_Maintenances_Mars_${fileDate}.pdf`);
   }
-   
-  
-  generatedReports: any[] = [
-    {
-      type: 'weekly',
-      period: 'Lundi 14 Avril 2025  au Dimanche 20 Avril 2025',
-      generatedDate: new Date('2025-04-14T08:00:00'),
-      filePath: '/reports/weekly-2024-04-15.txt'
-    },
-    {
-      type: 'monthly',   
-      period: 'Avril 2025',
-      generatedDate: new Date('2025-04-01T08:00:00'),
-      filePath: '/reports/monthly-2024-04.txt'
-    }
+  generateWeeklyReportMetadata(baseDate: Date = new Date()): { type: string; period: string; generatedDate: Date; filePath: string } {
+    const daysOfWeek = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const months = [
+        'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+    ];
+
+    // Trouver le lundi de la semaine
+    const day = baseDate.getDay();
+    const diffToMonday = (day === 0 ? -6 : 1) - day; // Dimanche (0) => retour à lundi précédent
+    const monday = new Date(baseDate);
+    monday.setDate(baseDate.getDate() + diffToMonday);
+
+    // Trouver le dimanche de cette semaine
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    // Format français : Lundi 21 Avril 2025
+    const formatDate = (date: Date): string => {
+        return `${daysOfWeek[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    };
+
+    const period = `${formatDate(monday)} au ${formatDate(sunday)}`;
+    const generatedDate = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate(), 8, 0, 0); // lundi à 08:00
+    const filePath = `/reports/weekly-${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}.txt`;
+
+    return {
+        type: 'weekly',
+        period,
+        generatedDate,
+        filePath
+    };
+}
+generateMonthlyReportMetadata(baseDate: Date = new Date()): { type: string; period: string; generatedDate: Date; filePath: string } {
+  const months = [
+      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
   ];
+
+  // Trouver le 1er jour du mois courant
+  const firstDayOfMonth = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+
+  // Trouver le dernier jour du mois
+  const lastDayOfMonth = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
+
+  // Format français : Avril 2025
+  const period = `${months[firstDayOfMonth.getMonth()]} ${firstDayOfMonth.getFullYear()}`;
+  const generatedDate = new Date(firstDayOfMonth.getFullYear(), firstDayOfMonth.getMonth(), 1, 8, 0, 0); // 1er jour du mois à 08:00
+  const filePath = `/reports/monthly-${firstDayOfMonth.getFullYear()}-${String(firstDayOfMonth.getMonth() + 1).padStart(2, '0')}.txt`;
+
+  return {
+      type: 'monthly',
+      period,
+      generatedDate,
+      filePath
+  };
+}
+
+  
+generateReports(): void {
+  const today = new Date();
+  
+  // Générer le rapport hebdomadaire
+  const weeklyReport = this.generateWeeklyReportMetadata(today);
+  
+  // Générer le rapport mensuel
+  const monthlyReport = this.generateMonthlyReportMetadata(today);
+  
+  // Ajouter les rapports dans le tableau
+  this.generatedReports = [
+      {
+          type: 'weekly',
+          period: weeklyReport.period,
+          generatedDate: weeklyReport.generatedDate,
+          filePath: weeklyReport.filePath
+      },
+      {
+          type: 'monthly',
+          period: monthlyReport.period,
+          generatedDate: monthlyReport.generatedDate,
+          filePath: monthlyReport.filePath
+      }
+  ];
+}
+
   
 
 

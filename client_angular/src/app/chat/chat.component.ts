@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChatMessage } from '../models/ChatMessage';
 import { ChatService } from '../services/ChatService';
@@ -6,18 +6,28 @@ import { UserService } from '../services/user.service';
 import { User } from '../models/user';
 import { AuthService } from '../services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
-//import { WebSocketService } from '../services/WebSocketService';
+import { CommonModule } from '@angular/common'; // <- pour les pipes slice, uppercase, date
+import { ReactiveFormsModule } from '@angular/forms'; // <- pour formGroup
+import { MatFormFieldModule } from '@angular/material/form-field'; // <- pour mat-form-field
+import { MatInputModule } from '@angular/material/input'; // <- pour input matInput
+import { Router } from '@angular/router';
+import { WebSocketService } from '../services/WebSocketService';
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   standalone: true,
-  imports: [MatIconModule],
+  imports: [MatIconModule,CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+],
   styleUrls: ['./chat.component.css']
 
 })
 export class ChatComponent implements OnInit {
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
+  
 
   chatForm: FormGroup;
   messages: ChatMessage[] = [];
@@ -37,7 +47,9 @@ export class ChatComponent implements OnInit {
     private chatService: ChatService,
     private userService: UserService,
     private authService: AuthService,
-    //private webSocketService: WebSocketService
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private webSocketService: WebSocketService
   ) {
     this.chatForm = this.fb.group({
       message: ['', Validators.required]
@@ -50,19 +62,28 @@ export class ChatComponent implements OnInit {
       this.username = user.username;
 
       // Connexion WebSocket après récupération du user
-      //this.webSocketService.connect();
+      this.webSocketService.connect();
 
-     // this.webSocketService.onMessage().subscribe((newMessage: ChatMessage) => {
-        // Ajoute le message si pertinent
-       // if (
-         // (newMessage.sender === this.username && newMessage.receiver === this.receiver) ||
-           //(newMessage.sender === this.receiver && newMessage.receiver === this.username)
-         //)   {
-          //this.messages.push(newMessage);
-          //this.applyMessageFilter();
-          //this.scrollToBottom();
-        //}
-      //});
+      this.webSocketService.onMessage().subscribe((newMessage: ChatMessage) => {
+        // Ajoute TOUJOURS dans tous les messages
+        this.messages.push(newMessage);
+      
+        // Si le nouveau message concerne la conversation ouverte
+        if (
+          (newMessage.sender === this.username && newMessage.receiver === this.receiver) ||
+          (newMessage.sender === this.receiver && newMessage.receiver === this.username)
+        ) {
+          // Ajoute aussi dans les messages filtrés
+          this.filteredMessages.push(newMessage);
+      
+          // Scroller en bas
+          this.scrollToBottom();
+      
+          // Détecter les changements manuellement
+          this.cdr.detectChanges();
+        }
+      });
+      
 
     } else {
       console.error('Aucun utilisateur connecté');
@@ -75,8 +96,11 @@ export class ChatComponent implements OnInit {
   }
 
   ngAfterViewChecked(): void {
-    this.scrollToBottom();
+    setTimeout(() => {
+      this.scrollToBottom();
+    }, 0);
   }
+  
 
   private scrollToBottom(): void {
     try {
@@ -90,6 +114,7 @@ export class ChatComponent implements OnInit {
       user.username.toLowerCase().includes(this.userSearchText.toLowerCase())
     );
   }
+
 
   selectUser(user: User): void {
     this.selectedUser = user;
@@ -140,16 +165,27 @@ export class ChatComponent implements OnInit {
         receiver: this.receiver,
         type: 'CHAT'
       };
-
+  
       // Envoie en WebSocket
-      //this.webSocketService.sendPrivateMessage(message);
-
-      // Enregistre dans la BDD via REST (optionnel si WebSocket le fait déjà)
+      this.webSocketService.sendPrivateMessage(message);
+  
+      // Enregistre dans la BDD via REST
       this.chatService.sendChatMessage(message).subscribe(savedMessage => {
         this.messages.push(savedMessage);
+  
+        // ⚡ Ajoute aussi dans les messages affichés directement
+        if (
+          (savedMessage.sender === this.username && savedMessage.receiver === this.receiver) ||
+          (savedMessage.sender === this.receiver && savedMessage.receiver === this.username)
+        ) {
+          this.filteredMessages.push(savedMessage);
+        }
+  
         this.chatForm.reset();
         this.scrollToBottom();
+        this.cdr.detectChanges(); // pour être sûr à 100%
       });
     }
   }
+  
 }

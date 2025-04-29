@@ -1,82 +1,126 @@
-<!--
+<!-- chat.component.html -->
 <div class="chat-container">
   
-  <div class="user-sidebar" [class.collapsed]="isSidebarCollapsed">
-    <div class="sidebar-header" (click)="toggleSidebar()">
-      <mat-icon class="sidebar-icon">people</mat-icon>
-      <span class="sidebar-title" *ngIf="!isSidebarCollapsed">Utilisateurs en ligne ({{activeUsersCount}})</span>
-      <mat-icon class="toggle-icon">
-        {{isSidebarCollapsed ? 'keyboard_arrow_left' : 'keyboard_arrow_right'}}
-      </mat-icon>
+  <!-- Sidebar Utilisateurs -->
+  <aside class="user-sidebar">
+    <div class="sidebar-header">
+      <mat-icon class="sidebar-icon">group</mat-icon>
+      <span>Contacts</span>
     </div>
     
-    <div class="scroll-container">
-      <div class="user-list">
-        <div *ngFor="let user of filteredUsers" 
-             class="user-item" 
-             [class.active]="user.actif"
-             [class.selected]="user === selectedUser"
-             (click)="selectUser(user)">
-          <div class="user-avatar">
-            {{ user.username | slice:0:1 | uppercase }}
-            <span class="online-badge" *ngIf="user.actif"></span>
-          </div>
-          <div class="user-info">
-            <span class="user-name">{{ user.username }}</span>
-            <mat-icon *ngIf="user.actif" class="user-status online">fiber_manual_record</mat-icon>
-            <mat-icon *ngIf="!user.actif" class="user-status offline">fiber_manual_record</mat-icon>
-          </div>
+    <div class="user-list">
+      <div *ngFor="let user of filteredUsers"
+           class="user-item"
+           [class.active]="user.actif"
+           [class.selected]="user === selectedUser"
+           (click)="selectUser(user)">
+        <div class="user-avatar" [style.background]="(user.username)">
+          {{ user.username | slice:0:1 | uppercase }}
+          <span class="online-dot" *ngIf="user.actif"></span>
+        </div>
+        <div class="user-info">
+          <span class="user-name">{{ user.username }}</span>
+       
+        </div>
+        <div class="message-info">
+          <span class="message-time" *ngIf="(user)">
+      
+          </span>
+          <mat-icon class="read-icon" *ngIf="(user)">done_all</mat-icon>
         </div>
       </div>
     </div>
-  </div>
+  </aside>
 
- 
-  <div class="main-content">
-    - Historique des messages 
-    <div class="chat-history" #chatHistory>
-      <div *ngFor="let msg of filteredMessages" class="message">
-        <div class="message-bubble" [class.self]="msg.sender === username">
-          <div class="message-header">
-            <strong class="message-sender">{{ msg.sender }}</strong>
-            <span class="timestamp">{{ msg.timestamp | date:'shortTime' }}</span>
-          </div>
-          <div class="message-content">{{ msg.content }}</div>
+  <!-- Chat Principal -->
+  <section class="chat-main">
+    
+    <!-- En-tête de chat -->
+    <div class="chat-header" *ngIf="selectedUser">
+      <div class="chat-user">
+        <div class="user-avatar" [style.background]="(selectedUser.username)">
+          {{ selectedUser.username | slice:0:1 | uppercase }}
+          <span class="online-dot" *ngIf="selectedUser.actif"></span>
+        </div>
+        <div class="user-info">
+          <span class="user-name">{{ selectedUser.username }}</span>
+          <span class="user-status" *ngIf="selectedUser.actif">En ligne</span>
+          <span class="user-status offline" *ngIf="!selectedUser.actif">Hors ligne</span>
         </div>
       </div>
-    </div>
-
-   Zone d'envoi de message >
-    <div class="message-input-area">
-      Formulaire d'envoi (si utilisateur sélectionné) 
-      <form *ngIf="selectedUser" [formGroup]="chatForm" (ngSubmit)="sendMessage()" class="chat-form">
-        <mat-form-field appearance="outline" class="message-input">
-          <mat-label>Message à {{selectedUser.username}}</mat-label>
-          <textarea matInput 
-                  formControlName="message" 
-                  rows="2" 
-                  placeholder="Écrivez votre message..."
-                  cdkTextareaAutosize
-                  required></textarea>
-        </mat-form-field>
-        <button mat-raised-button 
-                color="primary" 
-                type="submit" 
-                class="send-button"
-                [disabled]="!chatForm.valid">
-          <mat-icon>send</mat-icon> Envoyer
+      <div class="chat-actions">
+        <button mat-icon-button>
+          <mat-icon>search</mat-icon>
         </button>
-      </form>
-
-      - Aucun utilisateur sélectionné 
-      <div *ngIf="!selectedUser" class="no-user-selected">
-        <div class="empty-state">
-          <mat-icon class="empty-icon">person_search</mat-icon>
-          <h3>Aucun utilisateur sélectionné</h3>
-          <p>Sélectionnez un utilisateur pour commencer à discuter</p>
+        <button mat-icon-button>
+          <mat-icon>more_vert</mat-icon>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Messages -->
+    <div class="chat-history" #chatHistory>
+      <div *ngIf="filteredMessages.length === 0" class="no-messages">
+ 
+      </div>
+      
+      <!-- Date séparatrice -->
+      <div class="date-separator" *ngIf="filteredMessages.length > 0">
+        <span>{{ filteredMessages[0].timestamp | date:'fullDate' }}</span>
+      </div>
+      
+      <div *ngFor="let msg of filteredMessages; let i = index" 
+           [ngClass]="{'message-row': true, 'own-message': msg.sender === username}">
+        
+        <!-- Nouvelle date si changement de jour -->
+        <div class="date-separator" *ngIf="(i)">
+          <span>{{ msg.timestamp | date:'fullDate' }}</span>
+        </div>
+        
+        <div class="message-container">
+          <div class="message-bubble">
+            <div class="message-text">{{ msg.content }}</div>
+            <div class="message-footer">
+              <span class="message-time">{{ msg.timestamp | date:'shortTime' }}</span>
+              <mat-icon class="read-icon" *ngIf="msg.sender === username">
+              
+              </mat-icon>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- Zone de saisie -->
+    <form class="chat-input" *ngIf="selectedUser" [formGroup]="chatForm" (ngSubmit)="sendMessage()">
+
+        <button mat-icon-button type="button">
+          <mat-icon>attach_file</mat-icon>
+        </button>
+    
+        <mat-form-field style="flex: 1; margin: 0 8px;">
+          <textarea matInput
+                    formControlName="message"
+                    placeholder="Écrire un message..."
+                    cdkTextareaAutosize
+                    cdkAutosizeMinRows="3"
+                    cdkAutosizeMaxRows="4"></textarea>
+        </mat-form-field>
+    
+      
+    
+        <button mat-icon-button type="submit" [disabled]="!chatForm.valid" color="accent">
+          <mat-icon>send</mat-icon>
+        </button>
+      
+    
+     
+    </form>
+
+    <div *ngIf="!selectedUser" class="no-user-selected">
+      <mat-icon class="empty-icon">forum</mat-icon>
+      <h3>Bienvenue dans le chat</h3>
+      <p>Sélectionnez un contact pour commencer à discuter</p>
+    </div>
+  </section>
 </div>
--->

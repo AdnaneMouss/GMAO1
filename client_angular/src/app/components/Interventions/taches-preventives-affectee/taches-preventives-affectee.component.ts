@@ -28,6 +28,7 @@ import { NotificationService } from '../../../services/NotificationService';
 import { AttributEquipements } from '../../../models/attribut-equipement';
 import { AuthService } from '../../../services/auth.service';
 import { Intervention } from '../../../models/intervention';
+import { DateAdapter } from '@angular/material/core';
 
 @Component({
   selector: 'app-taches-preventives-affectee',
@@ -35,7 +36,7 @@ import { Intervention } from '../../../models/intervention';
   styleUrls: ['./taches-preventives-affectee.component.css']
 })
 export class TachesPreventivesAffecteeComponent implements OnInit{
-  expandedMaintenances: any[] = []
+  expandedMaintenances: any[] = [];
   technicienId: number = 0;
 
   maintenance: maintenance[] = [];
@@ -46,7 +47,7 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
   searchTerm = '';
   message: string = '';
   filteredMaintenace = [...this.maintenance];
-  equipements: Equipement[] = [];
+ // equipements: Equipement[] = [];
   typesEquipements: TypesEquipements[] = []
   users  :User[]  =[];
   selectedFile: File | null = null;  // Déclarer selectedFile ici ICI
@@ -68,7 +69,7 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
   pageSize: number = 15 // 20 éléments par page
 
   selectedAttribut: any;
-  selectedEquipementId: number | null = null;
+  //selectedEquipementId: number | null = null;
 
   filteredMaintenances = [...this.maintenance];
   currentTechnicienId: number | null = null;
@@ -185,6 +186,46 @@ onAttributChange(attribut: any) {
     "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
     "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
   ];
+  isToday(date: Date | string): boolean {
+    if (!date) return false;
+    
+    const today = new Date();
+    const checkDate = new Date(date);
+    
+    return checkDate.getDate() === today.getDate() && 
+           checkDate.getMonth() === today.getMonth() && 
+           checkDate.getFullYear() === today.getFullYear();
+  }
+
+  getDateStatus(date: Date | string): string {
+    if (!date) return '';
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = checkDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'today';
+    if (diffDays > 0 && diffDays <= 4) return `in_${diffDays}`;
+    return '';
+  }
+  
+  getDateMessage(date: Date | string): string {
+    const status = this.getDateStatus(date);
+    
+    switch(status) {
+      case 'today': return 'Aujourd\'hui';
+      case 'in_1': return 'Demain';
+      case 'in_2': return 'Dans 2 j';
+      case 'in_3': return 'Dans 3 j';
+      case 'in_4': return 'Dans 4 j';
+      default: return '';
+    }
+  }
 
 
   selectedAttributs: AttributEquipements[] = [];
@@ -263,6 +304,7 @@ onAttributChange(attribut: any) {
     seuil: 0,
     endDaterep: new Date(''),
     equipementId: null,
+    equipementNom:'',
 
 
     indicateurs: [],
@@ -293,17 +335,17 @@ onAttributChange(attribut: any) {
       return;
     }
 
-    this.equipementService.getAttributsByEquipementId(equipementId).subscribe({
-      next: (attributs) => {
+    // this.equipementService.getAttributsByEquipementId(equipementId).subscribe({
+      //next: (attributs) => {
         // Filter attributes where type === 'number'
-        this.selectedAttributs = attributs.filter(attr => attr.attributEquipementType === 'NUMBER');
-        console.log("attributs:", this.selectedAttributs);
-      },
-      error: (error) => {
-        console.error('Erreur lors de la récupération des attributs', error);
-        this.selectedAttributs = [];
-      }
-    });
+        //this.selectedAttributs = attributs.filter(attr => attr.attributEquipementType === 'NUMBER');
+        //console.log("attributs:", this.selectedAttributs);
+      //},
+     // error: (error) => {
+       // console.error('Erreur lors de la récupération des attributs', error);
+       // this.selectedAttributs = [];
+     // }
+    //});
   }
 
 
@@ -515,16 +557,18 @@ onAttributChange(attribut: any) {
 
     // 2. Ensuite charger les maintenances pour cet utilisateur
     this.getMaintenancesByTechnicien(this.technicienId);
+    
+    this.expandMaintenances();
 
     // 3. Charger les autres données (optionnel)
-    this.chargerEquipements();
+   // this.chargerEquipements();
     this.chargerUsers();
-    //this.filteredMaintenace = this.maintenances;
+    this.filteredMaintenace = this.maintenances;
     this.loadPiecesDetachees();
     this.loadTechnicianInterventions();
     // Dans la subscription
 
-    this.expandMaintenances();
+   
 
 
 
@@ -547,21 +591,29 @@ onAttributChange(attribut: any) {
     this.expandedMaintenances = [];
   
     this.filteredMaintenace.forEach((maintenance) => {
-      if (maintenance.nextRepetitionDatesAsList?.length) {
-        maintenance.nextRepetitionDatesAsList.forEach((date: string) => {
+      const dates = maintenance.nextRepetitionDatesAsList;
+  
+      // S'il n'y a pas de dates, on ajoute quand même une ligne avec la date répétition vide
+      if (!dates || dates.length === 0) {
+        this.expandedMaintenances.push({
+          ...maintenance,
+          singleRepetitionDate: null
+        });
+      } else {
+        dates.forEach((date: string, index: number) => {
           this.expandedMaintenances.push({
             ...maintenance,
             singleRepetitionDate: date
           });
         });
-      } else {
-        this.expandedMaintenances.push({
-          ...maintenance,
-          singleRepetitionDate: null
-        });
       }
     });
+  
+    console.log("Maintenances étendues:", this.expandedMaintenances);
   }
+  
+  
+  
 
   
 
@@ -775,17 +827,17 @@ filteredInterventions(): Intervention[] {
   }
 
 
-  chargerEquipements(): void {
-    this.equipementService.getAllEquipements().subscribe({
-      next: (data) => {
-        this.equipements = data;
-        console.log("Équipements chargés :", this.equipements); // Pour vérifier si les données arrivent bien
-      },
-      error: (err) => {
-        console.error("Erreur lors du chargement des équipements", err);
-      }
-    });
-  }
+  //chargerEquipements(): void {
+    //this.equipementService.getAllEquipements().subscribe({
+      //next: (data) => {
+        //this.equipements = data;
+        //console.log("Équipements chargés :", this.equipements); // Pour vérifier si les données arrivent bien
+     // },
+     // error: (err) => {
+       // console.error("Erreur lors du chargement des équipements", err);
+     // }
+    //});
+  //}
 
   chargerUsers(): void {
     this.userService.getAllUsers().subscribe({
@@ -946,31 +998,6 @@ showDetails(maintenance: any) {
 }
 
 
-
-
-// Fonction pour afficher le formulaire correspondant à l'option sélectionnée
-
-
-// Fermer le menu si on clique en dehors
-
-
-
-
- //getMaintenance(): void {
-   // this.maintenanceService.getAllMaintenances().subscribe((data: maintenance[]) => {
-     /// this.maintenance = data;
-      //this.filteredMaintenace=data;
-    //});
-  //}
-//filterMaintenancesByStatus() {
-  //if (this.selectedFilter) {
-   // this.filteredMaintenace = this.maintenance.filter(e => e.statut === this.selectedFilter);
-  ///} else {
-    //this.filteredMaintenace = [...this.maintenance];
-  //}
-//}
-
-//dat de la prpchaine  maittenance
 
 
 daysOfWeek = [

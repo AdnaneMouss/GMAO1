@@ -1,3 +1,5 @@
+import { Intervention } from "./intervention";
+
 export interface User {
   id: number;
   nom: string;
@@ -10,4 +12,7 @@ export interface User {
   role: 'ADMIN' | 'RESPONSABLE' | 'TECHNICIEN' | 'MAGASINIER' | 'LAMBDA'; // Role avec des valeurs possibles
   actif: boolean;
   dateInscription: string;
+  Intervention: Intervention;
+  notifications?: boolean;
+  interventionss?: Intervention[]; 
 }
