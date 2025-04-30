@@ -38,6 +38,7 @@ import { DateAdapter } from '@angular/material/core';
 export class TachesPreventivesAffecteeComponent implements OnInit{
   expandedMaintenances: any[] = [];
   technicienId: number = 0;
+  showNotificationsPanel: boolean = false;
 
   maintenance: maintenance[] = [];
   selectedFilter: string = '';
@@ -64,6 +65,7 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
   filteredTechnicienUsers: any[] = [];
   selectedStatus: string = '';
   selectedPriorite: string = '';
+  notifications: string[] = [];
 
   currentPage: number = 0;
   pageSize: number = 15 // 20 éléments par page
@@ -229,6 +231,9 @@ onAttributChange(attribut: any) {
 
 
   selectedAttributs: AttributEquipements[] = [];
+  notificationMessage: string = ''; // Variable pour stocker le message de notification
+  notificationCount: number = 0;
+  notification: {id: number, message: string}[] = [];
 
 
   closeForm() {
@@ -1162,6 +1167,32 @@ markAsCompletedd(id: number): void {
       console.error('Error marking task as completed:', error);
     }
   );
+}
+navigateToChat() {
+  this.router.navigate(['/CHAT']);
+}
+showToastNotification(message: string): void {
+  this.toastr.info(message, 'Nouvelle maintenance', {
+    timeOut: 5000,
+    positionClass: 'toast-top-right',
+    closeButton: true,
+    progressBar: true
+  });
+
+}
+
+
+toggleNotificationsPanel(): void {
+  this.showNotificationsPanel = !this.showNotificationsPanel;
+  if (!this.showNotificationsPanel) {
+    this.notificationCount = 0; // Réinitialiser le compteur quand on ferme le panneau
+  }
+}
+
+clearNotifications(): void {
+  this.notifications = [];
+  this.notificationCount = 0;
+  this.showNotificationsPanel = false;
 }
 
 openConfirmationDialog(action: 'start' | 'complete', maintenanceId: number): void {

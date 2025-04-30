@@ -1,31 +1,51 @@
 <div class="ios-calendar-container">
-  <!-- Header avec style iOS -->
+  <!-- En-tête -->
   <div class="ios-header">
     <div class="ios-header-content">
       <div class="ios-header-left">
-        <h1 class="ios-title">Calendrier des Maintenances</h1>
-        <p class="ios-subtitle">{{ currentMonth }}</p>
+        <h1 class="ios-title" aria-label="Calendrier des maintenances">Calendrier des Maintenances</h1>
+        <p class="ios-subtitle" aria-label="Mois courant">{{ currentMonth }}</p>
       </div>
       
       <div class="ios-header-right">
-        <button class="ios-button" (click)="exportCalendarPDF()">
+        <button class="ios-button" (click)="exportCalendarPDF()" [disabled]="isLoading" 
+                aria-label="Exporter le calendrier en PDF">
           <span class="ios-button-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" 
+                 aria-hidden="true">
               <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
               <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
             </svg>
           </span>
-          <span class="ios-button-label">Exporter</span>
+          <span class="ios-button-label">{{ isLoading ? 'Génération...' : 'Exporter' }}</span>
+        </button>
+
+        <button class="ios-button ios-button-secondary" (click)="refreshData()" [disabled]="isLoading"
+                aria-label="Rafraîchir les données">
+          <span class="ios-button-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" 
+                 aria-hidden="true">
+              <path d="M8 3a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V8a6 6 0 1 1 12 0v5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1V8a5 5 0 0 0-5-5z"/>
+            </svg>
+          </span>
+          <span class="ios-button-label">Rafraîchir</span>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Légende style iOS -->
+  <!-- Messages d'erreur -->
+  <div *ngIf="errorMessage" class="ios-error-message" role="alert">
+    {{ errorMessage }}
+    <button (click)="errorMessage = null" aria-label="Fermer le message d'erreur">×</button>
+  </div>
+
+  <!-- Légende -->
   <div class="ios-legend-container">
-    <div class="ios-legend">
+    <div class="ios-legend" aria-label="Légende des statuts">
       <div class="ios-legend-item" *ngFor="let item of legendItems">
-        <span class="ios-legend-badge" [style.background-color]="item.color"></span>
+        <span class="ios-legend-badge" [style.background-color]="item.color" 
+              [attr.aria-label]="'Statut ' + item.label"></span>
         <span class="ios-legend-text">{{item.label}}</span>
       </div>
     </div>
@@ -33,6 +53,11 @@
 
   <!-- Calendrier principal -->
   <div class="ios-calendar-wrapper">
+    <div *ngIf="isLoading" class="ios-loading-overlay">
+      <div class="ios-spinner"></div>
+      <p>Chargement des données...</p>
+    </div>
+    
     <full-calendar [options]="calendarOptions"></full-calendar>
   </div>
 </div>

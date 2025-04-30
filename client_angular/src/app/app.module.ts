@@ -71,11 +71,14 @@ import { CommonModule } from '@angular/common'; // <- pour les pipes slice, uppe
 
 import { MatInputModule } from '@angular/material/input';
 import { DetailsHistoComponent } from './details-histo/details-histo.component'; // <- pour input matInput
+
+
 @NgModule({
   declarations: [
     AppComponent,
-    
+   
     DetailsUtilisateursComponent,
+    
     GestionAccesUtilisateursComponent,
     ListeUtilisateursComponent,
     ListePiecesDetacheesComponent,

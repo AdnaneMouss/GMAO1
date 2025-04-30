@@ -79,7 +79,7 @@ export class MaintenancesPreventivesComponent implements OnInit {
   selectedSalle: number = 0;
   etages: any[] = [];
   salles: any[] = [];
-  unreadMessages: number = 3; // À remplacer par votre vraie logique de comptage
+ 
 
 
 
@@ -93,6 +93,10 @@ showNotificationsPanel: boolean = false;
 
 generatedDates: Date[] = [];
 
+unreadMessagesCount: number = 0;
+showNotificationm: boolean = false;
+notificationMessagecHAT: string = '';
+private unreadMessages: {[key: string]: number} = {};
 
 
 
