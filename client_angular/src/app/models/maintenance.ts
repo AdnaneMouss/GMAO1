@@ -81,6 +81,9 @@ attributsValeurs?: AttributEquipementValeur[];
  indice?:indice;
 
 
+
+
+
 }  
 
   

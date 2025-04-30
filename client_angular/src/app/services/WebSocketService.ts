@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core'; 
 import { Subject } from 'rxjs';
 import { ChatMessage } from '../models/ChatMessage';
-import * as Stomp from 'stompjs';
+import { Client, Stomp } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+
+
 
 @Injectable({
   providedIn: 'root'

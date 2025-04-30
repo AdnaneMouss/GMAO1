@@ -49,9 +49,24 @@
         </div>
       </div>
       <div class="chat-actions">
-        <button mat-icon-button>
+        <!-- Bouton Search avec (click) -->
+        <button mat-icon-button (click)="toggleSearch()"> <!-- Ajoutez (click) -->
           <mat-icon>search</mat-icon>
         </button>
+      
+        <!-- Barre de recherche (liée à showSearch) -->
+        <div class="search-bar" *ngIf="showSearch">
+          <mat-form-field appearance="outline">
+            <input 
+              matInput 
+              #searchInput
+              (input)="onSearchInput(searchInput.value)"
+              placeholder="Rechercher dans les messages"
+            >
+            
+          </mat-form-field>
+        </div>
+      
         <button mat-icon-button>
           <mat-icon>more_vert</mat-icon>
         </button>
@@ -74,7 +89,7 @@
         
         <!-- Nouvelle date si changement de jour -->
         <div class="date-separator" *ngIf="(i)">
-          <span>{{ msg.timestamp | date:'fullDate' }}</span>
+         <span>{{ msg.timestamp | date:'fullDate' }}</span>
         </div>
         
         <div class="message-container">
@@ -112,7 +127,7 @@
         <button mat-icon-button type="submit" [disabled]="!chatForm.valid" color="accent">
           <mat-icon>send</mat-icon>
         </button>
-      
+       
     
      
     </form>

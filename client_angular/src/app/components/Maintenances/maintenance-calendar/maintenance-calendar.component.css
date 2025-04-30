@@ -1,84 +1,91 @@
-/* Style général iOS */
+/* Style général */
 .ios-calendar-container {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  width: 100%;
-  height: 100vh; /* Prendre toute la hauteur de l'écran */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  max-width: 100%;
   margin: 0 auto;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  background: #ffffff;
-  padding: 0 20px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Header style iOS */
+/* En-tête */
 .ios-header {
-  background: linear-gradient(to right, #4169E1, #6941E1);
-  color: white;
-  padding: 16px 0;
+  padding: 15px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .ios-header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .ios-title {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-  letter-spacing: -0.5px;
+  color: #000;
 }
 
 .ios-subtitle {
-  font-size: 14px;
-  opacity: 0.9;
+  font-size: 1rem;
   margin: 4px 0 0;
-  font-weight: 400;
+  color: #666;
 }
 
-/* Bouton style iOS */
+/* Boutons */
 .ios-button {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.2);
+  background: #007AFF;
+  color: white;
   border: none;
   border-radius: 8px;
   padding: 8px 12px;
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s;
 }
 
 .ios-button:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: #0062CC;
 }
 
-.ios-button-icon {
-  display: flex;
-  align-items: center;
+.ios-button:disabled {
+  background: #A7A7A7;
+  cursor: not-allowed;
 }
 
-.ios-button-icon svg {
-  width: 14px;
-  height: 14px;
+.ios-button-secondary {
+  background: #E8E8E8;
+  color: #000;
+  margin-left: 8px;
 }
 
-/* Légende style iOS */
+.ios-button-secondary:hover {
+  background: #D1D1D1;
+}
+
+/* Légende */
 .ios-legend-container {
-  padding: 12px 20px;
-  background: #f8f8fa;
-  border-bottom: 1px solid #e5e5ea;
+  background: #fff;
+  padding: 8px 15px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .ios-legend {
   display: flex;
-  gap: 16px;
+  gap: 15px;
+  font-size: 0.875rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .ios-legend-item {
@@ -91,115 +98,108 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
+  display: inline-block;
 }
 
-.ios-legend-text {
-  font-size: 13px;
-  color: #636366;
-}
-
-/* Calendrier principal */
+/* Calendrier */
 .ios-calendar-wrapper {
-  padding: 0;
-  width: 100%;
-  height: calc(100vh - 120px); /* Ajuster la hauteur en fonction de la taille du header et des autres éléments */
-}
-
-/* Personnalisation de FullCalendar pour iOS */
-:host ::ng-deep .fc {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  width: 100%; /* Utiliser toute la largeur disponible */
-}
-:host ::ng-deep .fc-day {
+  flex: 1;
+  padding: 10px;
   position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-:host ::ng-deep .fc-toolbar-title {
-  font-size: 18px;
-  font-weight: 600;
+/* Événements du calendrier */
+.fc-event-main-container {
+  font-size: 0.75rem;
 }
 
-:host ::ng-deep .fc-button {
-  background: transparent;
-  border: none;
-  color: #636366;
-  font-weight: 500;
-  border-radius: 8px;
-  padding: 6px 10px;
+.fc-event-duration-bar {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-:host ::ng-deep .fc-button:hover {
-  background: #f2f2f7;
-}
-
-
-
-:host ::ng-deep .fc-button-primary:not(:disabled).fc-button-active {
-  background: #007aff;
+/* Messages d'erreur */
+.ios-error-message {
+  background: #FF3B30;
   color: white;
-}
-
-:host ::ng-deep .fc-daygrid-day-number {
-  color: #636366;
-  font-weight: 500;
-  padding: 4px;
-}
-
-:host ::ng-deep .fc-day-today {
-  background-color: rgba(0, 122, 255, 0.1);
-}
-:host ::ng-deep .fc-day-today .fc-event {
-  background-color: #ff9500; /* Couleur spécifique pour les événements du jour */
-}
-
-:host ::ng-deep .fc-day-today .fc-daygrid-day-number {
-  color: #007aff;
-  font-weight: 600;
-}
-
-:host ::ng-deep .fc-event-main-container {
-  border-radius: 50%; /* Faire des événements des cercles */
-  width: 40px; /* Ajustez la taille des cercles selon vos besoins */
-  height: 40px; /* Ajustez la taille des cercles selon vos besoins */
-  overflow: hidden; /* Empêche tout débordement du contenu */
-  margin: 4px; /* Ajoutez un peu d'espace entre les cercles */
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin: 10px 15px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  text-align: center;
+  animation: fadeIn 0.3s;
 }
 
-:host ::ng-deep .fc-event-duration-bar {
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  height: 24px !important;
-  display: flex !important;
-  align-items: center;
-  padding: 0 8px !important;
-}
-:host ::ng-deep .fc-event-title {
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  flex-grow: 1;
-  text-align: center;
+.ios-error-message button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0 0 10px;
 }
 
-:host ::ng-deep .fc-event-start,
-:host ::ng-deep .fc-event-end {
-  font-size: 10px !important;
-  font-weight: 600 !important;
-  opacity: 0.9;
-}
-
-:host ::ng-deep .fc-event {
-  border-radius: 50%; /* Assurez-vous que les événements sont en forme de cercle */
-  width: 50px; /* Ajustez la taille du cercle */
-  height: 50px; /* Ajustez la taille du cercle */
-  margin: 5px;
+/* Animation de chargement */
+.ios-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  background-color: #007aff; /* Couleur de fond de l'événement */
-  color: white; /* Couleur du texte */
-  font-size: 12px; /* Ajustez la taille du texte */
+  align-items: center;
+  z-index: 100;
+}
+
+.ios-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007AFF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ios-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .ios-header-right {
+    margin-top: 10px;
+    width: 100%;
+  }
+  
+  .ios-button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .ios-legend {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .ios-calendar-wrapper {
+    padding: 5px;
+  }
 }

@@ -112,6 +112,9 @@ public class InterventionPreventiveController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de la création de l'intervention");
         }
     }
+    
+  
+
 
 
        
