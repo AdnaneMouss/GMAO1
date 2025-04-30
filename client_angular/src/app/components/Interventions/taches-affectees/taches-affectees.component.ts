@@ -130,10 +130,6 @@ export class TachesAffecteesComponent implements OnInit {
     );
   }
 
-  getMaxQuantite(pieceId: number): number {
-    const piece = this.piecesList.find(p => p.id === pieceId);
-    return piece ? piece.quantiteStock : 1;
-  }
 
 
   markAsCompleted(id: number): void {

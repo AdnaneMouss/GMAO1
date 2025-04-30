@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 //@ts-ignore
 import { saveAs } from 'file-saver';
 import {environment} from "../../../../environments/environment";
+import {AchatPieceService} from "../../../services/achat-piece.service";
 @Component({
   selector: 'app-liste-pieces-detachees',
   templateUrl: './liste-pieces-detachees.component.html',
@@ -25,17 +26,18 @@ export class ListePiecesDetacheesComponent  implements OnInit {
   isEditing: boolean = false;
   imageError: string | null = null;
 
+  newAchat: any = {  // Object to store new achat data
+    dateAchat: '',
+    quantite: 0,
+    coutUnitaire: 0
+  };
   newPiece: PieceDetachee = {
   id: 0,
   nom: '',
   description: '',
   reference: '',
   fournisseur: '',
-  coutUnitaire: 0,
-  quantiteStock: 0,
   quantiteMinimale: 0,
-  dateAchat: new Date().toISOString().split('T')[0], // Format YYYY-MM-DD
-  datePeremption: '',
   historiqueUtilisation: '',
   image:''
 
@@ -46,7 +48,7 @@ selectedPiece: any = {};
 
   showPanel = false;
 
-  constructor(private PieceDetacheeService: PieceDetacheeService) { }
+  constructor(private PieceDetacheeService: PieceDetacheeService, private AchatPieceService: AchatPieceService) { }
   ngOnInit(): void {
     this.fetchPieces();
   }
@@ -69,6 +71,42 @@ selectedPiece: any = {};
       this.selectedFile = file;
     }
   }
+
+
+  addLotAchat(pieceId: number): void {
+    const { dateAchat, quantite, coutUnitaire } = this.newAchat;
+    if (!dateAchat || quantite <= 0 || coutUnitaire <= 0) {
+      this.errorMessage = "Tous les champs doivent être remplis avec des valeurs valides.";
+      return;
+    }
+
+    // Call the service to add a new purchase lot
+    this.AchatPieceService.ajouterAchat({
+      pieceId,
+      dateAchat,
+      quantite,
+      coutUnitaire
+    }).subscribe({
+      next: (result) => {
+        this.successMessage = "Lot d'achat ajouté avec succès!";
+        this.newAchat = { dateAchat: '', quantite: 0, coutUnitaire: 0 }; // Clear form
+        this.fetchPieces();  // Re-fetch the pieces to update the UI
+      },
+      error: (err) => {
+        console.error("Erreur lors de l'ajout du lot", err);
+        this.errorMessage = 'Erreur lors de l\'ajout du lot.';
+      }
+    });
+  }
+
+  // Select a piece to manage
+  selectPiece(piece: any): void {
+    this.selectedPiece = piece;
+    this.showEditPanel = true;
+  }
+
+
+
 
   addPiece(): void {
     // Call the service method to create the piece with image
@@ -213,11 +251,7 @@ selectedPiece: any = {};
           description: '',
           reference: '',
           fournisseur: '',
-          coutUnitaire: 0,
-          quantiteStock: 0,
           quantiteMinimale: 0,
-          dateAchat: new Date().toISOString().split('T')[0], // Format YYYY-MM-DD
-          datePeremption: '',
           historiqueUtilisation: '',
           image:''
       };
@@ -236,11 +270,7 @@ selectedPiece: any = {};
         'Description': piece.description,
         'Référence': piece.reference,
         'Fournisseur': piece.fournisseur,
-        'Coût Unitaire (€)': piece.coutUnitaire,
-        'Quantité en Stock': piece.quantiteStock,
         'Quantité Minimale': piece.quantiteMinimale,
-        'Date Achat': piece.dateAchat,
-        'Date Péremption': piece.datePeremption,
         'Historique Utilisation': piece.historiqueUtilisation,
         'Image': piece.image,
       };

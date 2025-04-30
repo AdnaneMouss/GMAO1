@@ -21,18 +21,23 @@ export class PieceDetacheeService {
     return this.http.post<PieceDetachee>(`${this.apiUrl}/add`, pieceDetachee);
   }
 
-  createPieceWithImage(pieceData: { nom: string, description: string, reference: string, fournisseur: string, coutUnitaire: number, quantiteStock: number, quantiteMinimale: number, dateAchat: string, datePeremption: string }, file: File): Observable<any> {
+  createPieceWithImage(
+    pieceData: {
+      nom: string,
+      description: string,
+      reference: string,
+      fournisseur: string,
+      quantiteMinimale: number
+    },
+    file: File
+  ): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('nom', pieceData.nom);
     formData.append('description', pieceData.description);
     formData.append('reference', pieceData.reference);
     formData.append('fournisseur', pieceData.fournisseur);
-    formData.append('coutUnitaire', pieceData.coutUnitaire.toString());
-    formData.append('quantiteStock', pieceData.quantiteStock.toString());
     formData.append('quantiteMinimale', pieceData.quantiteMinimale.toString());
-    formData.append('dateAchat', pieceData.dateAchat);
-    formData.append('datePeremption', pieceData.datePeremption);
 
     return this.http.post<any>(this.apiUrl, formData);
   }

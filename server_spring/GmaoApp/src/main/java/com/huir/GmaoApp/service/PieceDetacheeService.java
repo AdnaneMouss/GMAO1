@@ -41,7 +41,7 @@ public class PieceDetacheeService {
 
     
     //mis a jour
-    @Transactional
+  /*  @Transactional
     public PieceDetacheeDTO updatePiece(Long id, PieceDetacheeDTO pieceDetacheeDTO) {
     	Optional<PieceDetachee> optionalPieceDetachee  =  pieceDetacheeRepository.findById(id);
     	if(optionalPieceDetachee.isPresent())
@@ -64,7 +64,7 @@ public class PieceDetacheeService {
     	}
  return null;
     }
-
+*/
 
     // Get all spare parts
     	

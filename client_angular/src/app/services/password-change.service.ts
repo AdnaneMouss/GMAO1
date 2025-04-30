@@ -46,4 +46,28 @@ export class PasswordService {
 
     return this.http.post<string>(`${this.baseUrl}/check-password`, null, { params, responseType: 'text' as 'json' });
   }
+
+  verifyCode(email: string, code: string): Observable<string> {
+    const params = new HttpParams()
+      .set('email', email)
+      .set('code', code);
+
+    return this.http.post<string>(`${this.baseUrl}/verify-code`, null, {
+      params,
+      responseType: 'text' as 'json'
+    });
+  }
+
+  resetPassword(email: string, code: string, newPassword: string): Observable<string> {
+    const params = new HttpParams()
+      .set('email', email)
+      .set('code', code)
+      .set('newPassword', newPassword);
+
+    return this.http.post<string>(`${this.baseUrl}/reset-password`, null, {
+      params,
+      responseType: 'text' as 'json'
+    });
+  }
+
 }

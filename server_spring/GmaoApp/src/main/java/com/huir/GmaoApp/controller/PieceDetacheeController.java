@@ -62,8 +62,6 @@ public class PieceDetacheeController {
             @RequestParam("description") String description,
             @RequestParam("reference") String reference,
             @RequestParam("fournisseur") String fournisseur,
-            @RequestParam("coutUnitaire") double coutUnitaire,
-            @RequestParam("quantiteStock") int quantiteStock,
             @RequestParam("quantiteMinimale") int quantiteMinimale
     ) {
         if (pieceDetacheeRepository.existsByReference(reference)) {
@@ -76,8 +74,6 @@ public class PieceDetacheeController {
         piece.setDescription(description);
         piece.setReference(reference);
         piece.setFournisseur(fournisseur);
-        piece.setCoutUnitaire(coutUnitaire);
-        piece.setQuantiteStock(quantiteStock);
         piece.setQuantiteMinimale(quantiteMinimale);
 
         try {
@@ -89,6 +85,9 @@ public class PieceDetacheeController {
 
             // Associer l'image à la pièce
             piece.setImage(fileName);
+
+            // Stock initialisé à 0 (calculé plus tard via les achats)
+            piece.setQuantiteStock(0);
 
             // Sauvegarde en base
             PieceDetachee savedPiece = pieceDetacheeService.addPiece(piece);

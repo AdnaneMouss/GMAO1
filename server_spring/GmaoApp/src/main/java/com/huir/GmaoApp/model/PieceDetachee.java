@@ -63,8 +63,12 @@ public class PieceDetachee {
     @JsonBackReference(value = "intervention-piece")
     private List<InterventionPieceDetachee> interventionPieces;
 
+	@OneToMany(mappedBy = "pieceDetachee", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonIgnoreProperties("pieceDetachee")
+	private List<AchatPiece> achats;
 
-    @Transient
+
+	@Transient
     public String getStatut() {
         if (quantiteStock == 0) return "Rupture";
         if (quantiteStock < quantiteMinimale) return "Stock bas";

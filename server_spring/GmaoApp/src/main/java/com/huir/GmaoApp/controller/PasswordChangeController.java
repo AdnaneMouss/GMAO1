@@ -47,6 +47,32 @@ public class PasswordChangeController {
         String result = passwordChangeService.updatePasswordAfterCodeVerification(email, currentPassword, newPassword);
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<?> verifyCode(@RequestParam String email, @RequestParam String code) {
+        boolean verified = passwordChangeService.verifyCode(email, code);
+        if (!verified) {
+            return ResponseEntity.badRequest().body("Code invalide ou expiré.");
+        }
+        return ResponseEntity.ok("Code vérifié avec succès.");
+    }
+
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @RequestParam String email,
+            @RequestParam String code,
+            @RequestParam String newPassword
+    ) {
+        boolean verified = passwordChangeService.verifyCode(email, code);
+        if (!verified) {
+            return ResponseEntity.badRequest().body("Code invalide ou expiré.");
+        }
+
+        String result = passwordChangeService.updatePasswordAfterCodeVerification(email, "", newPassword);
+        return ResponseEntity.ok(result);
+    }
+
 }
 
 

@@ -8,8 +8,37 @@
   <div class="w-full md:w-1/2 flex items-center justify-center bg-cover bg-center" style="background-image: url('/assets/back.png');">
     <div class="w-full max-w-md px-8 py-10 bg-white shadow-lg rounded-xl" style="background-color: rgba(255, 255, 255, 0.8);">
       <h2 class="text-3xl font-semibold text-center text-green-900 mb-6">Bienvenue à GMAO HUIR</h2>
+      <div *ngIf="isLoading"  class="container">
+        <div class="content">
+          <div class="heart-rate">
+            <svg
+              xml:space="preserve"
+              viewBox="0 0 150 73"
+              height="73px"
+              width="150px"
+              y="0px"
+              x="0px"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlns="http://www.w3.org/2000/svg"
+              version="1.0"
+            >
+          <polyline
+            points="0,45.486 38.514,45.486 44.595,33.324 50.676,45.486 57.771,45.486 62.838,55.622 71.959,9 80.067,
+    63.729 84.122,45.486 97.297,45.486 103.379,40.419 110.473,45.486 150,45.486"
+            stroke-miterlimit="10"
+            stroke-width="3"
+            stroke="#009B9E"
+            fill="none"
+          ></polyline>
+        </svg>
 
-      <form class="space-y-5" (submit)="onLogin($event)">
+            <div class="fade-in"></div>
+
+            <div class="fade-out"></div>
+          </div>
+        </div>
+      </div>
+      <form  *ngIf="!forgottenPasswordForm && !isLoading" class="space-y-5" (submit)="onLogin($event)">
         <!-- Email Input -->
         <div>
           <label class="block text-gray-700 font-medium mb-1">Adresse e-mail</label>
@@ -33,7 +62,7 @@
         </div>
 
         <div class="flex justify-between items-center text-sm">
-          <a href="#" class="text-green-700 hover:underline">Mot de passe oublié?</a>
+          <button (click)="motDepasseOublie()" class="text-green-700 hover:underline">Mot de passe oublié?</button>
         </div>
 
         <!-- Login Button with Loading Spinner -->
@@ -47,6 +76,146 @@
         <!-- Message d'erreur -->
         <p *ngIf="errorMessage" class="text-red-600 text-center mt-2">{{ errorMessage }}</p>
       </form>
+
+
+      <form *ngIf="forgottenPasswordForm && !isLoading" class="form" (submit)="resetStep === 1 ? sendResetCode() : resetStep === 3 ? resetPasswordFinal() : null; $event.preventDefault()">
+        <div class="note">
+          <label class="title">Réinitialisation du mot de passe</label>
+          <span class="subtitle">
+      {{ resetStep === 1 ? 'Veuillez saisir votre adresse e-mail. Un code vous sera envoyé.' :
+            resetStep === 2 ? 'Veuillez entrer le code de vérification reçu par email.' :
+              'Veuillez entrer un nouveau mot de passe sécurisé.' }}
+    </span>
+        </div>
+
+        <!-- ÉTAPE 1 : Saisie email -->
+        <div *ngIf="resetStep === 1">
+          <input
+            [(ngModel)]="resetEmail"
+            placeholder="Entrez votre adresse e-mail"
+            title="Entrez votre adresse e-mail"
+            name="resetEmail"
+            type="email"
+            class="input_field"
+            required
+          />
+          <button type="submit" class="submit">Envoyer le code</button>
+        </div>
+
+        <!-- ÉTAPE 2 : Saisie code -->
+        <div *ngIf="resetStep === 2">
+          <input
+            [(ngModel)]="resetCode"
+            placeholder="Entrez le code de vérification"
+            title="Code"
+            name="resetCode"
+            type="text"
+            class="input_field"
+            required
+          />
+          <button type="button" class="submit" (click)="verifyCode()">Vérifier le code</button>
+        </div>
+
+        <!-- ÉTAPE 3 : Nouveau mot de passe -->
+        <div *ngIf="resetStep === 3">
+          <input
+            [(ngModel)]="newPassword"
+            placeholder="Entrez un nouveau mot de passe"
+            title="Nouveau mot de passe"
+            name="newPassword"
+            type="password"
+            class="input_field"
+            required
+          />
+          <button type="submit" class="submit">Réinitialiser le mot de passe</button>
+        </div>
+
+        <!-- Messages -->
+        <div *ngIf="resetMessage" style="color: green; margin-top: 10px;">{{ resetMessage }}</div>
+        <div *ngIf="resetError" style="color: red; margin-top: 10px;">{{ resetError }}</div>
+
+        <button type="button" (click)="goBack()" class="submit">Retour à la connexion</button>
+      </form>
+
+      </div>
     </div>
-  </div>
+
+
+
+
 </div>
+
+<style>
+  /* Specific styles for .container */
+  .container {
+    background: rgba(255, 255, 255, 0.8) none repeat scroll 0 0;
+    color: #999;
+    font-size: 100%;
+    line-height: 24px;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+  }
+
+  /* Specific styles for .heart-rate container */
+  .container .heart-rate {
+    width: 150px;
+    height: 73px;
+    position: relative;
+    margin: 20px auto;
+  }
+
+  /* Styles for the fade-in animation */
+  .container .heart-rate .fade-in {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color:rgba(255, 255, 255, 0.8);;
+    top: 0;
+    right: 0;
+    animation: heartRateIn 2.5s linear infinite;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  }
+
+
+  /* Styles for the fade-out animation */
+  .container .heart-rate .fade-out {
+    position: absolute;
+    width: 120%; /* Adjusted width to ensure animation space */
+    height: 100%;
+    background-color:rgba(255, 255, 255, 0.8);;
+    top: 0;
+    right: -120%;
+    animation: heartRateOut 2.5s linear infinite;
+  }
+
+  /* Keyframes for the heartRateIn animation */
+  @keyframes heartRateIn {
+    0% {
+      width: 100%;
+    }
+    50% {
+      width: 0;
+    }
+    100% {
+      width: 0;
+    }
+  }
+
+  /* Keyframes for the heartRateOut animation */
+  @keyframes heartRateOut {
+    0% {
+      left: -120%;
+    }
+    30% {
+      left: -120%;
+    }
+    100% {
+      left: 0;
+    }
+  }
+
+
+
+</style>

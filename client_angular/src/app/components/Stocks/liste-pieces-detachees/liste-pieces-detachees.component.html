@@ -1,11 +1,11 @@
  <div *ngIf="showAddSuccessMessage" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
     <i class="fas fa-check-circle text-2xl"></i>
-    <span class="font-semibold">Service ajouté avec succès !</span>
+    <span class="font-semibold">Pièce ajoutée avec succès !</span>
   </div>
 
   <div *ngIf="showEditSuccessMessage" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
     <i class="fas fa-check-circle text-2xl"></i>
-    <span class="font-semibold">Service modifié avec succès !</span>
+    <span class="font-semibold">Pièce modifiée avec succès !</span>
   </div>
 
  <div *ngIf="showPanel" class="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
@@ -70,32 +70,6 @@
          </div>
        </div>
 
-       <!-- Coût Unitaire -->
-       <div>
-         <label class="block text-gray-700 font-medium mb-1">
-           <i class="fas fa-money-bill-wave text-green-700 mr-1"></i> Coût Unitaire <span class="text-red-500">*</span>
-         </label>
-         <input type="number" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                [(ngModel)]="newPiece.coutUnitaire" name="coutUnitaire" required #coutUnitaire="ngModel">
-         <small class="text-gray-500">Prix unitaire d'achat de la pièce.</small>
-         <div *ngIf="coutUnitaire.invalid && coutUnitaire.touched" class="text-red-500 text-sm mt-1">
-           Le coût unitaire est requis.
-         </div>
-       </div>
-
-       <!-- Quantité en Stock -->
-       <div>
-         <label class="block text-gray-700 font-medium mb-1">
-           <i class="fas fa-warehouse text-green-700 mr-1"></i> Quantité en Stock <span class="text-red-500">*</span>
-         </label>
-         <input type="number" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                [(ngModel)]="newPiece.quantiteStock" name="quantiteStock" required #quantiteStock="ngModel">
-         <small class="text-gray-500">Nombre d’unités actuellement disponibles.</small>
-         <div *ngIf="quantiteStock.invalid && quantiteStock.touched" class="text-red-500 text-sm mt-1">
-           La quantité en stock est requise.
-         </div>
-       </div>
-
        <!-- Quantité Minimale -->
        <div>
          <label class="block text-gray-700 font-medium mb-1">
@@ -109,28 +83,6 @@
          </div>
        </div>
 
-       <!-- Date d'Achat -->
-       <div>
-         <label class="block text-gray-700 font-medium mb-1">
-           <i class="fas fa-calendar-plus text-green-700 mr-1"></i> Date d'Achat <span class="text-red-500">*</span>
-         </label>
-         <input type="date" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                [(ngModel)]="newPiece.dateAchat" name="dateAchat" required #dateAchat="ngModel">
-         <small class="text-gray-500">Quand cette pièce a-t-elle été achetée ?</small>
-         <div *ngIf="dateAchat.invalid && dateAchat.touched" class="text-red-500 text-sm mt-1">
-           La date d'achat est requise.
-         </div>
-       </div>
-
-       <!-- Date de Péremption -->
-       <div>
-         <label class="block text-gray-700 font-medium mb-1">
-           <i class="fas fa-hourglass-end text-green-700 mr-1"></i> Date de Péremption
-         </label>
-         <input type="date" class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                [(ngModel)]="newPiece.datePeremption" name="datePeremption">
-         <small class="text-gray-500">Date à laquelle la pièce devient inutilisable (si applicable).</small>
-       </div>
 
        <!-- Image -->
        <div class="md:col-span-2">
@@ -189,7 +141,7 @@
       <div *ngFor="let piece of filteredPiecesDetachees"
            class="relative bg-white p-6 border-2 border-green-700 rounded-xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl z-0">
 
-        <!-- ⚠️ Alert icon with tooltip if under stock -->
+        <!-- ⚠️ Alert icon with tooltip if under stock
         <div *ngIf="piece.quantiteStock < piece.quantiteMinimale"
              class="absolute top-2 left-5 z-50 group">
           <div class="relative flex items-center justify-center">
@@ -199,12 +151,12 @@
                     clip-rule="evenodd" />
             </svg>
 
-            <!-- Tooltip with better stacking -->
             <span class="absolute top-full mt-1 w-48 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-[9999] text-center">
           Réapprovisionnement nécessaire
         </span>
           </div>
         </div>
+-->
 
         <!-- Piece image -->
         <img [src]="getImageUrl(piece.image)"
@@ -217,12 +169,6 @@
           {{ piece.nom }}
         </h5>
 
-        <!-- Quantity -->
-        <p class="text-gray-500 text-center">
-          Quantité:
-          <span class="font-semibold">{{ piece.quantiteStock }}</span>
-        </p>
-
         <!-- Details button -->
         <div class="flex justify-center mt-6 relative z-20">
           <button (click)="viewDetails(piece.id)"
@@ -231,13 +177,14 @@
           </button>
         </div>
 
-        <!-- Out of stock overlay -->
+        <!-- Out of stock overlay
         <div *ngIf="piece.quantiteStock === 0"
              class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded-xl z-10 pointer-events-none">
           <img src="assets/out-of-stock.png"
                alt="Rupture de stock"
                class="w-24 h-24 object-contain opacity-90" />
         </div>
+        -->
       </div>
     </div>
 
