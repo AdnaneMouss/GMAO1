@@ -104,10 +104,13 @@ nextPage(): void {
     this.filteredMaintenace;
     this.allMaintenances;
 
-    setInterval(() => {
-      this.generateWeeklyReportIfScheduled();
+    setTimeout(() => {
       this.generateMonthlyReportIfScheduled();
-    }, 60 * 1000); // Vérifie chaque minute
+      // Programme la vérification mensuelle
+      setInterval(() => {
+        this.generateMonthlyReportIfScheduled();
+      }, 30 * 24 * 60 * 60 * 1000); // Environ 30 jours
+    }, );
   }
 
   loadMaintenances(): void {
@@ -625,74 +628,30 @@ if (maintenance.nextRepetitionDatesAsList) {
     return priorityLabels[priority] || priority;
   }
 
-  generateWeeklyReportIfScheduled(): void {
-    const now = new Date();
+ 
   
-    // Vérifie si on est lundi à 8h00 (heure exacte)
-    const isMonday = now.getDay() === 1; // 1 = Lundi
-    const is8AM = now.getHours() === 8 && now.getMinutes() === 0;
-  
-    if (!isMonday || !is8AM) {
-      return; // Ce n’est pas le moment de générer
-    }
-  
-    const today = new Date();
-    const startOfLastWeek = new Date(today);
-    const endOfLastWeek = new Date(today);
-  
-    // Début de la semaine passée (lundi précédent)
-    startOfLastWeek.setDate(today.getDate() - 7 - (today.getDay() - 1));
-    startOfLastWeek.setHours(0, 0, 0, 0);
-  
-    // Fin de la semaine passée (dimanche précédent)
-    endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
-    endOfLastWeek.setHours(23, 59, 59, 999);
-  
-    // Filtrage des maintenances réalisées la semaine passée (sur dateFinPrevue)
-    const filtered = this.allMaintenances.filter(m => {
-      const dateFinPrevue = new Date(m.dateFinPrevue);
-      return dateFinPrevue >= startOfLastWeek && dateFinPrevue <= endOfLastWeek;
-    });
-  
-    if (filtered.length === 0) {
-      console.log("Aucune maintenance clôturée la semaine passée.");
-      return;
-    }
-  
-    let content = `Rapport Hebdomadaire - ${startOfLastWeek.toLocaleDateString()} au ${endOfLastWeek.toLocaleDateString()}\n\n`;
-    filtered.forEach((m, i) => {
-      content += `${i + 1}. ${m.equipement} - ${m.repetitiontype} - ${m.commentaires} (Clôturé le ${new Date(m.dateFinPrevue).toLocaleDateString()})\n`;
-    });
-  
-    content += `\nGénéré automatiquement le ${now.toLocaleString()}`;
-  
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const filename = `rapport-hebdo-${startOfLastWeek.toISOString().split('T')[0]}.txt`;
-    saveAs(blob, filename);
-  
-    console.log("✅ Rapport hebdomadaire généré automatiquement.");
-  }
   
   generateMonthlyReportIfScheduled(): void {
     const now = new Date();
   
     // Vérifie si on est le 1er jour du mois à 8h00 (heure exacte)
     const isFirstDayOfMonth = now.getDate() === 1;
-    const is8AM = now.getHours() === 8 && now.getMinutes() === 0;
-  
-    if (!isFirstDayOfMonth || !is8AM) {
-      return; // Ce n’est pas le moment de générer
+    const is8AM = now.getHours() === 8 && now.getMinutes() < 1; // Donne une fenêtre d'une minute
+    
+    if (!(isFirstDayOfMonth && is8AM)) {
+      return; // Ce n'est pas le moment de générer
     }
   
     const today = new Date();
     const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0); // 0 = dernier jour du mois précédent
+    const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
   
     startOfLastMonth.setHours(0, 0, 0, 0);
     endOfLastMonth.setHours(23, 59, 59, 999);
   
-    // Filtrage des maintenances réalisées le mois passé
+    // Filtrage des maintenances clôturées le mois passé
     const filtered = this.allMaintenances.filter(m => {
+      if (!m.dateFinPrevue) return false;
       const dateFinPrevue = new Date(m.dateFinPrevue);
       return dateFinPrevue >= startOfLastMonth && dateFinPrevue <= endOfLastMonth;
     });
@@ -706,18 +665,25 @@ if (maintenance.nextRepetitionDatesAsList) {
     const year = startOfLastMonth.getFullYear();
   
     let content = `Rapport Mensuel - ${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}\n\n`;
+    content += `Total des maintenances : ${filtered.length}\n\n`;
+    
+    // Groupement par type de maintenance
+   
+ 
+    
+    content += '\nDétail des maintenances :\n';
     filtered.forEach((m, i) => {
-      content += `${i + 1}. ${m.equipement} - ${m.repetitiontype} - ${m.commentaires} (Clôturé le ${new Date(m.dateFinPrevue).toLocaleDateString()})\n`;
+      content += `${i + 1}. [${m.repetitiontype}] ${m.equipement} - ${m.commentaires || 'sans commentaire'} (Clôturé le ${new Date(m.dateFinPrevue).toLocaleDateString('fr-FR')})\n`;
     });
   
-    content += `\nGénéré automatiquement le ${now.toLocaleString()}`;
+    content += `\nGénéré automatiquement le ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR')}`;
   
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const filename = `rapport-mensuel-${year}-${(startOfLastMonth.getMonth() + 1).toString().padStart(2, '0')}.txt`;
     saveAs(blob, filename);
   
-    console.log("✅ Rapport mensuel généré automatiquement.");
-  }
+    console.log(`✅ Rapport mensuel généré pour ${monthName} ${year} avec ${filtered.length} maintenances.`);
+}
   
 
 
@@ -745,10 +711,26 @@ if (maintenance.nextRepetitionDatesAsList) {
       return;
     }
   
-    // Filtrer les maintenances du mois de mars
-    const marsMaintenances = maintenances.filter(m => {
-      const dateFin = new Date(m.dateFinPrevue);
-      return dateFin.getMonth() === 2 && dateFin.getFullYear() === 2025; // Mars = 2
+    const now = new Date();
+    const currentMonth = now.getMonth(); // 0 = Janvier
+    const currentYear = now.getFullYear();
+  
+    // Calcul du mois précédent
+    let previousMonth = currentMonth - 1;
+    let yearOfPreviousMonth = currentYear;
+    if (previousMonth < 0) {
+      previousMonth = 11; // Décembre
+      yearOfPreviousMonth -= 1;
+    }
+  
+    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet',
+                        'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    const previousMonthName = monthNames[previousMonth];
+  
+    // Filtrer les maintenances du mois précédent
+    const filteredMaintenances = maintenances.filter(m => {
+      const dateDebut = new Date(m.dateDebutPrevue);
+      return dateDebut.getMonth() === previousMonth && dateDebut.getFullYear() === yearOfPreviousMonth;
     });
   
     const doc = new jsPDF();
@@ -756,12 +738,12 @@ if (maintenance.nextRepetitionDatesAsList) {
     // Titre
     doc.setFontSize(16);
     doc.setTextColor(40);
-    doc.text('Rapport des Maintenances - Mars 2025', 15, 15);
+    doc.text(`Rapport des Maintenances - ${previousMonthName} ${yearOfPreviousMonth}`, 15, 15);
   
     // Sous-titre
     doc.setFontSize(12);
     doc.setTextColor(80);
-    doc.text(`Nombre de maintenances prévues : ${marsMaintenances.length}`, 15, 25);
+    doc.text(`Nombre de maintenances prévues : ${filteredMaintenances.length}`, 15, 25);
   
     // En-tête du tableau
     let y = 40;
@@ -770,90 +752,204 @@ if (maintenance.nextRepetitionDatesAsList) {
     doc.setFont('helvetica', 'bold');
     doc.text('ID', 15, y);
     doc.text('Description', 40, y);
-    doc.text('Date Fin Prévue', 120, y);
+    doc.text('Date Début Prévue', 120, y);
     doc.text('Statut', 170, y);
   
     // Corps du tableau
     y += 10;
     doc.setFont('helvetica', 'normal');
   
-    marsMaintenances.forEach((m, i) => {
+    filteredMaintenances.forEach((m, i) => {
       if (y > 280) {
         doc.addPage();
         y = 20;
       }
   
-      const dateFinFormatted = new Date(m.dateFinPrevue).toLocaleDateString('fr-FR');
+      const dateDebutFormatted = new Date(m.dateDebutPrevue).toLocaleDateString('fr-FR');
       doc.text(m.id?.toString() || '-', 15, y);
       doc.text((m.commentaires || '').substring(0, 40), 40, y);
-      doc.text(dateFinFormatted, 120, y);
+      doc.text(dateDebutFormatted, 120, y);
       doc.text(m.statut || '-', 170, y);
   
       y += 10;
     });
   
     // Pied de page
-    const dateGeneration = new Date().toLocaleDateString('fr-FR');
+    const dateGeneration = now.toLocaleDateString('fr-FR');
     doc.setFontSize(8);
     doc.setTextColor(100);
     doc.text(`Généré le ${dateGeneration}`, 150, 290);
   
     // Sauvegarde
     const fileDate = dateGeneration.replace(/\//g, '-');
-    doc.save(`Rapport_Maintenances_Mars_${fileDate}.pdf`);
+    doc.save(`Rapport_Maintenances_${previousMonthName}_${fileDate}.pdf`);
   }
-  generateWeeklyReportMetadata(baseDate: Date = new Date()): { type: string; period: string; generatedDate: Date; filePath: string } {
-    const daysOfWeek = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-    const months = [
-        'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-    ];
-
-    // Trouver le lundi de la semaine
-    const day = baseDate.getDay();
-    const diffToMonday = (day === 0 ? -6 : 1) - day; // Dimanche (0) => retour à lundi précédent
-    const monday = new Date(baseDate);
-    monday.setDate(baseDate.getDate() + diffToMonday);
-
-    // Trouver le dimanche de cette semaine
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-
-    // Format français : Lundi 21 Avril 2025
-    const formatDate = (date: Date): string => {
-        return `${daysOfWeek[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-    };
-
-    const period = `${formatDate(monday)} au ${formatDate(sunday)}`;
-    const generatedDate = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate(), 8, 0, 0); // lundi à 08:00
-    const filePath = `/reports/weekly-${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}.txt`;
-
-    return {
-        type: 'weekly',
-        period,
-        generatedDate,
-        filePath
-    };
-}
+  
+  
+ 
 generateMonthlyReportMetadata(baseDate: Date = new Date()): { type: string; period: string; generatedDate: Date; filePath: string } {
+  const months = [
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+  ];
+
+  // Mois courant
+  const currentMonth = baseDate.getMonth();
+  const currentYear = baseDate.getFullYear();
+
+  // Mois précédent
+  let previousMonth = currentMonth - 1;
+  let previousYear = currentYear;
+  if (previousMonth < 0) {
+    previousMonth = 11; // Décembre
+    previousYear -= 1;
+  }
+
+  // Texte pour la période = mois précédent
+  const period = `${months[previousMonth]} ${previousYear}`;
+
+  // Date de génération = 1er jour du mois courant à 08:00
+  const generatedDate = new Date(currentYear, currentMonth, 1, 8, 0, 0);
+
+  // Fichier basé sur le mois précédent
+  const filePath = `/reports/monthly-${previousYear}-${String(previousMonth + 1).padStart(2, '0')}.txt`;
+
+  return {
+    type: 'monthly',
+    period,
+    generatedDate,
+    filePath
+  };
+}
+downloadWeeklyReport(maintenances: any[]): void {
+  if (!maintenances || maintenances.length === 0) {
+    console.warn('Aucune maintenance à traiter.');
+    return;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Réinitialiser l'heure à minuit
+
+  // Trouver le lundi de la semaine actuelle
+  const currentMonday = new Date(today);
+  const dayOfWeek = currentMonday.getDay(); // 0 (dimanche) à 6 (samedi)
+  const offset = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Lundi = 0
+  currentMonday.setDate(currentMonday.getDate() - offset);
+  
+  // Calculer le dimanche de la semaine actuelle
+  const currentSunday = new Date(currentMonday);
+  currentSunday.setDate(currentMonday.getDate() + 6);
+  currentSunday.setHours(23, 59, 59, 999); // Fin de journée
+
+  console.log('Période analysée:', currentMonday.toLocaleDateString(), 'au', currentSunday.toLocaleDateString());
+
+  // Filtrer les maintenances de la semaine actuelle
+  const filtered = maintenances.filter(m => {
+    try {
+      const maintenanceDate = new Date(m.dateDebutPrevue);
+      maintenanceDate.setHours(0, 0, 0, 0); // Normaliser la date
+      return maintenanceDate >= currentMonday && maintenanceDate <= currentSunday;
+    } catch (e) {
+      console.error('Erreur de conversion de date pour la maintenance:', m.id, e);
+      return false;
+    }
+  });
+
+  console.log('Maintenances filtrées:', filtered);
+
+  if (filtered.length === 0) {
+    console.warn('Aucune maintenance dans la période de la semaine actuelle.');
+    return;
+  }
+
+  // Création du PDF
+  const doc = new jsPDF();
+
+  // Titre
+  doc.setFontSize(16);
+  doc.setTextColor(40);
+  doc.text(`Rapport Hebdomadaire des Maintenances`, 105, 15, { align: 'center' });
+
+  // Période
+  doc.setFontSize(12);
+  doc.setTextColor(80);
+  doc.text(`Période: ${currentMonday.toLocaleDateString('fr-FR')} au ${currentSunday.toLocaleDateString('fr-FR')}`, 105, 25, { align: 'center' });
+
+  // Tableau
+  let y = 40;
+  doc.setFontSize(10);
+  doc.setTextColor(0);
+  
+  // En-tête du tableau
+  doc.setFont('helvetica', 'bold');
+  doc.text('ID', 20, y);
+  doc.text('Équipement', 40, y);
+  doc.text('Type', 80, y);
+  doc.text('Date Début', 110, y);
+  doc.text('Statut', 150, y);
+  doc.text('Priorité', 180, y);
+
+  // Ligne de séparation
+  y += 5;
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.2);
+  doc.line(20, y, 190, y);
+  y += 10;
+
+  // Contenu du tableau
+  doc.setFont('helvetica', 'normal');
+  filtered.forEach(m => {
+    if (y > 280) { // Si on arrive en bas de page
+      doc.addPage();
+      y = 20;
+    }
+
+    doc.text(m.id.toString(), 20, y);
+    doc.text(m.equipementNom || '-', 40, y);
+    doc.text(m.type_maintenance === 'PREVENTIVE' ? 'Préventive' : 'Préventive', 80, y);
+    doc.text(new Date(m.dateDebutPrevue).toLocaleDateString('fr-FR'), 110, y);
+    doc.text(this.getStatusLabel(m.statut), 150, y);
+    doc.text(this.getPriorityLabel(m.priorite), 180, y);
+
+    y += 10;
+  });
+
+  // Pied de page
+  doc.setFontSize(8);
+  doc.setTextColor(100);
+  doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')}`, 105, 290, { align: 'center' });
+
+  // Sauvegarde du PDF
+  doc.save(`rapport_hebdomadaire_${currentMonday.toISOString().split('T')[0]}_au_${currentSunday.toISOString().split('T')[0]}.pdf`);
+}
+generateWeeklyReportMetadata(baseDate: Date = new Date()): { type: string; period: string; generatedDate: Date; filePath: string } {
+  const daysOfWeek = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   const months = [
       'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
       'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
   ];
 
-  // Trouver le 1er jour du mois courant
-  const firstDayOfMonth = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+  // Trouver le lundi de la semaine actuelle
+  const day = baseDate.getDay();
+  const diffToMonday = (day === 0 ? -6 : 1) - day; // Calcul du lundi de la semaine actuelle
+  const monday = new Date(baseDate);
+  monday.setDate(baseDate.getDate() + diffToMonday);
 
-  // Trouver le dernier jour du mois
-  const lastDayOfMonth = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
+  // Trouver le dimanche de la semaine actuelle
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
 
-  // Format français : Avril 2025
-  const period = `${months[firstDayOfMonth.getMonth()]} ${firstDayOfMonth.getFullYear()}`;
-  const generatedDate = new Date(firstDayOfMonth.getFullYear(), firstDayOfMonth.getMonth(), 1, 8, 0, 0); // 1er jour du mois à 08:00
-  const filePath = `/reports/monthly-${firstDayOfMonth.getFullYear()}-${String(firstDayOfMonth.getMonth() + 1).padStart(2, '0')}.txt`;
+  // Format français : Lundi 21 Avril 2025
+  const formatDate = (date: Date): string => {
+      return `${daysOfWeek[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
+  const period = `${formatDate(monday)} au ${formatDate(sunday)}`;
+  const generatedDate = new Date(); // Date actuelle de génération
+  const filePath = `/reports/weekly-${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}.txt`;
 
   return {
-      type: 'monthly',
+      type: 'weekly',
       period,
       generatedDate,
       filePath
@@ -865,7 +961,7 @@ generateReports(): void {
   const today = new Date();
   
   // Générer le rapport hebdomadaire
-  const weeklyReport = this.generateWeeklyReportMetadata(today);
+   const weeklyReport = this.generateWeeklyReportMetadata(today);
   
   // Générer le rapport mensuel
   const monthlyReport = this.generateMonthlyReportMetadata(today);
@@ -874,7 +970,7 @@ generateReports(): void {
   this.generatedReports = [
       {
           type: 'weekly',
-          period: weeklyReport.period,
+         period: weeklyReport.period,
           generatedDate: weeklyReport.generatedDate,
           filePath: weeklyReport.filePath
       },

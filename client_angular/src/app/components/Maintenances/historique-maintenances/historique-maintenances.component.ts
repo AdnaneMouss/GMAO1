@@ -14,6 +14,7 @@ export class HistoriqueMaintenancesComponent implements OnInit {
   errorMessage: string = '';
   sortField: 'date' | 'priority' = 'date';
   sortOrder: 'recent' | 'oldest' = 'recent';
+  selectedMaintenance: any = null;
 
   ngOnInit(): void {
     this.loadMaintenances();
@@ -37,6 +38,15 @@ export class HistoriqueMaintenancesComponent implements OnInit {
   filterTerminatedMaintenances(): void {
     this.terminatedMaintenances = this.maintenances.filter(m => m.statut === 'TERMINEE');
   }
+
+  
+openModal(maintenance: any): void {
+  this.selectedMaintenance = maintenance;
+}
+
+closeModal(): void {
+  this.selectedMaintenance = null;
+}
 
 
   // Tri par date

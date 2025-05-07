@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,10 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.huir.GmaoApp.dto.InterventionDTO;
+import com.huir.GmaoApp.dto.InterventionPieceDetacheeDTO;
+
 import com.huir.GmaoApp.dto.InterventionPreventiveDTO;
 import com.huir.GmaoApp.model.*;
+import com.huir.GmaoApp.repository.InterventionPieceDetacheeRepository;
 import com.huir.GmaoApp.repository.MaintenanceRepository;
 import com.huir.GmaoApp.repository.PieceDetacheeRepository;
 import com.huir.GmaoApp.service.*;
@@ -36,6 +39,9 @@ public class InterventionPreventiveController {
     private MaintenanceRepository maintenanceRepository;
     @Autowired
     private PieceDetacheeRepository pieceDetacheeRepository;
+    @Autowired
+
+    private InterventionPieceDetacheeRepository interventionPieceDetacheeRepository;
 
     // Get all interventions    
     @GetMapping
@@ -50,66 +56,88 @@ public class InterventionPreventiveController {
     }
 
 
+
     @PostMapping("/create")
-    public ResponseEntity<?> createInterventionPreventive(
-            // @RequestParam(value = "file") MultipartFile file,
+    public ResponseEntity<?> createIntervention(
+            @RequestParam(value = "files", required = false) MultipartFile[] files,
             @RequestParam(value = "description") String description,
             @RequestParam(value = "remarques", required = false) String remarques,
             @RequestParam("maintenanceId") Long maintenanceId,
             @RequestParam("technicienId") Long technicienId,
-            @RequestParam("piecesDetachees") List<Long> pieceDetacheesIds) {
+            @RequestParam("piecesDetachees") List<Long> pieceDetacheesIds,
+            @RequestParam("quantites") List<Integer> quantites) {
 
-        // Vérifier si l'enregistrement de maintenance existe
+        // 🔍 Check if maintenance exists
         Maintenance maintenance = maintenanceRepository.findById(maintenanceId)
-                .orElseThrow(() -> new RuntimeException("Maintenance non trouvée"));
+                .orElseThrow(() -> new RuntimeException("Maintenance not found"));
 
-        // Créer l'entité d'intervention
-        InterventionPreventive interventionPreventive = new InterventionPreventive();
-        interventionPreventive.setDescription(description);
-        interventionPreventive.setRemarques(remarques);
+        // 👷 Build the base intervention
+        InterventionPreventive InterventionPreventive = new InterventionPreventive();
+        InterventionPreventive.setDescription(description);
+        InterventionPreventive.setRemarques(remarques);
+        InterventionPreventive.setType(TypeIntervention.PREVENTIVE);
 
-        // Définir le technicien et la maintenance
+        // 🔗 Link technician and maintenance
         User technicien = new User();
         technicien.setId(technicienId);
-        interventionPreventive.setTechnicien(technicien);
-        interventionPreventive.setMaintenance(maintenance);
-
-        // Définir le type d'intervention comme PRÉVENTIVE
-        interventionPreventive.setType(TypeIntervention.PREVENTIVE);
+        InterventionPreventive.setTechnicien(technicien);
+        InterventionPreventive.setMaintenance(maintenance);
 
         try {
-            // Gestion de l'upload d'image (désactivée)
-            /*
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path filePath = Paths.get("uploads", fileName);
-            Files.createDirectories(filePath.getParent());
-            Files.write(filePath, file.getBytes());
+            // 🖼️ Handle image uploads
+            List<PhotosIntervention> photos = new ArrayList<>();
+            if (files != null && files.length > 0) {
+                for (MultipartFile file : files) {
+                    if (!file.isEmpty()) {
+                        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                        Path filePath = Paths.get("uploads", fileName);
+                        Files.createDirectories(filePath.getParent());
+                        Files.write(filePath, file.getBytes());
 
-            PhotosIntervention photo = new PhotosIntervention();
-            photo.setUrl(fileName);
-            interventionPreventive.setPhotos(List.of(photo));
-            */
-
-            // Récupérer et associer les pièces détachées
-            List<PieceDetachee> pieceDetachees = pieceDetacheeRepository.findAllById(pieceDetacheesIds);
-            interventionPreventive.setPiecesDetachees(pieceDetachees);
-
-            for (PieceDetachee piece : pieceDetachees) {
-                int newQuantity = piece.getQuantiteStock() - 1;
-                piece.setQuantiteStock(Math.max(0, newQuantity));
+                        PhotosIntervention photo = new PhotosIntervention();
+                        photo.setUrl(fileName);
+                        photo.setInterventionPreventive(InterventionPreventive);
+                        photos.add(photo);
+                    }
+                }
             }
 
-            pieceDetacheeRepository.saveAll(pieceDetachees);
+            // ✨ Attach photos
+            InterventionPreventive.setPhotos(photos);
 
-            // Sauvegarder l'intervention
-            InterventionPreventive savedIntervention = InterventionPreventiceService.save(interventionPreventive);
+            // ✅ Save the intervention FIRST
+            InterventionPreventive savedIntervention = InterventionPreventiceService.save(InterventionPreventive);
 
-            // Convertir l'entité sauvegardée en DTO
+            // 🔄 Now fetch spare parts
+            List<PieceDetachee> pieceDetachees = pieceDetacheeRepository.findAllById(pieceDetacheesIds);
+            List<InterventionPieceDetachee> interventionPieces = new ArrayList<>();
+
+            for (int i = 0; i < pieceDetachees.size(); i++) {
+                PieceDetachee piece = pieceDetachees.get(i);
+                Integer quantityUsed = quantites.get(i);
+
+                // 💥 Update stock safely
+                int newQuantity = piece.getQuantiteStock() - quantityUsed;
+                piece.setQuantiteStock(Math.max(0, newQuantity));
+
+                // 🔗 Build relation with SAVED intervention
+                InterventionPieceDetachee interventionPiece = new InterventionPieceDetachee();
+              //   interventionPiece.setInterventionPreventive(savedIntervention);
+                interventionPiece.setPieceDetachee(piece);
+                interventionPiece.setQuantiteUtilisee(quantityUsed);
+
+                interventionPieces.add(interventionPiece);
+            }
+
+            // 💾 Save after all links are valid
+            interventionPieceDetacheeRepository.saveAll(interventionPieces);
+
+            // 🎁 Return DTO
             InterventionPreventiveDTO savedInterventionDTO = new InterventionPreventiveDTO(savedIntervention);
-
             return ResponseEntity.ok(savedInterventionDTO);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de la création de l'intervention");
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Image upload failed");
         }
     }
     

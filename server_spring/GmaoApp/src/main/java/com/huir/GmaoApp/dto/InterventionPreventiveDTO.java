@@ -21,7 +21,7 @@ public class InterventionPreventiveDTO {
     private String dateCloture;
     private String dateCreation;
     private List<PhotosInterventionDTO> photos;
-    private List<PieceDetacheeDTO> piecesDetachees;
+    private List<InterventionPieceDetacheeDTO> piecesDetachees;
     private String remarques;
 
 
@@ -69,13 +69,22 @@ public class InterventionPreventiveDTO {
                 : null;
 
       
-
-        // Map PieceDetachee if available
-        this.piecesDetachees =  InterventionPreventive.getPiecesDetachees() != null
-                ?  InterventionPreventive.getPiecesDetachees().stream()
-                .map(pieceDetachee -> new PieceDetacheeDTO(pieceDetachee))
-                .collect(Collectors.toList())
-                : null;
+               // this.piecesDetachees = InterventionPreventive.getInterventionPieces() != null
+                //	    ? InterventionPreventive.getInterventionPieces().stream()
+                	//        .map(ipd -> {
+                	  //          return new InterventionPieceDetacheeDTO(
+                	    //            ipd.getPieceDetachee().getId(),
+                	      //          ipd.getPieceDetachee().getNom(),
+                	        //        ipd.getPieceDetachee().getReference(),
+                	          //      ipd.getQuantiteUtilisee()
+                	           // );
+                	        //})
+                	        //.collect(Collectors.toList())
+                	    //: null;
     }
 }
+
+
+            
+
 
