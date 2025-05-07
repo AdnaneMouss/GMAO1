@@ -11,9 +11,14 @@ export class TypesEquipementsService {
 
   constructor(private http: HttpClient) { }
 
-  getTypesEquipements(): Observable<TypesEquipements[]> {
-    return this.http.get<TypesEquipements[]>(this.apiUrl);
+  getActifs(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}`);
   }
+
+  getInactifs(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/inactifs`);
+  }
+
   getAttributesByTypeId(typeId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${typeId}/attributes`);
   }
@@ -39,6 +44,23 @@ export class TypesEquipementsService {
     }
 
     return this.http.put<any>(`${this.apiUrl}/${typeId}`, formData);
+  }
+
+  archiver(id: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}/archiver`, {});
+  }
+
+
+  restaurer(id: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}/restaurer`, {});
+  }
+
+  restaurerMultiple(ids: number[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/restaurer-multiple`, ids);
+  }
+
+  archiverMultiple(ids: number[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/archiver-multiple`, ids);
   }
 
 

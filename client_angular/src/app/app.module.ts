@@ -11,7 +11,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { DetailsUtilisateursComponent } from './components/Utilisateurs/details-utilisateurs/details-utilisateurs.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -25,7 +24,6 @@ import {RouterLink, RouterOutlet} from "@angular/router";
 import {AppRoutingModule} from "./app-routing.module";
 import {LoginComponent} from "./components/login/login.component";
 import {NgOptimizedImage} from "@angular/common";
-import { GestionAccesUtilisateursComponent } from './components/Utilisateurs/gestion-acces-utilisateurs/gestion-acces-utilisateurs.component';
 import { ListeUtilisateursComponent } from './components/Utilisateurs/liste-utilisateurs/liste-utilisateurs.component';
 import { ListePiecesDetacheesComponent } from './components/Stocks/liste-pieces-detachees/liste-pieces-detachees.component';
 import { SuiviStocksAlertesComponent } from './components/Stocks/suivi-stocks-alertes/suivi-stocks-alertes.component';
@@ -70,16 +68,15 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common'; // <- pour les pipes slice, uppercase, date
 
 import { MatInputModule } from '@angular/material/input';
-import { DetailsHistoComponent } from './details-histo/details-histo.component'; // <- pour input matInput
+import { DetailsHistoComponent } from './details-histo/details-histo.component';
+import { LotAchatPieceComponent } from './components/Stocks/lot-achat-piece/lot-achat-piece.component';
+import { EtagesListeComponent } from './components/batiments/etages-liste/etages-liste.component';
+import { SallesListeComponent } from './components/batiments/salles-liste/salles-liste.component'; // <- pour input matInput
 
 
 @NgModule({
   declarations: [
     AppComponent,
-   
-    DetailsUtilisateursComponent,
-    
-    GestionAccesUtilisateursComponent,
     ListeUtilisateursComponent,
     ListePiecesDetacheesComponent,
     SuiviStocksAlertesComponent,
@@ -109,6 +106,9 @@ import { DetailsHistoComponent } from './details-histo/details-histo.component';
     ChangePasswordComponent,
     HistoriqueMaintenancesCorrectivesComponent,
     DetailsHistoComponent,
+    LotAchatPieceComponent,
+    EtagesListeComponent,
+    SallesListeComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -134,7 +134,7 @@ import { DetailsHistoComponent } from './details-histo/details-histo.component';
     MatCardModule,
     MatListModule,
     MatDividerModule,
-  
+
     MatOption,
     MatSelect,
     FormsModule,

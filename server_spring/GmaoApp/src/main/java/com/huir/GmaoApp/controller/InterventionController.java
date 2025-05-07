@@ -126,9 +126,6 @@ public class InterventionController {
                 PieceDetachee piece = pieceDetachees.get(i);
                 Integer quantityUsed = quantites.get(i);
 
-                // 💥 Update stock safely
-                int newQuantity = piece.getQuantiteStock() - quantityUsed;
-                piece.setQuantiteStock(Math.max(0, newQuantity));
 
                 // 🔗 Build relation with SAVED intervention
                 InterventionPieceDetachee interventionPiece = new InterventionPieceDetachee();

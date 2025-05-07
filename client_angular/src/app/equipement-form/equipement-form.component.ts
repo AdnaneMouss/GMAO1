@@ -37,7 +37,7 @@ export class EquipementFormComponent implements OnInit {
     historiquePannes: '',
     coutAchat: '',
     serviceNom: '',
-    typeEquipement: { id: undefined, type: '', image: '', attributs: [] },  // Initial empty type
+    typeEquipement: {} as TypesEquipements,
     service: {} as Service,
     piecesDetachees: [],
     salle: {} as Salle,
@@ -88,7 +88,7 @@ export class EquipementFormComponent implements OnInit {
 
   ngOnInit():
     void {
-    this.typesEquipementsService.getTypesEquipements().subscribe((types: TypesEquipements[]) => {
+    this.typesEquipementsService.getActifs().subscribe((types: TypesEquipements[]) => {
       this.typesEquipements = types;
     });
     this.loadBatiments();

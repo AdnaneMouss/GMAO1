@@ -123,7 +123,7 @@ dateFinFiltre: string | null = null;
     piecesDetachees: []
   };
 
-  
+
 
 
 
@@ -190,35 +190,35 @@ onAttributChange(attribut: any) {
   ];
   isToday(date: Date | string): boolean {
     if (!date) return false;
-    
+
     const today = new Date();
     const checkDate = new Date(date);
-    
-    return checkDate.getDate() === today.getDate() && 
-           checkDate.getMonth() === today.getMonth() && 
+
+    return checkDate.getDate() === today.getDate() &&
+           checkDate.getMonth() === today.getMonth() &&
            checkDate.getFullYear() === today.getFullYear();
   }
 
   getDateStatus(date: Date | string): string {
     if (!date) return '';
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const checkDate = new Date(date);
     checkDate.setHours(0, 0, 0, 0);
-    
+
     const diffTime = checkDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return 'today';
     if (diffDays > 0 && diffDays <= 4) return `in_${diffDays}`;
     return '';
   }
-  
+
   getDateMessage(date: Date | string): string {
     const status = this.getDateStatus(date);
-    
+
     switch(status) {
       case 'today': return 'Aujourd\'hui';
       case 'in_1': return 'Demain';
@@ -258,7 +258,7 @@ onAttributChange(attribut: any) {
       historiquePannes: '',
       coutAchat: '',
       serviceNom: '',
-      typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Initial empty type
+      typeEquipement: {} as TypesEquipements, // Initial empty type
       service: {} as Service,
       piecesDetachees: [],
       salle: {} as Salle,
@@ -360,7 +360,7 @@ onAttributChange(attribut: any) {
   nextRepetitionDates:  string | Date[] = [];
 
 
- 
+
 
 
 
@@ -376,7 +376,7 @@ onAttributChange(attribut: any) {
     private InterventionPreventiceService:InterventionPreventiceService,
 
     private router: Router ) { }
- 
+
 
   validateDates() {
     if (this.newMaintenance.dateDebutPrevue && this.newMaintenance.dateFinPrevue) {
@@ -394,39 +394,39 @@ onAttributChange(attribut: any) {
   }
 
   trackByDate(index: number, date: string | Date): number {
-    return index; 
+    return index;
   }
 
-  
 
 
 
-  
+
+
 
 
 
   filtrerParDateAujourdhui() {
     const aujourdhui = new Date();  // Obtenir la date complète d'aujourd'hui
-    
+
     this.filteredMaintenace = this.maintenances.filter(m => {
       // 1. Filtre pour la date de début prévue aujourd'hui
       const debutAujourdhui = m.dateDebutPrevue?.startsWith(aujourdhui.toISOString().split('T')[0]);
-  
+
       // 2. Filtre pour les dates de répétition aujourd'hui
       const repetitionAujourdhui = m.nextRepetitionDatesAsList?.some((date: string | Date) => {
         // Convertit la date en string si c'est un objet Date
         const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
-        
+
         // Comparer la date complète (année, mois, jour)
         return dateStr === aujourdhui.toISOString().split('T')[0];
       });
-  
+
       // Retourne true si l'une ou l'autre condition est vraie
       return debutAujourdhui || repetitionAujourdhui;
     });
   }
-  
-  
+
+
   getNextRepetitionDates(dates: Date[]): Date[] {
     if (!dates) return [];
     const today = new Date();
@@ -454,11 +454,11 @@ onAttributChange(attribut: any) {
 
 
 
-  
 
 
 
-  
+
+
 
 
 
@@ -562,7 +562,7 @@ onAttributChange(attribut: any) {
 
     // 2. Ensuite charger les maintenances pour cet utilisateur
     this.getMaintenancesByTechnicien(this.technicienId);
-    
+
     this.expandMaintenances();
 
     // 3. Charger les autres données (optionnel)
@@ -573,31 +573,31 @@ onAttributChange(attribut: any) {
     this.loadTechnicianInterventions();
     // Dans la subscription
 
-   
 
 
 
 
- 
 
-  
-    
 
-    
 
-    
 
-   
+
+
+
+
+
+
+
 
 
   }
 
   expandMaintenances() {
     this.expandedMaintenances = [];
-  
+
     this.filteredMaintenace.forEach((maintenance) => {
       const dates = maintenance.nextRepetitionDatesAsList;
-  
+
       // S'il n'y a pas de dates, on ajoute quand même une ligne avec la date répétition vide
       if (!dates || dates.length === 0) {
         this.expandedMaintenances.push({
@@ -613,18 +613,18 @@ onAttributChange(attribut: any) {
         });
       }
     });
-  
+
     console.log("Maintenances étendues:", this.expandedMaintenances);
   }
-  
-  
-  
-
-  
 
 
 
- 
+
+
+
+
+
+
 
 
   calculateRepetitionDates(
@@ -636,25 +636,25 @@ onAttributChange(attribut: any) {
   ): Date[] {
     const dates: Date[] = [];
     const currentDate = new Date(startDate);
-  
+
     while (currentDate <= endDate) {
       const day = currentDate.getDay();
       const month = currentDate.getMonth() + 1; // 0-based
-  
+
       if (
         (repetitionType === 'HEBDOMADAIRE' && selectedJours.includes(day)) ||
         (repetitionType === 'MENSUEL' && selectedMois.includes(month))
       ) {
         dates.push(new Date(currentDate));
       }
-  
+
       // Avancer d’un jour
       currentDate.setDate(currentDate.getDate() + 1);
     }
-  
+
     return dates;
   }
-  
+
 
   loadTechnicianInterventions(): void {
     const user = JSON.parse(localStorage.getItem('user') || '{}');

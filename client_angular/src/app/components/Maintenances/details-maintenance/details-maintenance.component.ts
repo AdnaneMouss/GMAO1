@@ -14,6 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Equipement } from '../../../models/equipement';
 import { AttributEquipements } from '../../../models/attribut-equipement';
 import { EquipementService } from '../../../services/equipement.service';
+import {TypesEquipements} from "../../../models/types-equipements";
 
 @Component({
   selector: 'app-details-maintenance',
@@ -63,9 +64,9 @@ export class DetailsMaintenanceComponent implements OnInit {
       coutAchat: '',
       valeurSuivi: 0,
       labelSuivi: '',
-    
 
-      typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Initial empty type
+
+      typeEquipement: {} as TypesEquipements, // Initial empty type
       service: {} as Service,
       piecesDetachees: [],
       salle: {} as Salle,
@@ -471,7 +472,7 @@ constructor(
             coutAchat: '',
             valeurSuivi: 0,
             labelSuivi: '',
-            typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Type vide
+            typeEquipement: {} as TypesEquipements, // Type vide
             service: {} as Service,
             piecesDetachees: [],
             salle: {} as Salle,

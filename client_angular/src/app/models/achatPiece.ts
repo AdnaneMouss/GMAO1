@@ -3,5 +3,7 @@ export interface AchatPiece {
   dateAchat: string; // format ISO: 'YYYY-MM-DD'
   quantite: number;
   coutUnitaire: number;
+  pieceId: number;
+  nomPiece?: string;
 }
 

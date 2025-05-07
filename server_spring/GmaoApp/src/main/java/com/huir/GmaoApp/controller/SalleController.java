@@ -8,6 +8,7 @@ import com.huir.GmaoApp.model.Etage;
 import com.huir.GmaoApp.model.Salle;
 import com.huir.GmaoApp.repository.BatimentRepository;
 import com.huir.GmaoApp.repository.EtageRepository;
+import com.huir.GmaoApp.repository.SallesRepository;
 import com.huir.GmaoApp.service.EtageService;
 import com.huir.GmaoApp.service.SalleService;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -30,30 +32,145 @@ public class SalleController {
     private SalleService salleService;
     @Autowired
     private EtageRepository etageRepository;
+    @Autowired
+    private SallesRepository salleRepository;
 
 
     @PostMapping
-    public ResponseEntity<?> createSalle(@RequestBody SalleDTO salleDTO) {
+    public ResponseEntity<?> createSalle(
+            @RequestParam("num") Integer num,
+            @RequestParam("prefixe") String prefixe,
+            @RequestParam("etageId") Long etageId) {
 
-        if (salleService.existsByNumAndEtageId(salleDTO.getNum(), salleDTO.getEtage().getId())) {
+        // Check if the Salle with the given number and EtageId already exists
+        if (salleService.existsByPrefixeAndNumAndEtageIdAndActifTrue(prefixe,num, etageId)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Cette existe déjà dans ce cet étage.");
+        }
+
+        // Create a new Salle object and set its properties
+        Salle salle = new Salle();
+        salle.setNum(num);
+        salle.setPrefixe(prefixe);
+
+        // Fetch the Etage using the etageId and set it to the Salle
+        Etage etage = etageRepository.findById(etageId)
+                .orElseThrow(() -> new RuntimeException("Etage non trouvé avec ID : " + etageId));
+        salle.setEtage(etage);
+
+        // Save the new Salle to the database
+        Salle savedSalle = salleService.saveSalle(salle);
+
+        // Convert the saved Salle back to SalleDTO for the response
+        SalleDTO responseDTO = new SalleDTO(savedSalle);
+
+        return ResponseEntity.ok(responseDTO);  // Return the saved SalleDTO as the response
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateSalle(
+            @PathVariable Long id,
+            @RequestParam("num") Integer num,
+            @RequestParam("prefixe") String prefixe,
+            @RequestParam("etageId") Long etageId) {
+
+        // Fetch the Salle object by ID
+        Optional<Salle> existingSalleOpt = salleRepository.findById(id);
+        if (existingSalleOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Salle non trouvée.");
+        }
+
+        Salle existingSalle = existingSalleOpt.get();
+
+        // Check if the Salle with the given number already exists in the same Etage
+        if (salleService.existsByPrefixeAndNumAndEtageIdAndActifTrue(prefixe, num, etageId)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Ce numéro d'étage existe déjà dans ce bâtiment.");
         }
 
-        Salle salle = new Salle();
-        salle.setNum(salleDTO.getNum());
+        // Fetch the Etage using the etageId and set it to the Salle
+        Etage etage = etageRepository.findById(etageId)
+                .orElseThrow(() -> new RuntimeException("Etage non trouvé avec ID : " + etageId));
+        existingSalle.setEtage(etage);
+
+        // Update the Salle fields
+        existingSalle.setNum(num);
+        existingSalle.setPrefixe(prefixe);
+
+        // Save the updated Salle back to the database
+        Salle updatedSalle = salleRepository.save(existingSalle);
+
+        // Convert the updated Salle to SalleDTO for the response
+        SalleDTO responseDTO = new SalleDTO(updatedSalle);
+
+        return ResponseEntity.ok(responseDTO);  // Return the updated SalleDTO as the response
+    }
 
 
-        if (salleDTO.getEtage() != null && salleDTO.getEtage().getId() != null) {
-            Etage etage = etageRepository.findById(salleDTO.getEtage().getId())
-                    .orElseThrow(() -> new RuntimeException("Etage non trouvé avec ID : " + salle.getEtage().getId()));
-            salle.setEtage(etage);
+    @PutMapping("/{id}/archiver")
+    public ResponseEntity<Map<String, String>> archiverSalle(@PathVariable Long id) {
+        Salle salle = salleRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Salle non trouvée"));
+
+        salle.setActif(false);
+        salleRepository.save(salle);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Salle archivée avec succès");
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/salles/archiver-multiple")
+    public ResponseEntity<Map<String, String>> archiverSalles(@RequestBody List<Long> ids) {
+        List<Salle> salles = salleRepository.findAllById(ids);
+        for (Salle salle : salles) {
+            salle.setActif(false);
+        }
+        salleRepository.saveAll(salles);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Salles archivées avec succès");
+        return ResponseEntity.ok(response);
+    }
+
+
+    @PutMapping("/{id}/restaurer")
+    public ResponseEntity<Map<String, String>> restaurerSalle(@PathVariable Long id) {
+        Salle salle = salleRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Salle non trouvée"));
+
+        salle.setActif(true);
+        salleRepository.save(salle);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Salle restaurée avec succès");
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/salles/restaurer-multiple")
+    public ResponseEntity<?> restaurerSalles(@RequestBody List<Long> ids) {
+        List<Salle> salles = salleRepository.findAllById(ids);
+        List<String> conflicts = new ArrayList<>();
+
+        for (Salle salle : salles) {
+            if (salleService.existsByPrefixeAndNumAndEtageIdAndActifTrue(salle.getPrefixe(), salle.getNum(), salle.getEtage().getId())) {
+                conflicts.add("Nom déjà utilisé : Salle '" + salle.getNum() +
+                        "' sur l'étage '" + salle.getEtage().getNum() + "'");
+                continue;
+            }
+
+            salle.setActif(true);
         }
 
-        Salle savedSalle = salleService.saveSalle(salle);
+        if (!conflicts.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(conflicts);
+        }
 
-        SalleDTO responseDTO = new SalleDTO(savedSalle);
-        return ResponseEntity.ok(responseDTO);
+        salleRepository.saveAll(salles);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Salles restaurées avec succès");
+        return ResponseEntity.ok(response);
     }
 
 

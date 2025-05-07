@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class BatimentDTO {
 
     private Long id;
-    private int numBatiment;
+    private Integer numBatiment;
     private String intitule;
     private Boolean actif;
     private List<EtageDTO> etages;
@@ -30,4 +30,6 @@ public class BatimentDTO {
                 .collect(Collectors.toList())
                 : null;
     }
+
+
 }

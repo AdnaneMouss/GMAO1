@@ -1,0 +1,163 @@
+<div class="container mx-auto p-8">
+  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 border border-gray-200">
+    <div *ngIf="showSalleForm" class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
+      <div class="bg-white rounded-lg w-full max-w-2xl p-6 relative overflow-y-auto max-h-[90vh]">
+
+        <!-- Bouton de fermeture -->
+        <button (click)="showSalleForm = false" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-semibold">
+          <i class="fas fa-times"></i>
+        </button>
+
+        <h2 class="text-2xl font-semibold mb-4 text-center text-green-700">Ajouter une salle</h2>
+
+        <form (ngSubmit)="addSalle()" #salleForm="ngForm">
+          <div class="grid grid-cols-1 gap-6 mb-6">
+            <!-- Préfixe (lettre) -->
+            <div>
+              <label for="prefixe" class="block text-sm font-medium text-gray-700">Bloc / Préfixe <span class="text-red-500">*</span></label>
+              <input
+                id="prefixe"
+                type="text"
+                maxlength="1"
+                [(ngModel)]="newSalle.prefixe"
+                name="prefixe"
+                required
+                #prefixe="ngModel"
+                class="mt-2 p-3 border border-gray-300 rounded-md w-full uppercase" />
+              <div *ngIf="prefixe.invalid && prefixe.touched" class="text-red-500 text-sm">Le préfixe est requis.</div>
+            </div>
+
+            <!-- Numéro de salle -->
+            <div>
+              <label for="numSalle" class="block text-sm font-medium text-gray-700">Numéro de la salle <span class="text-red-500">*</span></label>
+              <input
+                id="numSalle"
+                type="number"
+                min="1"
+                [(ngModel)]="newSalle.num"
+                name="numSalle"
+                required
+                #numSalle="ngModel"
+                class="mt-2 p-3 border border-gray-300 rounded-md w-full" />
+              <div *ngIf="numSalle.invalid && numSalle.touched" class="text-red-500 text-sm">Le numéro est requis.</div>
+            </div>
+
+            <div *ngIf="errorMessage" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
+          </div>
+
+          <div class="flex justify-end space-x-4">
+            <button type="button" (click)="showSalleForm = false" class="text-gray-500 hover:text-gray-700 text-sm">Annuler</button>
+            <button type="submit" [disabled]="salleForm.invalid" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
+              <i class="fas fa-plus"></i> Ajouter
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <button
+      class="bg-transparent w-32 h-10 rounded-2xl relative text-green-700 text-sm font-semibold overflow-hidden group transition-all duration-300"
+      (click)="goBack(etageId)">
+
+
+      <div
+        class="bg-green-700 rounded-xl h-10 w-8 flex items-center justify-center absolute left-1 top-0 group-hover:w-[128px] z-10 transition-all duration-500 ease-in-out">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1024 1024"
+          height="16"
+          width="16"
+          fill="white">
+          <path d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"/>
+          <path d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"/>
+        </svg>
+      </div>
+
+    </button>
+
+    <!-- Conteneur principal en flex -->
+    <h2 class="text-2xl font-bold text-gray-700">Salles de l'étage <strong style="color:#388e3c">{{selectedEtage!.intitule}}</strong></h2>
+    <p class="text-gray-500 text-sm">Gérez facilement tous les étages d'un bâtiment.</p>
+
+
+    <div class="flex flex-wrap md:flex-nowrap justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+      <div class="flex space-x-4 w-full md:w-auto">
+        <div class="flex space-x-4">
+          <div
+            class="relative group flex items-center justify-center text-primary-600 font-semibold cursor-pointer select-none"
+            (click)="showSalleForm = !showSalleForm"
+          >
+            <!-- Floating Panel -->
+            <div
+              class="absolute opacity-0 group-hover:opacity-100 group-hover:-translate-y-[140%] transition-all duration-300 ease-out"
+            >
+              <div class="flex items-center gap-2 bg-white p-3 rounded-lg shadow-md">
+                <i class="fas fa-user-plus text-blue-600"></i> <!-- Blue Icon -->
+                <span class="text-gray-800">Nouvel étage</span>
+              </div>
+              <div
+                class="absolute bottom-0 left-1/2 w-3 h-3 bg-white transform -translate-x-1/2 translate-y-1/2 rotate-45 shadow"
+              ></div>
+            </div>
+
+            <!-- Main Button -->
+            <div
+              class="flex items-center gap-2 bg-gradient-to-br from-primary-100 to-primary-200 hover:from-primary-200 hover:to-primary-300 p-3 rounded-full shadow transition duration-300"
+            >
+              <i class="fas fa-plus text-blue-600"></i> <!-- Blue Icon -->
+              <span class="hidden group-hover:inline text-primary-700 text-sm transition duration-300">
+      Ajouter
+    </span>
+            </div>
+          </div>
+          <div
+            class="relative group flex justify-center items-center text-green-600 text-sm font-bold cursor-pointer"
+          >
+            <!-- Floating Panel -->
+            <div
+              class="absolute opacity-0 group-hover:opacity-100 group-hover:-translate-y-[150%] transition-all duration-500 group-hover:delay-500 ease-out"
+            >
+              <div class="flex items-center gap-1 bg-white p-2 rounded-md">
+                <i class="fas fa-file-excel text-green-700"></i> <!-- Green Icon -->
+                <span class="text-green-700">Exporter en format excel</span> <!-- Green Text -->
+              </div>
+              <div
+                class="absolute bottom-0 left-1/2 w-3 h-3 bg-white transform -translate-x-1/2 translate-y-1/2 rotate-45 shadow"
+              ></div>
+            </div>
+
+            <!-- Main Button -->
+            <div
+              class="flex items-center group-hover:gap-2 bg-white p-3 rounded-full shadow-md transition duration-300"
+            >
+              <i class="fas fa-download text-green-700"></i> <!-- Green Icon -->
+              <span class="text-[0px] group-hover:text-sm text-green-700 transition duration-300">
+      Exporter
+    </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      <div *ngFor="let salle of salles"  class="bg-white rounded-2xl shadow-md p-6 border border-gray-200 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105">
+        <div class="flex flex-col items-center">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center shadow-sm">
+            <span class="text-green-700 font-bold text-xl">{{salle.prefixe}}{{ salle.num }}</span>
+          </div>
+        </div>
+        <button
+          class="w-full bg-green-700 text-white px-4 py-2 rounded-lg mt-4 font-medium shadow-md hover:bg-green-900 transition-all duration-300 transform hover:-translate-y-1"
+          >
+          Voir équipements
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noEtages>
+    <p class="text-gray-500 text-center">Aucune salle trouvée pour cet étage.</p>
+  </ng-template>
+</div>
+
+

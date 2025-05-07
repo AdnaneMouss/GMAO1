@@ -21,10 +21,12 @@ public class PieceDetacheeDTO {
 	private List<String> historiqueUtilisation;
 	private String image;
 	private String statut;
+	private int quantiteStock;  // Added quantiteStock field
 
 	// Ajout des achats (setter séparé)
 	private List<AchatPieceDTO> achats;
 
+	// Constructor to initialize DTO from the entity
 	public PieceDetacheeDTO(PieceDetachee pieceDetachee) {
 		this.id = pieceDetachee.getId();
 		this.nom = pieceDetachee.getNom();
@@ -40,5 +42,8 @@ public class PieceDetacheeDTO {
 				.map(AchatPieceDTO::new)
 				.collect(Collectors.toList())
 				: null;
+
+		// Calculate quantiteStock dynamically based on AchatPiece
+		this.quantiteStock = pieceDetachee.getQuantiteStock(); // This uses the transient getter for quantiteStock
 	}
 }

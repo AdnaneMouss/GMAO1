@@ -19,7 +19,7 @@ public class Etage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+	private boolean actif = true;
     // Par exemple, le numéro de l'étage
     private int num;
 

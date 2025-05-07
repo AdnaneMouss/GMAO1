@@ -94,4 +94,35 @@ public class TypesEquipementsService {
     public boolean existsByType(String type) {
         return typesEquipementsRepository.existsByType(type);
     }
+
+    public List<TypesEquipements> getTypesEquipementsActifs() {
+        return typesEquipementsRepository.findByActifTrue();
+    }
+
+    public List<TypesEquipements> getTypesEquipementsInactifs() {
+        return typesEquipementsRepository.findByActifFalse();
+    }
+
+    public boolean existsByTypeAndActifTrue(String type) {
+        return typesEquipementsRepository.existsByTypeAndActifTrue(type);
+    }
+
+    public void restaurerMultiple(List<Long> ids) {
+        for (Long id : ids) {
+            Optional<TypesEquipements> optional = typesEquipementsRepository.findById(id);
+            if (optional.isPresent()) {
+                TypesEquipements type = optional.get();
+
+                // Vérifie si un autre type actif avec le même nom existe déjà
+                boolean alreadyExists = typesEquipementsRepository.existsByTypeAndActifTrueAndIdNot(type.getType(), id);
+                if (alreadyExists) {
+                    throw new RuntimeException("Le type '" + type.getType() + "' existe déjà en tant qu'actif.");
+                }
+
+                type.setActif(true);
+                typesEquipementsRepository.save(type);
+            }
+        }
+    }
+
 }

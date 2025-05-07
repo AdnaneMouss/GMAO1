@@ -23,6 +23,9 @@ import {AttributEquipements} from "../../../models/attribut-equipement";
 import {TypesEquipements} from "../../../models/types-equipements";
 import {TypesEquipementsService} from "../../../services/types-equipements.service";
 import {environment} from "../../../../environments/environment";
+import {Etage} from "../../../models/etage";
+import {Salle} from "../../../models/salle";
+import {Batiment} from "../../../models/batiment";
 
 @Component({
   selector: 'app-liste-equipements',
@@ -238,12 +241,7 @@ export class ListeEquipementsComponent implements OnInit {
       coutAchat: '',
       valeurSuivi:0,
       labelSuivi:'',
-      typeEquipement: {
-        id: 0,
-        type: '',
-        image: '',
-        attributs:[]
-      },
+      typeEquipement: {} as TypesEquipements,
       attributsValeurs: [],  // Assuming this is an empty array initially
       service: {
         id: 0,
@@ -252,46 +250,20 @@ export class ListeEquipementsComponent implements OnInit {
         description:''
       },
       piecesDetachees: [],  // Empty array for spare parts initially
-      salle: {
-        id: 0,
-        num: 1,
-        etage: {
-          id: 0,
-          num: 1,
-          salles: [],
-          batiment: {
-            id: 0,
-            numBatiment: 1,
-            intitule: '',
-            etages: []
-          }
-        }
-      },
-      etage: {
-        id: 0,
-        num: 1,
-        salles: [],
-        batiment: {        id: 0,
-          numBatiment: 1,
-          intitule:'',
-          etages:[]}
-      },
-      batiment: {
-        id: 0,
-        numBatiment: 1,
-        intitule:'',
-        etages:[]
+      salle: {} as Salle,
+      etage: {} as Etage,
+      batiment: {} as Batiment
 
       }
     };
-  }
+
 
 
 
 
 
   getTypesEquipements(): void {
-    this.typesEquipementsService.getTypesEquipements().subscribe((data: TypesEquipements[]) => {
+    this.typesEquipementsService.getActifs().subscribe((data: TypesEquipements[]) => {
       this.typesEquipements = data;
     });
   }

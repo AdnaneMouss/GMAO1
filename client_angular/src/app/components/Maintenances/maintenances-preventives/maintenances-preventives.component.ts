@@ -87,7 +87,7 @@ unreadMessagesCount: number = 0;
   selectedSalle: number = 0;
   etages: any[] = [];
   salles: any[] = [];
- 
+
 
 
 
@@ -240,7 +240,7 @@ applyFilters(): void {
       historiquePannes: '',
       coutAchat: '',
       serviceNom: '',
-      typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Initial empty type
+      typeEquipement: {} as TypesEquipements,
       service: {} as Service,
       piecesDetachees: [],
       salle: {} as Salle,
@@ -382,11 +382,16 @@ applyFilters(): void {
      private route: ActivatedRoute,private toastr: ToastrService,
      private http: HttpClient,private notificationService: NotificationService,
      private batimentService: BatimentService ,
+<<<<<<< HEAD
       private etageService: EtageService,
       private webSocketService: WebSocketService,
       private chatService: ChatService,
       private authService: AuthService) { }
       
+=======
+      private etageService: EtageService,) { }
+
+>>>>>>> 09f36ca348373641df32f78480c553e24b38263b
 
 
   validateDates() {
@@ -448,8 +453,8 @@ applyFilters(): void {
   }
 
   filterMaintenancesByEquipement(){
-    console.log("Maintenances Data:", this.equipements); 
-    
+    console.log("Maintenances Data:", this.equipements);
+
     if (this.selectedEquipement) {
       // Filtrer en fonction de la priorité sélectionnée
       this.filteredMaintenace = this.maintenances.filter(e => e.equipementNom === this.selectedEquipement);
@@ -463,8 +468,8 @@ applyFilters(): void {
   }
 
   filterMaintenancesBydateDebutPrevue(){
-    console.log("Maintenances Data:", this.maintenances); 
-    
+    console.log("Maintenances Data:", this.maintenances);
+
     if (this.dateDebutPrevue) {
       // Filtrer en fonction de la priorité sélectionnée
       this.filteredMaintenace = this.maintenances.filter(e => e.dateDebutPrevue === this.dateDebutPrevue);
@@ -479,8 +484,8 @@ applyFilters(): void {
   }
 
   filterMaintenancesBydatedateFinPrevue(){
-    console.log("Maintenances Data:", this.maintenances); 
-    
+    console.log("Maintenances Data:", this.maintenances);
+
     if (this.dateFinPrevue) {
       // Filtrer en fonction de la priorité sélectionnée
       this.filteredMaintenace = this.maintenances.filter(e => e.dateFinPrevue === this.dateFinPrevue);
@@ -512,7 +517,7 @@ applyFilters(): void {
   }
 
 
-  
+
 
 
 
@@ -1294,7 +1299,7 @@ resetForm() {
         historiquePannes: '',
         coutAchat: '',
         serviceNom: '',
-        typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Initial empty type
+        typeEquipement: {} as TypesEquipements, // Initial empty type
         service: {} as Service,
         piecesDetachees: [],
         salle: {} as Salle,
