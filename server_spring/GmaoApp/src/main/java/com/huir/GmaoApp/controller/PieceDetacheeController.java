@@ -112,13 +112,7 @@ public class PieceDetacheeController {
             @RequestParam(value = "description") String description,
             @RequestParam(value = "reference") String reference,
             @RequestParam(value = "fournisseur") String fournisseur,
-            @RequestParam(value = "coutUnitaire") Double coutUnitaire,
-            @RequestParam(value = "quantiteStock") Integer quantiteStock,
-            @RequestParam(value = "quantiteMinimale") Integer quantiteMinimale,
-
-            // Make dates optional with DateTimeFormat
-            @RequestParam(value = "dateAchat") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateAchat,
-            @RequestParam(value = "datePeremption") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datePeremption
+            @RequestParam(value = "quantiteMinimale") Integer quantiteMinimale
     ) {
         System.out.println("🔥 Reached updatePiece endpoint");
         System.out.println("💾 ID: " + id);
@@ -141,11 +135,7 @@ public class PieceDetacheeController {
             existingPiece.setReference(reference);
         }
         if (fournisseur != null) existingPiece.setFournisseur(fournisseur);
-        if (coutUnitaire != null) existingPiece.setCoutUnitaire(coutUnitaire);
-        if (quantiteStock != null) existingPiece.setQuantiteStock(quantiteStock);
         if (quantiteMinimale != null) existingPiece.setQuantiteMinimale(quantiteMinimale);
-        if (dateAchat != null) existingPiece.setDateAchat(dateAchat);
-        if (datePeremption != null) existingPiece.setDatePeremption(datePeremption);
 
         try {
             // Handle file upload if it's provided

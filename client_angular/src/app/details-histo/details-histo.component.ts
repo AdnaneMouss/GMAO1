@@ -15,6 +15,7 @@ import { UserService } from '../services/user.service';
 import { EquipementService } from '../services/equipement.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RepetitionType } from '../models/RepetitionType';
+import {TypesEquipements} from "../models/types-equipements";
 
 
 
@@ -66,9 +67,9 @@ export class DetailsHistoComponent  implements OnInit {
       coutAchat: '',
       valeurSuivi: 0,
       labelSuivi: '',
-    
 
-      typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Initial empty type
+
+      typeEquipement: {} as TypesEquipements,
       service: {} as Service,
       piecesDetachees: [],
       salle: {} as Salle,
@@ -474,7 +475,7 @@ constructor(
             coutAchat: '',
             valeurSuivi: 0,
             labelSuivi: '',
-            typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Type vide
+            typeEquipement: {} as TypesEquipements,
             service: {} as Service,
             piecesDetachees: [],
             salle: {} as Salle,

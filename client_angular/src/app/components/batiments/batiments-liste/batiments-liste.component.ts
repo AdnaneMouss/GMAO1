@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Batiment } from '../../../models/batiment';
 import { BatimentService } from '../../../services/batiment.service';
 import { EtageService } from '../../../services/etage.service';
@@ -17,70 +18,184 @@ import { saveAs } from 'file-saver';
 })
 export class BatimentsListeComponent implements OnInit {
 
-  batiments: Batiment[] = [];
+  batimentsActifs: Batiment[] = [];
+  batimentsInActifs: Batiment[] = [];
   searchTermNom: string = '';
-  selectedBatiment: Batiment | null = null;
+  isBulkRestored: boolean= false;
+  bulkRestoreError: string | null = null;
+  batimentTakenBulk: boolean = false;
+  bulkMode: boolean = false;
+  selectedBatimentIds: number[] = [];
+  selectedBatimentToArchive: any = null;
   etages: any[] = [];
   selectedEtage: any | null = null;
   salles: any[] = [];
-  filteredBatiments = [...this.batiments];
-  errorMessageBatiment: string = '';
-  errorMessageEtage: string = '';
-  errorMessageSalle: string = '';
+  filteredBatiments = [...this.batimentsActifs];
+  errorMessage: string = '';
+  batimentTaken: boolean=false;
   showForm: boolean = false;
+  showEditForm: boolean = false;
   newBatiment: Batiment = {id:0, numBatiment: 1, intitule: '', etages: []};
-  newEtage: number = 1;
-  newSalle: number = 1;
-  showEtageForm: boolean = false;
+  batimentUpdated: boolean = false;
+  batimentAdded: boolean = false;
+  selectedBatiment: any = {};
   isLoading: boolean = false;
 
-
-  constructor(private batimentService: BatimentService, private etageService: EtageService, private salleService: SalleService) { }
+  isRestored: boolean = false;
+  isArchived: boolean = false;
+  batIdToArchive: number | null | undefined;
+  showTrash: boolean = false;
+  showConfirmationModal: boolean = false;
+  constructor(private router: Router, private batimentService: BatimentService, private etageService: EtageService, private salleService: SalleService) { }
 
   ngOnInit(): void {
-    this.getAllBatiments();
+    this.getInactifs();
+    this.getActifs();
   }
 
-  getAllBatiments(): void {
-    this.batimentService.getAllBatiments().subscribe(
-      (data: Batiment[]) => {
-        this.batiments = data;
-        this.filteredBatiments = data;
+  goToEtages(batimentId: number): void {
+    this.router.navigate(['/batiment', batimentId, 'etages']);
+  }
+
+  getActifs(): void {
+    this.batimentService.getAllBatiments().subscribe(data => {
+      this.batimentsActifs = data;
+      this.filteredBatiments = data;
+    });
+  }
+
+  getInactifs(): void {
+    this.batimentService.getBatimentsInactifs().subscribe(data => {
+      this.batimentsInActifs = data;
+    });
+  }
+
+  restaurerBatiment(id: number): void {
+    this.batimentService.restaurerBatiment(id).subscribe(
+      (response) => {
+        console.log('Response from restaurer:', response);  // Check what comes from the backend
+        this.isRestored = true;
+        this.getInactifs();
+        this.getActifs();
+        this.showTrash = false;  // Close the trash modal after action
+        this.resetForm();
+        setTimeout(() => {
+          this.isRestored = false;
+        }, 3000);
       },
       (error) => {
-        console.error('Error fetching batiments', error);
+        if (error.status != 200) {
+          this.batimentTaken = true;
+          this.errorMessage = 'Un bâtiment actif avec ce nom ou ce numéro existe déjà!';
+        }
       }
     );
   }
 
-  getEtages(batId: number): void {
-    this.batimentService.getEtagesByBatimentId(batId).subscribe(
-      (data: any[]) => {
-        this.etages = data;
-        this.selectedBatiment = this.batiments.find(b => b.id === batId) || null;
-        console.log(`Etages for Batiment ${batId}:`, data);
+  archiverBatiment(id: number): void {
+    this.batimentService.archiverBatiment(id).subscribe(
+      (response) => {
+        console.log('Response from archiver:', response);  // Check what comes from the backend
+        this.isArchived = true;  // Flag to show the type has been archived
+        this.getActifs();
+        this.getInactifs();
+        this.showTrash = false;  // Close the trash modal after action
+
+        setTimeout(() => {
+          this.isArchived = false;
+        }, 3000);  // Hide the success flag after 3 seconds
       },
       (error) => {
-        console.error(`Error fetching etages for Batiment ${batId}`, error);
+        console.error('Erreur lors de l\'archivage', error);
       }
     );
   }
 
-  getSalles(etageId: number): void {
-    this.etageService.getSallesByEtageId(etageId).subscribe(
-      (data: any[]) => {
-        this.salles = data;
-        this.selectedEtage = this.etages.find(e => e.id === etageId) || null;
-        console.log(`Salles for Etage ${etageId}:`, data);
+
+  restaurerSelection(): void {
+    this.errorMessage='';
+    if (this.selectedBatimentIds.length === 0) return;
+
+    this.bulkRestoreError = null;
+    this.batimentService.restaurerMultiple(this.selectedBatimentIds).subscribe(
+      (response) => {
+        this.isBulkRestored = true;
+        this.getInactifs();
+        this.getActifs();
+        this.showTrash=false;
+        this.resetForm();
+        this.selectedBatimentIds = [];
+        console.log("",this.isBulkRestored);
+        setTimeout(() => {
+          this.isBulkRestored = false;
+        }, 3000);
       },
       (error) => {
-        console.error(`Error fetching salles for Etage ${etageId}`, error);
+        if (error.status != 200) {
+          this.batimentTakenBulk = true;
+          this.errorMessage = 'Un ou plusieurs types actifs portant les mêmes noms existe déjà!';
+        }
       }
     );
   }
 
+  archiverSelection(): void {
+    if (this.selectedBatimentIds.length === 0) return;
+
+    this.batimentService.archiverMultiple(this.selectedBatimentIds).subscribe(
+      (response) => {
+        console.log('Archive successful:', response);
+        this.getInactifs();
+        this.getActifs();
+        this.selectedBatimentIds = [];  // Reset selected IDs after archiving
+        this.showTrash = false;
+      },
+      (error) => {
+        console.log("Error occurred during archiving:", error);
+        this.errorMessage = 'Erreur lors de l\'archivage des types.';
+      }
+    );
+  }
+
+
+  toggleBulkMode(): void {
+    this.bulkMode = !this.bulkMode;
+    if (!this.bulkMode) {
+      this.selectedBatimentIds = [];
+    }
+  }
+
+
+  isSelected(type: any): boolean {
+    return this.selectedBatimentIds.includes(type.id);
+  }
+
+  toggleSelection(id: number): void {
+    const index = this.selectedBatimentIds.indexOf(id);
+    if (index > -1) {
+      this.selectedBatimentIds.splice(index, 1);
+    } else {
+      this.selectedBatimentIds.push(id);
+    }
+  }
+
+  selectAll() {
+    this.selectedBatimentIds = this.batimentsInActifs.map(batiment => batiment.id);
+  }
+
+  resetSelection() {
+    this.selectedBatimentIds = [];
+  }
+
+
+  toggleTrash() {
+    this.showTrash = !this.showTrash;
+    if (this.showTrash) {
+      this.getInactifs();
+    }
+  }
   filterBatimentsByName(): void {
-    this.filteredBatiments = this.batiments.filter(batiment =>
+    this.filteredBatiments = this.batimentsActifs.filter(batiment =>
       batiment.intitule.toLowerCase().includes(this.searchTermNom.toLowerCase())
     );
   }
@@ -88,88 +203,85 @@ export class BatimentsListeComponent implements OnInit {
   resetForm(): void {
     this.newBatiment = {id:0, numBatiment: 0, intitule: '', etages: []};
     this.showForm = false;
+    this.batimentAdded=false;
+    this.batimentUpdated=false;
+    this.batimentTaken = false;
+    this.batimentTakenBulk = false;
   }
 
   addBatiment(): void {
-    this.errorMessageBatiment = '';
+    this.errorMessage = '';
     this.batimentService.createBatiment(this.newBatiment).subscribe(
       (savedBatiment: Batiment) => {
         console.log('Service ajouté avec succès:', savedBatiment);
-        this.batiments.push(savedBatiment);
+        this.batimentsActifs.push(savedBatiment);
         this.filterBatimentsByName();
         this.resetForm();
       },
       (error) => {
         console.error('Erreur lors de l\'ajout du batiment:', error);
         if (error.status != 200) {
-          this.errorMessageBatiment = 'Un batiment avec ces informations existe déjà.';
+          this.errorMessage = 'Un batiment avec ces informations existe déjà.';
         }
       }
     );
   }
 
+  updateBatiment(): void {
+    if (!this.selectedBatiment || this.selectedBatiment.id === undefined) {
+      this.errorMessage = 'Aucun bâtiment sélectionné pour la mise à jour!';
+      return;
+    }
 
+    if (!this.selectedBatiment.nom) {
+      this.errorMessage = 'Le nom du bâtiment est obligatoire';
+      return;
+    }
 
-  addEtage(): void {
-    this.errorMessageEtage='';
-    if (this.selectedBatiment && this.newEtage) {
-      const etage: Etage = {
-        id: 0,
-        num: this.newEtage,
-        salles: [],
-        batiment: {id:0, numBatiment: 0, intitule: '', etages: []}
-      };
+    this.isLoading = true;
 
-      // Associate the new Etage with the selected Batiment
-      etage.batiment = this.selectedBatiment;
+    this.batimentService.updateBatiment(this.selectedBatiment.id, this.selectedBatiment)
+      .subscribe(
+        (updatedBatiment) => {
+          const index = this.batimentsActifs.findIndex(b => b.id === updatedBatiment.id);
+          if (index !== -1) {
+            this.batimentsActifs[index] = updatedBatiment;
+          }
+          this.resetForm();
+          this.getActifs();
+          this.getInactifs();
 
-      // Call the service to create the new Etage
-      this.etageService.createEtage(etage).subscribe(
-        (savedEtage: Etage) => {
-          console.log('Etage added successfully:', savedEtage);
-          this.etages.push(savedEtage);
-          this.newEtage = 0;
+          this.batimentUpdated = true;
+          this.showEditForm = false;
+
+          setTimeout(() => {
+            this.batimentUpdated = false;
+          }, 3000);
+
+          this.isLoading = false;
         },
         (error) => {
-          if (error.status != 200) {
-            this.errorMessageEtage = 'Cet étage existe déjà.';
+          if (error.status === 409) {
+            this.batimentTaken = true;
+            this.errorMessage = 'Un bâtiment avec le même nom existe déjà.';
+          } else {
+            this.errorMessage = 'Échec de la mise à jour du bâtiment.';
           }
+          this.isLoading = false;
         }
       );
-    }
   }
 
-  addSalle(): void {
-    this.errorMessageSalle = '';
-
-    if (this.selectedEtage && this.newSalle) {
-      const salle: Salle = {
-        id: 0,  // Temporary, backend will assign real ID
-        num: this.newSalle,  // Ensure "nom" is correctly used
-        etage: this.selectedEtage  // Associate the salle with the selected étage
-      };
-
-      // Call the service to create the new Salle
-      this.salleService.createSalle(salle).subscribe(
-        (savedSalle: Salle) => {
-          console.log('Salle added successfully:', savedSalle);
-          this.salles.push(savedSalle);  // Update the UI with the new salle
-          this.newSalle = 0;  // Reset input field
-        },
-        (error) => {
-          if (error.status !== 200) {
-            this.errorMessageSalle = 'Cette salle existe déjà.';
-          }
-        }
-      );
-    }
+  toggleForm(): void{
+    this.resetForm();
+    this.showEditForm=false;
+    this.showForm=false;
   }
-
 
   exportExcel(): void {
     const data: any[] = [];
 
-    this.batiments.forEach((batiment) => {
+    this.batimentsActifs.forEach((batiment) => {
       batiment.etages.forEach((etage, etageIndex) => {
         etage.salles.forEach((salle, salleIndex) => {
           data.push({

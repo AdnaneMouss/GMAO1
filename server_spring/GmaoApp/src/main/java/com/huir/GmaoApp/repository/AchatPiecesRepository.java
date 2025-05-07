@@ -8,6 +8,9 @@ import java.util.Optional;
 
 public interface AchatPiecesRepository extends JpaRepository<AchatPiece, Long> {
 
+
+    List<AchatPiece> findByPieceDetacheeId(Long pieceId);
+
 }
 
 

@@ -3,9 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 
 import {LoginComponent} from "./components/login/login.component";
-import {
-  DetailsUtilisateursComponent
-} from "./components/Utilisateurs/details-utilisateurs/details-utilisateurs.component";
 import {ListeUtilisateursComponent} from "./components/Utilisateurs/liste-utilisateurs/liste-utilisateurs.component";
 import {
   CategoriesEquipementsComponent
@@ -13,7 +10,6 @@ import {
 import {
   ListePiecesDetacheesComponent
 } from "./components/Stocks/liste-pieces-detachees/liste-pieces-detachees.component";
-import {SuiviStocksAlertesComponent} from "./components/Stocks/suivi-stocks-alertes/suivi-stocks-alertes.component";
 import {
   DemandePieceDetacheeComponent
 } from "./components/Stocks/demande-piece-detachee/demande-piece-detachee.component";
@@ -32,9 +28,6 @@ import {
   StatistiquesInterventionsComponent
 } from "./components/Rapports/statistiques-interventions/statistiques-interventions.component";
 import {ParametresGenerauxComponent} from "./components/Parametres/parametres-generaux/parametres-generaux.component";
-import {
-  GestionAccesUtilisateursComponent
-} from "./components/Utilisateurs/gestion-acces-utilisateurs/gestion-acces-utilisateurs.component";
 import {DashboardComponent} from "./components/dashboard/dashboard.component";
 import {ListeEquipementsComponent} from "./components/Equipements/liste-equipements/liste-equipements.component";
 import {
@@ -59,6 +52,9 @@ import { TachesPreventivesAffecteeComponent } from './components/Interventions/t
 import { HistoriqueMaintenancesCorrectivesComponent } from './components/Maintenances/historique-maintenances-correctives/historique-maintenances-correctives.component';
 import { ChatComponent } from './chat/chat.component';
 import { DetailsHistoComponent } from './details-histo/details-histo.component';
+import {LotAchatPieceComponent} from "./components/Stocks/lot-achat-piece/lot-achat-piece.component";
+import {EtagesListeComponent} from "./components/batiments/etages-liste/etages-liste.component";
+import {SallesListeComponent} from "./components/batiments/salles-liste/salles-liste.component";
 
 
 
@@ -67,8 +63,6 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
   { path: 'utilisateurs/liste', component: ListeUtilisateursComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
-  { path: 'utilisateurs/permissions', component: GestionAccesUtilisateursComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
-  { path: 'details/:id', component: DetailsUtilisateursComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'equipements/liste', component: ListeEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
   { path: 'test', component: EquipementFormComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
   { path: 'equipements/type_equipements', component: TypesEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
@@ -76,8 +70,10 @@ const routes: Routes = [
   { path: 'equipements/:serviceId', component: EquipementsParCategorieComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'equipement/:id/pieces', component: DetailsEquipementsPiecesComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'batiments/liste', component: BatimentsListeComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
+  { path: 'batiment/:id/etages', component: EtagesListeComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
+  { path: 'batiment/:id/salles', component: SallesListeComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'stock/liste', component: ListePiecesDetacheesComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN','RESPONSABLE','MAGASINIER'] } },
-  { path: 'stock/alertes', component: SuiviStocksAlertesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE'] } },
+  { path: 'stock/lot/:pieceId', component: LotAchatPieceComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN','RESPONSABLE'] } },
   { path: 'stock/demande', component: DemandePieceDetacheeComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE'] } },
   { path:'details-maintenance/:id',component:DetailsMaintenanceComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path:'details/:id',component:DetailsHistoComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },

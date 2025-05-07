@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import {catchError, Observable, throwError} from 'rxjs';
-import {Salle} from "../models/salle";
+
 
 @Injectable({
   providedIn: 'root'
@@ -13,11 +13,39 @@ export class SalleService {
   constructor(private http: HttpClient) { }
 
 
-  createSalle(salle: Salle): Observable<Salle> {
-    return this.http.post<Salle>(this.apiUrl, salle).pipe(
-      catchError(error => {
-        return throwError(() => error.error);
-      })
+  createSalle(salle: any): Observable<any> {
+    const params = new HttpParams()
+      .set('num', salle.num)
+      .set('prefixe', salle.prefixe)
+      .set('etageId', salle.etageId);
+
+    return this.http.post<any>(this.apiUrl, null, { params }).pipe(
+      catchError(error => throwError(() => error.error))
     );
   }
+
+  // Update Salle (send full object in body)
+  updateSalle(id: number, salle: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, salle).pipe(
+      catchError(error => throwError(() => error.error))
+    );
+  }
+
+  archiver(id: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}/archiver`, {});
+  }
+
+
+  restaurer(id: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}/restaurer`, {});
+  }
+
+  restaurerMultiple(ids: number[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/restaurer-multiple`, ids);
+  }
+
+  archiverMultiple(ids: number[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/archiver-multiple`, ids);
+  }
+
 }

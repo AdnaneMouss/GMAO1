@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { PieceDetacheeService } from '../../../services/piece-detachee.service';
 import { PieceDetachee } from '../../../models/piece-detachee';
 import * as XLSX from 'xlsx';
@@ -25,6 +26,8 @@ export class ListePiecesDetacheesComponent  implements OnInit {
   successMessage: string = '';
   isEditing: boolean = false;
   imageError: string | null = null;
+  isAddingLot: { [key: number]: boolean } = {};  // Pour suivre l'état d'affichage du formulaire pour chaque pièce
+
 
   newAchat: any = {  // Object to store new achat data
     dateAchat: '',
@@ -48,7 +51,7 @@ selectedPiece: any = {};
 
   showPanel = false;
 
-  constructor(private PieceDetacheeService: PieceDetacheeService, private AchatPieceService: AchatPieceService) { }
+  constructor(private PieceDetacheeService: PieceDetacheeService, private AchatPieceService: AchatPieceService, private router: Router) { }
   ngOnInit(): void {
     this.fetchPieces();
   }
@@ -105,7 +108,13 @@ selectedPiece: any = {};
     this.showEditPanel = true;
   }
 
+  toggleLotForm(pieceId: number): void {
+    this.isAddingLot[pieceId] = !this.isAddingLot[pieceId];
+  }
 
+  goToLotAchat(pieceId: number): void {
+    this.router.navigate(['/stock/lot', pieceId]);
+  }
 
 
   addPiece(): void {

@@ -25,4 +25,18 @@ public class SalleService {
         return sallesRepository.existsByNumAndEtageId(num, etageId);
     }
 
+    public List<Salle> getSallesActifs() {
+        return sallesRepository.findByActifTrue();
+    }
+
+    public List<Salle> getSallesInactifs() {
+        return sallesRepository.findByActifFalse();
+    }
+
+
+    public boolean existsByPrefixeAndNumAndEtageIdAndActifTrue(String prefixe, Integer num, Long etageId) {
+        return sallesRepository.existsByPrefixeAndNumAndEtageIdAndActifTrue(prefixe,num,etageId);
+    }
+
+
 }

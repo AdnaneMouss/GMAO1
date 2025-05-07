@@ -20,9 +20,9 @@ public class Salle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    private String prefixe;
     private int num;
-
+    private boolean actif = true;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "etage_id")
     @JsonBackReference("etage-salle")

@@ -137,56 +137,127 @@
     </div>
 
     <br>
-    <div class="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6 z-0">
-      <div *ngFor="let piece of filteredPiecesDetachees"
-           class="relative bg-white p-6 border-2 border-green-700 rounded-xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl z-0">
+     <div class="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6 z-0">
+       <div *ngFor="let piece of filteredPiecesDetachees"
+            class="relative bg-white p-6 border-2 border-green-700 rounded-xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl z-0">
 
-        <!-- ⚠️ Alert icon with tooltip if under stock
-        <div *ngIf="piece.quantiteStock < piece.quantiteMinimale"
-             class="absolute top-2 left-5 z-50 group">
-          <div class="relative flex items-center justify-center">
-            <svg class="w-5 h-5 text-yellow-500 cursor-pointer animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd"
-                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l6.518 11.594c.75 1.333-.213 2.996-1.742 2.996H3.48c-1.528 0-2.492-1.663-1.742-2.996L8.257 3.1zM11 14a1 1 0 10-2 0 1 1 0 002 0zm-.25-2.75a.75.75 0 01-1.5 0v-3a.75.75 0 011.5 0v3z"
-                    clip-rule="evenodd" />
-            </svg>
+         <div *ngIf="piece.quantiteStock !== undefined && piece.quantiteStock < piece.quantiteMinimale"
 
-            <span class="absolute top-full mt-1 w-48 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-[9999] text-center">
+         class="absolute top-2 left-5 z-50 group">
+           <div class="relative flex items-center justify-center">
+             <svg class="w-5 h-5 text-yellow-500 cursor-pointer animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+               <path fill-rule="evenodd"
+                     d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l6.518 11.594c.75 1.333-.213 2.996-1.742 2.996H3.48c-1.528 0-2.492-1.663-1.742-2.996L8.257 3.1zM11 14a1 1 0 10-2 0 1 1 0 002 0zm-.25-2.75a.75.75 0 01-1.5 0v-3a.75.75 0 011.5 0v3z"
+                     clip-rule="evenodd" />
+             </svg>
+
+             <span class="absolute top-full mt-1 w-48 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-[9999] text-center">
           Réapprovisionnement nécessaire
         </span>
-          </div>
-        </div>
--->
+           </div>
+         </div>
 
-        <!-- Piece image -->
-        <img [src]="getImageUrl(piece.image)"
-             class="rounded-full mx-auto mb-4 border-4 border-gray-200 object-contain"
-             style="width: 100px; height: 100px;"
-             alt="Image indisponible">
+         <!-- Image de la pièce -->
+         <img [src]="getImageUrl(piece.image)"
+              class="rounded-full mx-auto mb-4 border-4 border-gray-200 object-contain"
+              style="width: 100px; height: 100px;"
+              alt="Image indisponible">
 
-        <!-- Name -->
-        <h5 class="text-lg font-semibold text-center text-gray-800 truncate w-full" [title]="piece.nom">
-          {{ piece.nom }}
-        </h5>
+         <!-- Nom de la pièce -->
+         <h5 class="text-lg font-semibold text-center text-gray-800 truncate w-full" [title]="piece.nom">
+           {{ piece.nom }}
+         </h5>
 
-        <!-- Details button -->
-        <div class="flex justify-center mt-6 relative z-20">
-          <button (click)="viewDetails(piece.id)"
-                  class="px-4 py-2 text-sm font-semibold text-white bg-green-700 hover:bg-green-800 rounded-lg shadow-md transition duration-200">
-            Voir détails >
-          </button>
-        </div>
+         <!-- Quantité en stock -->
+         <p class="text-sm text-center text-green-700 font-medium mt-1">
+           Stock : <span class="font-semibold">{{ piece.quantiteStock }}</span>
+         </p>
 
-        <!-- Out of stock overlay
-        <div *ngIf="piece.quantiteStock === 0"
-             class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded-xl z-10 pointer-events-none">
-          <img src="assets/out-of-stock.png"
-               alt="Rupture de stock"
-               class="w-24 h-24 object-contain opacity-90" />
-        </div>
-        -->
-      </div>
-    </div>
+         <!-- Bouton "Ajouter un lot" pour afficher le formulaire -->
+         <div class="absolute top-4 right-3 z-20 group">
+             <button (click)="goToLotAchat(piece.id)"
+             class="relative px-1 py-1 text-sm font-semibold text-white bg-green-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-800 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-300 overflow-hidden"
+             >
+               <div
+                 class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-xl group-hover:opacity-75 transition-opacity"
+               ></div>
+
+               <span class="relative flex items-center gap-2">
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  fill="none"
+  viewBox="0 0 24 24"
+  stroke="currentColor"
+  class="w-4 h-4"
+>
+  <path
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.2 6h11.4M7 13L5.4 5M16 21a1 1 0 100-2 1 1 0 000 2zm-8 0a1 1 0 100-2 1 1 0 000 2z"
+  />
+</svg>
+    </span>
+             </button>
+
+             <div
+               class="absolute invisible opacity-0 group-hover:visible group-hover:opacity-100 bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 transition-all duration-300 ease-out transform group-hover:translate-y-0 translate-y-2"
+             >
+               <div
+                 class="relative p-4 bg-green-800 backdrop-blur-md rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(34,197,94,0.25)]"
+               >
+                 <div class="flex items-center gap-3 mb-2">
+                   <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
+                     <svg
+                       viewBox="0 0 20 20"
+                       fill="currentColor"
+                       class="w-4 h-4 text-white"
+                     >
+                       <path
+                         clip-rule="evenodd"
+                         d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                         fill-rule="evenodd"
+                       ></path>
+                     </svg>
+                   </div>
+                   <h3 class="text-sm font-semibold text-white">Information</h3>
+                 </div>
+
+                 <div class="relative space-y-2 z-20">
+                   <p class="text-sm text-white">
+                     Cliquez ici pour ajouter un lot d'achat pour cette pièce détachée. Cela mettra automatiquement à jour le stock disponible.
+                   </p>
+                 </div>
+
+                 <div
+                   class="absolute inset-0 rounded-2xl bg-green-700/20 blur-xl opacity-40"
+                 ></div>
+
+                 <div
+                   class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-green-800 rotate-45 border-r border-b border-white/10"
+                 ></div>
+               </div>
+
+             </div>
+           </div>
+
+
+         <!-- Détails de la pièce -->
+         <div class="flex justify-center mt-6 relative z-20">
+           <button (click)="viewDetails(piece.id)"
+                   class="px-4 py-2 text-sm font-semibold text-white bg-green-700 hover:bg-green-700 rounded-lg shadow-md transition duration-200">
+             Voir détails >
+           </button>
+         </div>
+
+         <div *ngIf="piece.quantiteStock === 0"
+              class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded-xl z-10 pointer-events-none">
+           <img src="assets/out-of-stock.png"
+                alt="Rupture de stock"
+                class="w-24 h-24 object-contain opacity-90" />
+         </div>
+       </div>
+     </div>
 
 
  </div>
@@ -237,11 +308,7 @@
                     <strong><i class="fas fa-user"></i> Fournisseur :</strong> {{ selectedPiece?.fournisseur }}
                   </p>
                 </div>
-                <div class="text-left">
-                  <p class="text-sm text-gray-600">
-                    <strong><i class="fas fa-money-bill-wave"></i> Coût unitaire :</strong> {{ selectedPiece?.coutUnitaire }} MAD
-                  </p>
-                </div>
+
                 <div class="text-left">
                   <p class="text-sm text-gray-600">
                     <strong><i class="fas fa-box"></i> Quantité en stock :</strong> {{ selectedPiece?.quantiteStock }}
@@ -250,20 +317,6 @@
                 <div class="text-left">
                   <p class="text-sm text-gray-600">
                     <strong><i class="fas fa-box"></i> Quantité minimale :</strong> {{ selectedPiece?.quantiteMinimale }}
-                  </p>
-                </div>
-              </div>
-
-              <!-- Date d'achat et de péremption -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div class="text-left">
-                  <p class="text-sm text-gray-600">
-                    <strong><i class="fas fa-calendar-day"></i> Date d'achat :</strong> {{ selectedPiece?.dateAchat }}
-                  </p>
-                </div>
-                <div class="text-left">
-                  <p class="text-sm text-gray-600">
-                    <strong><i class="fas fa-calendar-times"></i> Date de péremption :</strong> {{ selectedPiece?.datePeremption }}
                   </p>
                 </div>
               </div>
@@ -325,25 +378,6 @@
                 </div>
               </div>
 
-              <!-- Quantité en stock -->
-              <div>
-                <label class="block mb-2 text-gray-700">Quantité en stock</label>
-                <input
-                  type="number"
-                  name="quantiteStock"
-                  [(ngModel)]="selectedPiece!.quantiteStock"
-                  #quantiteStock="ngModel"
-                  required
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                  [class.border-red-500]="quantiteStock.touched && quantiteStock.invalid"
-                  [class.focus:ring-red-500]="quantiteStock.touched && quantiteStock.invalid"
-                  [class.focus:ring-green-500]="quantiteStock.valid"
-                >
-                <div *ngIf="quantiteStock.touched && quantiteStock.invalid" class="text-red-500 text-sm mt-1">
-                  Quantité requise.
-                </div>
-              </div>
-
               <!-- Quantité minimale -->
               <div>
                 <label class="block mb-2 text-gray-700">Quantité minimale</label>
@@ -363,53 +397,6 @@
                 </div>
               </div>
 
-              <!-- Coût unitaire -->
-              <div>
-                <label class="block mb-2 text-gray-700">Coût unitaire</label>
-                <input
-                  type="number"
-                  name="coutUnitaire"
-                  [(ngModel)]="selectedPiece!.coutUnitaire"
-                  #coutUnitaire="ngModel"
-                  required
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                  [class.border-red-500]="coutUnitaire.touched && coutUnitaire.invalid"
-                  [class.focus:ring-red-500]="coutUnitaire.touched && coutUnitaire.invalid"
-                  [class.focus:ring-green-500]="coutUnitaire.valid"
-                >
-                <div *ngIf="coutUnitaire.touched && coutUnitaire.invalid" class="text-red-500 text-sm mt-1">
-                  Coût unitaire requis.
-                </div>
-              </div>
-
-              <!-- Date d'achat -->
-              <div>
-                <label class="block mb-2 text-gray-700">Date d'achat</label>
-                <input
-                  type="date"
-                  name="dateAchat"
-                  [(ngModel)]="selectedPiece!.dateAchat"
-                  #dateAchat="ngModel"
-                  required
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                  [class.border-red-500]="dateAchat.touched && dateAchat.invalid"
-                  [class.focus:ring-red-500]="dateAchat.touched && dateAchat.invalid"
-                  [class.focus:ring-green-500]="dateAchat.valid"
-                >
-                <div *ngIf="dateAchat.touched && dateAchat.invalid" class="text-red-500 text-sm mt-1">
-                  Date d'achat requise.
-                </div>
-              </div>
-
-              <!-- Date de péremption (no validation) -->
-              <div>
-                <label class="block mb-2 text-gray-700">Date de péremption</label>
-                <input
-                  type="date"
-                  [(ngModel)]="selectedPiece!.datePeremption"
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-              </div>
 
               <!-- Description -->
               <div class="col-span-2">
@@ -469,6 +456,7 @@
 
 
     </div>
+
 
   </div>
 

@@ -79,7 +79,7 @@ export class MaintenancesPreventivesComponent implements OnInit {
   selectedSalle: number = 0;
   etages: any[] = [];
   salles: any[] = [];
- 
+
 
 
 
@@ -231,7 +231,7 @@ applyFilters(): void {
       historiquePannes: '',
       coutAchat: '',
       serviceNom: '',
-      typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Initial empty type
+      typeEquipement: {} as TypesEquipements,
       service: {} as Service,
       piecesDetachees: [],
       salle: {} as Salle,
@@ -374,7 +374,7 @@ applyFilters(): void {
      private http: HttpClient,private notificationService: NotificationService,
      private batimentService: BatimentService ,
       private etageService: EtageService,) { }
-      
+
 
 
   validateDates() {
@@ -436,8 +436,8 @@ applyFilters(): void {
   }
 
   filterMaintenancesByEquipement(){
-    console.log("Maintenances Data:", this.equipements); 
-    
+    console.log("Maintenances Data:", this.equipements);
+
     if (this.selectedEquipement) {
       // Filtrer en fonction de la priorité sélectionnée
       this.filteredMaintenace = this.maintenances.filter(e => e.equipementNom === this.selectedEquipement);
@@ -451,8 +451,8 @@ applyFilters(): void {
   }
 
   filterMaintenancesBydateDebutPrevue(){
-    console.log("Maintenances Data:", this.maintenances); 
-    
+    console.log("Maintenances Data:", this.maintenances);
+
     if (this.dateDebutPrevue) {
       // Filtrer en fonction de la priorité sélectionnée
       this.filteredMaintenace = this.maintenances.filter(e => e.dateDebutPrevue === this.dateDebutPrevue);
@@ -467,8 +467,8 @@ applyFilters(): void {
   }
 
   filterMaintenancesBydatedateFinPrevue(){
-    console.log("Maintenances Data:", this.maintenances); 
-    
+    console.log("Maintenances Data:", this.maintenances);
+
     if (this.dateFinPrevue) {
       // Filtrer en fonction de la priorité sélectionnée
       this.filteredMaintenace = this.maintenances.filter(e => e.dateFinPrevue === this.dateFinPrevue);
@@ -500,7 +500,7 @@ applyFilters(): void {
   }
 
 
-  
+
 
 
 
@@ -1248,7 +1248,7 @@ resetForm() {
         historiquePannes: '',
         coutAchat: '',
         serviceNom: '',
-        typeEquipement: { id: undefined, type: '', image: '', attributs: [] }, // Initial empty type
+        typeEquipement: {} as TypesEquipements, // Initial empty type
         service: {} as Service,
         piecesDetachees: [],
         salle: {} as Salle,

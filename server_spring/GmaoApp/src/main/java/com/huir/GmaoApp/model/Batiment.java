@@ -21,7 +21,7 @@ public class Batiment {
 
     private int numBatiment;
     private String intitule;
-    private Boolean actif;
+    private boolean actif = true;
 
 
     @OneToMany(mappedBy = "batiment", fetch = FetchType.EAGER, cascade = CascadeType.ALL)

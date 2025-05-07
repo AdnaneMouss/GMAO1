@@ -1,0 +1,263 @@
+<div *ngIf="showAddSuccessMessage" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Lot d'achat ajouté avec succès !</span>
+</div>
+
+<div *ngIf="showEditSuccessMessage" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Lot d'achat modifié avec succès !</span>
+</div>
+
+<div *ngIf="showPanel" class="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
+  <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-4xl relative">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-green-800">Ajouter un achat</h2>
+      <button (click)="showPanel = false"
+              class="text-gray-500 hover:text-red-600 text-xl font-bold focus:outline-none">
+        &times;
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="ajouterAchat()" #achatForm="ngForm" class="space-y-6">
+
+      <!-- Date -->
+      <div>
+        <label for="dateAchat" class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+          <i class="fas fa-calendar-alt text-green-800"></i>
+          Date d'achat <span class="text-red-600 font-bold">*</span>
+        </label>
+        <input type="date"
+               id="dateAchat"
+               name="dateAchat"
+               [(ngModel)]="newAchat.dateAchat"
+               #dateAchat="ngModel"
+               required
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-800 focus:border-green-800 sm:text-sm">
+        <small class="text-gray-500">Sélectionnez la date à laquelle l'achat a été effectué.</small>
+        <div *ngIf="dateAchat.invalid && dateAchat.touched" class="text-red-600 text-sm mt-1">
+          La date d'achat est obligatoire.
+        </div>
+      </div>
+
+      <!-- Quantité -->
+      <div>
+        <label for="quantite" class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+          <i class="fas fa-boxes text-green-800"></i>
+          Quantité <span class="text-red-600 font-bold">*</span>
+        </label>
+        <input type="number"
+               id="quantite"
+               name="quantite"
+               [(ngModel)]="newAchat.quantite"
+               #quantite="ngModel"
+               required
+               min="1"
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-800 focus:border-green-800 sm:text-sm">
+        <small class="text-gray-500">Indiquez le nombre d’unités achetées.</small>
+        <div *ngIf="quantite.invalid && quantite.touched" class="text-red-600 text-sm mt-1">
+          La quantité est obligatoire.
+        </div>
+      </div>
+
+      <!-- Coût unitaire -->
+      <div>
+        <label for="coutUnitaire" class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+          <i class="fas fa-money-bill-wave text-green-800"></i>
+          Coût unitaire (MAD) <span class="text-red-600 font-bold">*</span>
+        </label>
+        <input type="number"
+               id="coutUnitaire"
+               name="coutUnitaire"
+               [(ngModel)]="newAchat.coutUnitaire"
+               #coutUnitaire="ngModel"
+               required
+               step="0.01"
+               min="0"
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-800 focus:border-green-800 sm:text-sm">
+        <small class="text-gray-500">Saisissez le prix unitaire en dirhams marocains (MAD).</small>
+        <div *ngIf="coutUnitaire.invalid && coutUnitaire.touched" class="text-red-600 text-sm mt-1">
+          Le coût unitaire est obligatoire.
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <div class="text-center">
+        <button type="submit"
+                [disabled]="achatForm.invalid"
+                class="w-full px-4 py-2 bg-green-800 text-white font-semibold rounded-md hover:bg-green-700 transition duration-200">
+          Ajouter l'achat
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<div class="container mx-auto p-8">
+  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 border border-gray-200">
+
+      <button
+        class="bg-transparent w-32 h-10 rounded-2xl relative text-green-700 text-sm font-semibold overflow-hidden group transition-all duration-300"
+        [routerLink]="'/stock/liste'">
+
+
+        <div
+          class="bg-green-700 rounded-xl h-10 w-8 flex items-center justify-center absolute left-1 top-0 group-hover:w-[128px] z-10 transition-all duration-500 ease-in-out">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1024 1024"
+            height="16"
+            width="16"
+            fill="white">
+            <path d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"/>
+            <path d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"/>
+          </svg>
+        </div>
+
+      </button>
+
+      <!-- Conteneur principal en flex -->
+    <h2 class="text-2xl font-bold text-gray-700">Lots d'achat de la pièce détachée <strong style="color:#388e3c">{{selectedPiece.nom}}</strong></h2>
+    <p class="text-gray-500 text-sm">Triez et gérez facilement tous les lots d'achats d'une pièce.</p>
+
+    <div class="flex flex-wrap md:flex-nowrap justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+      <div class="relative">
+        <label for="filterDate" class="text-sm font-medium text-green-800 flex items-center gap-2">
+          <i class="fas fa-calendar-day"></i> Filtrer par date :
+        </label>
+        <input type="date"
+               id="filterDate"
+               [(ngModel)]="filterDate"
+               class="p-2 border border-green-300 rounded-lg focus:ring-green-800 focus:border-green-800" />
+        <button (click)="clearDateFilter()"
+                class="">
+          <i class="fas fa-times-circle text-green-800"></i>
+        </button>
+  </div>
+
+
+
+      <!-- Conteneur des boutons aligné à la fin -->
+      <div class="flex space-x-4 ml-auto">
+        <button class="text-blue-600 hover:text-blue-700 transition duration-200" (click)="showPanel = !showPanel">
+          <i class="fas fa-plus fa-lg"></i>
+        </button>
+
+        <button class="text-green-600 hover:text-green-700 transition duration-200" >
+          <i class="fas fa-download fa-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <br>
+    <div class="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6 z-0">
+      <!-- Loop through 'achats' and display each achat with an edit icon -->
+
+      <div *ngFor="let achat of filteredAchats()"
+           class="relative bg-white border border-green-200 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 max-w-3xl mx-auto group flex flex-col sm:flex-row items-center gap-6">
+
+        <!-- Left: Image + Date Information -->
+        <div class="flex flex-col items-center sm:items-start sm:w-1/3 space-y-4">
+          <img src="/assets/cart.png" alt="Achat" class="w-20 h-20 object-contain mb-4" />
+          <span class="text-xs uppercase text-gray-400 tracking-widest">Achat le</span>
+          <span class="text-sm text-gray-600">{{ achat.dateAchat }}</span>
+        </div>
+
+        <!-- Right: Purchase Details and Total -->
+        <div class="flex-1 sm:flex sm:flex-col items-center sm:items-end sm:text-right">
+          <div class="flex justify-between w-full mb-4">
+            <div class="text-xs text-gray-500">Quantité</div>
+            <div class="font-semibold text-green-700">x{{ achat.quantite }}</div>
+          </div>
+
+          <div class="flex justify-between w-full mb-4">
+            <div class="text-xs text-gray-500">Coût unitaire</div>
+            <div class="font-semibold text-green-700">{{ achat.coutUnitaire }} MAD</div>
+          </div>
+
+          <div class="flex flex-col items-center sm:items-end mt-2">
+            <span class="text-xs uppercase text-gray-400 tracking-widest">Total</span>
+            <span class="text-2xl font-bold text-green-700">{{ achat.quantite * achat.coutUnitaire }} MAD</span>
+          </div>
+        </div>
+
+        <!-- Hover Action Buttons -->
+        <div class="absolute top-3 right-3 flex space-x-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button (click)="openEditModal(achat)" class="p-2 rounded-full bg-green-100 hover:bg-green-200 text-green-800">
+            <i class="fas fa-edit"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal for editing Achat -->
+      <div *ngIf="showEditModal" class="fixed inset-0 flex justify-center items-center bg-gray-600 bg-opacity-50 z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-lg w-full sm:w-96">
+          <h2 class="text-xl font-bold text-center text-green-800 mb-4">
+            <i class="fas fa-pen-to-square mr-2"></i> Modifier Achat
+          </h2>
+
+          <form (ngSubmit)="updateAchat()">
+
+            <!-- Date -->
+            <div class="mb-4">
+              <label for="dateAchat2" class="block text-sm font-medium text-gray-600 flex items-center gap-2">
+                <i class="fas fa-calendar-alt text-green-800"></i>
+                Date d'achat
+              </label>
+              <input type="date" id="dateAchat2" name="dateAchat" [(ngModel)]="selectedAchat.dateAchat"
+                     class="mt-1 p-2 border border-gray-300 rounded w-full focus:ring-green-800 focus:border-green-800" required />
+              <small class="text-gray-500">Modifiez la date à laquelle l'achat a été effectué.</small>
+            </div>
+
+            <!-- Quantité -->
+            <div class="mb-4">
+              <label for="quantite2" class="block text-sm font-medium text-gray-600 flex items-center gap-2">
+                <i class="fas fa-boxes text-green-800"></i>
+                Quantité
+              </label>
+              <input type="number" id="quantite2" name="quantite" [(ngModel)]="selectedAchat.quantite"
+                     class="mt-1 p-2 border border-gray-300 rounded w-full focus:ring-green-800 focus:border-green-800" required />
+              <small class="text-gray-500">Entrez la nouvelle quantité achetée.</small>
+            </div>
+
+            <!-- Coût unitaire -->
+            <div class="mb-4">
+              <label for="coutUnitaire2" class="block text-sm font-medium text-gray-600 flex items-center gap-2">
+                <i class="fas fa-money-bill-wave text-green-800"></i>
+                Coût unitaire (MAD)
+              </label>
+              <input type="number" id="coutUnitaire2" name="coutUnitaire" [(ngModel)]="selectedAchat.coutUnitaire"
+                     step="0.01" min="0"
+                     class="mt-1 p-2 border border-gray-300 rounded w-full focus:ring-green-800 focus:border-green-800" required />
+              <small class="text-gray-500">Mettez à jour le prix unitaire en dirhams marocains.</small>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-between items-center mt-6">
+              <button type="button"
+                      (click)="closeEditModal()"
+                      class="py-2 px-4 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition">
+                <i class="fas fa-times mr-1"></i> Annuler
+              </button>
+              <button type="submit"
+                      class="py-2 px-4 bg-green-800 text-white rounded hover:bg-green-700 transition">
+                <i class="fas fa-check mr-1"></i> Mettre à jour
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+
+
+    </div>
+
+  </div>
+
+
+</div>
+
