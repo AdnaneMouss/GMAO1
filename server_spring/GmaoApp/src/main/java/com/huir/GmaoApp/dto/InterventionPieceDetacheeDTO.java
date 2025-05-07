@@ -22,7 +22,7 @@ public class InterventionPieceDetacheeDTO {
     // Constructor to convert from entity to DTO
     public InterventionPieceDetacheeDTO(InterventionPieceDetachee entity) {
         this.id = entity.getId();
-        this.interventionId = entity.getIntervention() != null ? entity.getIntervention().getId() : null;
+        this.interventionId = entity.getIntervention() != null ? entity.getIntervention().getDuree() : null;
         this.pieceDetacheeId = entity.getPieceDetachee() != null ? entity.getPieceDetachee().getId() : null;
         this.pieceNom = entity.getPieceDetachee() != null ? entity.getPieceDetachee().getNom() : null;
         this.pieceReference = entity.getPieceDetachee() != null ? entity.getPieceDetachee().getReference() : null;

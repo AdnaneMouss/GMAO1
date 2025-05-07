@@ -139,12 +139,27 @@
                 </td>
                 <td class="px-4 py-2 text-sm">
               <!-- Bouton de génération du rapport mensuel -->
-<button 
-class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm flex items-center space-x-2"
-(click)="downloadReport(allMaintenances)">
-<i class="fas fa-file-download"></i>
-<span>Télécharger le rapport </span>
-</button>
+<!-- Boutons d'export selon le type de rapport -->
+<div class="flex gap-2">
+  <!-- Rapport hebdomadaire -->
+  <button 
+    *ngIf="report.type === 'weekly'"
+    class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm flex items-center space-x-2"
+    (click)="downloadWeeklyReport(allMaintenances)">
+    <i class="fas fa-file-download"></i>
+    <span>Exporter Hebdo</span>
+  </button>
+
+  <!-- Rapport mensuel -->
+  <button 
+    *ngIf="report.type === 'monthly'"
+    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center space-x-2"
+    (click)="downloadReport(allMaintenances)">
+    <i class="fas fa-file-download"></i>
+    <span>Exporter Mensuel</span>
+  </button>
+</div>
+
 
 
                 

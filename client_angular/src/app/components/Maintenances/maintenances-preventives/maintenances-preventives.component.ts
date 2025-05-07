@@ -22,6 +22,9 @@ import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../../../services/NotificationService';
 import { AttributEquipements } from '../../../models/attribut-equipement';
 import { EtageService } from '../../../services/etage.service';
+import { WebSocketService } from '../../../services/WebSocketService';
+import { ChatService } from '../../../services/ChatService';
+import { AuthService } from '../../../services/auth.service';
 
 
 
@@ -48,6 +51,11 @@ export class MaintenancesPreventivesComponent implements OnInit {
   addSuccessful: boolean = false;
   successMessage:string= '';
 
+  showNotificationsPanel: boolean = false;
+notificationCount: number = 0;
+notifications: any[] = []; // Doit être alimenté depuis le backend
+unreadMessagesCount: number = 0;
+
   dateDebutPrevue: string = '';     // Filtre sur la date de début prévue
   dateFinPrevue: string = '';       // Filtre sur la date de fin prévue
 
@@ -64,7 +72,7 @@ export class MaintenancesPreventivesComponent implements OnInit {
   selectedStatus: string = '';
   selectedPriorite: string = '';
   notificationMessage: string = ''; // Variable pour stocker le message de notification
-  notificationCount: number = 0;
+ 
   notification: {id: number, message: string}[] = [];
   currentPage: number = 0;
   pageSize: number = 15 // 20 éléments par page
@@ -89,18 +97,19 @@ export class MaintenancesPreventivesComponent implements OnInit {
 
 
 private checkInterval: Subscription | undefined;
-showNotificationsPanel: boolean = false;
+
 
 generatedDates: Date[] = [];
 
-unreadMessagesCount: number = 0;
 showNotificationm: boolean = false;
 notificationMessagecHAT: string = '';
-private unreadMessages: {[key: string]: number} = {};
+
+  private unreadMessages: {[key: string]: number} = {};
 
 
 
-notifications: string[] = [];
+
+
 
 showNotifications: boolean = false;
 
@@ -373,7 +382,10 @@ applyFilters(): void {
      private route: ActivatedRoute,private toastr: ToastrService,
      private http: HttpClient,private notificationService: NotificationService,
      private batimentService: BatimentService ,
-      private etageService: EtageService,) { }
+      private etageService: EtageService,
+      private webSocketService: WebSocketService,
+      private chatService: ChatService,
+      private authService: AuthService) { }
       
 
 
@@ -619,9 +631,40 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     this.checkMaintenanceStartDate();
     this.chargerEquipements();
     this.loadBatiments();
+    this.setupChatNotifications();
 
+    
 
   }
+  private setupChatNotifications(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
+    // Écoute les nouveaux messages
+    this.webSocketService.onMessage().subscribe((message) => {
+      if (message.receiver === user.username) {
+        this.incrementUnreadCount(message.sender);
+      }
+    });
+    this.chatService.getUnreadMessagesCount().subscribe(count => {
+      this.unreadMessagesCount = count;
+      this.cdr.detectChanges();
+    });
+  }
+  private incrementUnreadCount(sender: string): void {
+    if (!this.unreadMessages[sender]) {
+      this.unreadMessages[sender] = 0;
+    }
+    this.unreadMessages[sender]++;
+    this.unreadMessagesCount = Object.values(this.unreadMessages).reduce((a, b) => a + b, 0);
+    this.cdr.detectChanges();
+  }
+  clearNotificationss(): void {
+    this.unreadMessagesCount = 0;
+    this.unreadMessages = {};
+    this.cdr.detectChanges();
+  }
+
 
   getPaginatedMaintenances(): any[] {
     const startIndex = this.currentPage * this.pageSize;
@@ -754,12 +797,15 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
 
   }
 
-  toggleNotificationsPanel(): void {
+  toggleNotificationsPanel(event: MouseEvent): void {
+    event.stopPropagation(); // Empêche le clic sur cloche de remonter à l'élément parent
     this.showNotificationsPanel = !this.showNotificationsPanel;
     if (!this.showNotificationsPanel) {
-      this.notificationCount = 0; // Réinitialiser le compteur quand on ferme le panneau
+      this.notificationCount = 0;
     }
   }
+
+  
 
   clearNotifications(): void {
     this.notifications = [];

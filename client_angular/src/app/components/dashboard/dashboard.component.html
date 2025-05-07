@@ -1,126 +1,744 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tableau de Bord Maintenance</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    /* Style général */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f9f9f9;
-    }
-
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-
-    /* Conteneur du tableau de bord */
-    .dashboard {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr); /* 2 colonnes */
-      gap: 20px; /* Espace entre les cartes */
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    /* Style des cartes */
-    .card {
-      background-color: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .card h2 {
-      margin-top: 0;
-      font-size: 1.5em;
-      color: #444;
-      text-align: center;
-    }
-
-    /* Conteneur des graphiques */
-    .chart-container {
-      width: 100%;
-      height: 300px; /* Hauteur fixe pour les graphiques */
-      margin: 0 auto;
-    }
-
-    /* Style de la liste des interventions */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #f2f2f2;
-    }
-
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-
-    tr:hover {
-      background-color: #f1f1f1;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Gestion Équipements</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        .sidebar {
+            background-color: var(--secondary-color);
+            min-height: 100vh;
+            color: white;
+            padding: 0;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            margin: 5px 10px;
+            padding: 10px 15px;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        
+        .card-stat {
+            border-radius: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card-stat:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.7;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .bg-status-active {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .bg-status-inactive {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .bg-role-admin {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .bg-role-technician {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .bg-role-standard {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+        
+        .action-btn {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
 </head>
 <body>
-  <h1>Tableau de Bord Maintenance</h1>
-  <div class="dashboard">
-    <!-- Graphique 1 : Interventions par type -->
-    <div class="card">
-      <h2>Interventions par Type</h2>
-      <div class="chart-container">
-        <canvas id="maintenanceChart"></canvas>
-      </div>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-0">
+                <div class="p-4">
+                    <h4 class="text-center mb-4">
+                        <i class="bi bi-hospital"></i> H.U.I.R
+                    </h4>
+                    <hr>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-tools"></i> Équipements
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-people"></i> Utilisateurs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-clipboard-data"></i> Rapports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-gear"></i> Paramètres
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 main-content">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">
+                        <i class="bi bi-speedometer2 me-2"></i> Tableau de Bord
+                    </h2>
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <span class="me-2">Bonjour, Admin</span>
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <button class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card card-stat bg-gradient-to-br from-indigo-50 to-indigo-100 border-top-0 border-start-0 border-end-0 border-bottom-3 border-primary shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Équipements</h6>
+                                        <h3 class="mb-0">245</h3>
+                                        <small class="text-success">
+                                            <i class="bi bi-arrow-up"></i> 5% vs mois dernier
+                                        </small>
+                                    </div>
+                                    <div class="stat-icon text-primary">
+                                        <i class="bi bi-pc-display"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card card-stat bg-gradient-to-br from-green-50 to-green-100 border-top-0 border-start-0 border-end-0 border-bottom-3 border-success shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Fonctionnels</h6>
+                                        <h3 class="mb-0">218</h3>
+                                        <small class="text-success">
+                                            <i class="bi bi-arrow-up"></i> 89% du parc
+                                        </small>
+                                    </div>
+                                    <div class="stat-icon text-success">
+                                        <i class="bi bi-check-circle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card card-stat bg-gradient-to-br from-orange-50 to-orange-100 border-top-0 border-start-0 border-end-0 border-bottom-3 border-warning shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">En Panne</h6>
+                                        <h3 class="mb-0">15</h3>
+                                        <small class="text-warning">
+                                            <i class="bi bi-exclamation-triangle"></i> 6.1% du parc
+                                        </small>
+                                    </div>
+                                    <div class="stat-icon text-warning">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card card-stat bg-gradient-to-br from-purple-50 to-purple-100 border-top-0 border-start-0 border-end-0 border-bottom-3 border-purple shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Coût Total</h6>
+                                        <h3 class="mb-0">1,245,000 DH</h3>
+                                        <small class="text-info">
+                                            <i class="bi bi-currency-exchange"></i> 5,102 DH/unité
+                                        </small>
+                                    </div>
+                                    <div class="stat-icon text-purple">
+                                        <i class="bi bi-cash-stack"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card card-stat bg-white border-top-0 border-start-0 border-end-0 border-bottom-3 border-primary shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Utilisateurs</h6>
+                                        <h3 class="mb-0">84</h3>
+                                        <small class="text-muted">Tous les comptes</small>
+                                    </div>
+                                    <div class="stat-icon text-primary">
+                                        <i class="bi bi-people"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card card-stat bg-white border-top-0 border-start-0 border-end-0 border-bottom-3 border-success shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Utilisateurs Actifs</h6>
+                                        <h3 class="mb-0">72</h3>
+                                        <small class="text-success">85.7% du total</small>
+                                    </div>
+                                    <div class="stat-icon text-success">
+                                        <i class="bi bi-person-check"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card card-stat bg-white border-top-0 border-start-0 border-end-0 border-bottom-3 border-warning shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Administrateurs</h6>
+                                        <h3 class="mb-0">8</h3>
+                                        <small class="text-warning">9.5% du total</small>
+                                    </div>
+                                    <div class="stat-icon text-warning">
+                                        <i class="bi bi-shield-lock"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card card-stat bg-white border-top-0 border-start-0 border-end-0 border-bottom-3 border-info shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Techniciens</h6>
+                                        <h3 class="mb-0">24</h3>
+                                        <small class="text-info">28.6% du total</small>
+                                    </div>
+                                    <div class="stat-icon text-info">
+                                        <i class="bi bi-tools"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts Row -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Statut des Équipements</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="equipmentStatusChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Répartition des Utilisateurs</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="userDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reports Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Rapports Automatisés</h5>
+                        <button class="btn btn-sm btn-primary">
+                            <i class="bi bi-download me-1"></i> Exporter Tout
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card border">
+                                    <div class="card-header bg-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0 text-primary">
+                                                    <i class="bi bi-calendar-week me-2"></i> Rapport Hebdomadaire
+                                                </h6>
+                                                <small class="text-muted">Dernière génération: 12/06/2023</small>
+                                            </div>
+                                            <span class="badge bg-primary">Nouveau</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i> Ce rapport inclut:
+                                        </p>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-1">
+                                                <i class="bi bi-check-circle text-success me-1"></i> Analyse des pannes sur 7 jours
+                                            </li>
+                                            <li class="mb-1">
+                                                <i class="bi bi-check-circle text-success me-1"></i> Nombre de maintenances programmées
+                                            </li>
+                                            <li class="mb-1">
+                                                <i class="bi bi-check-circle text-success me-1"></i> Coûts d'exploitation
+                                            </li>
+                                        </ul>
+                                        <div class="d-flex justify-content-end mt-3">
+                                            <button class="btn btn-sm btn-outline-primary me-2">
+                                                <i class="bi bi-eye me-1"></i> Visualiser
+                                            </button>
+                                            <button class="btn btn-sm btn-primary">
+                                                <i class="bi bi-download me-1"></i> Télécharger
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card border">
+                                    <div class="card-header bg-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0 text-success">
+                                                    <i class="bi bi-calendar-month me-2"></i> Rapport Mensuel Complet
+                                                </h6>
+                                                <small class="text-muted">Dernière génération: 01/06/2023</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i> Analyse complète du mois:
+                                        </p>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-1">
+                                                <i class="bi bi-check-circle text-success me-1"></i> Analyse des coûts
+                                            </li>
+                                            <li class="mb-1">
+                                                <i class="bi bi-check-circle text-success me-1"></i> Prévisions pour le mois suivant
+                                            </li>
+                                            <li class="mb-1">
+                                                <i class="bi bi-check-circle text-success me-1"></i> Analyse des équipements
+                                            </li>
+                                        </ul>
+                                        <div class="d-flex justify-content-end mt-3">
+                                            <button class="btn btn-sm btn-outline-success me-2">
+                                                <i class="bi bi-eye me-1"></i> Visualiser
+                                            </button>
+                                            <button class="btn btn-sm btn-success">
+                                                <i class="bi bi-download me-1"></i> Télécharger
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Critical Equipment Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Équipements Critiques
+                        </h5>
+                        <span class="badge bg-danger">15 équipements</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Localisation</th>
+                                        <th>Statut</th>
+                                        <th>Dernière Maintenance</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Scanner IRM</td>
+                                        <td>Bâtiment A - Salle 204</td>
+                                        <td>
+                                            <span class="status-badge bg-status-inactive">En panne</span>
+                                        </td>
+                                        <td>15/05/2023</td>
+                                        <td>
+                                            <button class="action-btn bg-primary text-white me-1" title="Détails">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="action-btn bg-success text-white" title="Exporter">
+                                                <i class="bi bi-download"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Échographe Doppler</td>
+                                        <td>Bâtiment B - Salle 112</td>
+                                        <td>
+                                            <span class="status-badge bg-status-inactive">Hors service</span>
+                                        </td>
+                                        <td>22/05/2023</td>
+                                        <td>
+                                            <button class="action-btn bg-primary text-white me-1" title="Détails">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="action-btn bg-success text-white" title="Exporter">
+                                                <i class="bi bi-download"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Analyseur Biochimique</td>
+                                        <td>Bâtiment C - Labo 3</td>
+                                        <td>
+                                            <span class="status-badge bg-warning text-dark">En maintenance</span>
+                                        </td>
+                                        <td>10/06/2023</td>
+                                        <td>
+                                            <button class="action-btn bg-primary text-white me-1" title="Détails">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="action-btn bg-success text-white" title="Exporter">
+                                                <i class="bi bi-download"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Users Section -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-people-fill text-primary me-2"></i> Liste des Utilisateurs
+                        </h5>
+                        <div>
+                            <span class="me-3">84 utilisateurs</span>
+                            <button class="btn btn-sm btn-primary">
+                                <i class="bi bi-plus"></i> Ajouter
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Filters -->
+                        <div class="p-3 bg-light">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label">Filtrer par Rôle</label>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-primary btn-sm active">Tous</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm">Admin</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm">Techniciens</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm">Responsables</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label">Recherche</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" placeholder="Nom, email...">
+                                        <button class="btn btn-primary" type="button">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Email</th>
+                                        <th>Rôle</th>
+                                        <th>Téléphone</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Dr. Ahmed Karim</td>
+                                        <td>EMAIL</td>
+                                        <td>
+                                            <span class="status-badge bg-role-admin">Admin</span>
+                                        </td>
+                                        <td>0612345678</td>
+                                        <td>
+                                            <span class="status-badge bg-status-active">Actif</span>
+                                        </td>
+                                        <td>
+                                            <button class="action-btn bg-primary text-white me-1" title="Voir">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="action-btn bg-warning text-white me-1" title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="action-btn bg-danger text-white" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>M. Samir Technicien</td>
+                                        <td>EMAIL</td>
+                                      
+                                        <td>
+                                            <span class="status-badge bg-role-technician">Technicien</span>
+                                        </td>
+                                        <td>0623456789</td>
+                                        <td>
+                                            <span class="status-badge bg-status-active">Actif</span>
+                                        </td>
+                                        <td>
+                                            <button class="action-btn bg-primary text-white me-1" title="Voir">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="action-btn bg-warning text-white me-1" title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="action-btn bg-danger text-white" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Mme. Fatima Responsable</td>
+                                        <td>EMAIL</td>
+                                      
+                                        <td>
+                                            <span class="status-badge bg-role-standard">Responsable</span>
+                                        </td>
+                                        <td>0634567890</td>
+                                        <td>
+                                            <span class="status-badge bg-status-inactive">Inactif</span>
+                                        </td>
+                                        <td>
+                                            <button class="action-btn bg-primary text-white me-1" title="Voir">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="action-btn bg-warning text-white me-1" title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="action-btn bg-danger text-white" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-sm justify-content-center mb-0">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">Précédent</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Suivant</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Graphique 2 : Équipements par statut -->
-    <div class="card">
-      <h2>Statut des Équipements</h2>
-      <div class="chart-container">
-        <canvas id="equipmentChart"></canvas>
-      </div>
-    </div>
-
-    <!-- Graphique 3 : Interventions par Mois -->
-    <div class="card">
-      <h2>Interventions par Mois</h2>
-      <div class="chart-container">
-        <canvas id="monthlyChart"></canvas>
-      </div>
-    </div>
-
-    <!-- Graphique 4 : Répartition des techniciens -->
-    <div class="card">
-      <h2>Répartition des Techniciens</h2>
-      <div class="chart-container">
-        <canvas id="technicianChart"></canvas>
-      </div>
-    </div>
-
-  
-  </div>
-
-
-
+    <script>
+        // Equipment Status Chart
+        const equipmentCtx = document.getElementById('equipmentStatusChart').getContext('2d');
+        const equipmentChart = new Chart(equipmentCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Fonctionnels', 'En panne', 'En maintenance', 'Hors service'],
+                datasets: [{
+                    data: [218, 15, 8, 4],
+                    backgroundColor: [
+                        '#10B981',
+                        '#F59E0B',
+                        '#3B82F6',
+                        '#EF4444'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const value = context.raw;
+                                const percentage = Math.round((value / total) * 100);
+                                label += value + ' (' + percentage + '%)';
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // User Distribution Chart
+        const userCtx = document.getElementById('userDistributionChart').getContext('2d');
+        const userChart = new Chart(userCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Admins', 'Techniciens', 'Responsables', 'Magasiniers', 'Autres'],
+                datasets: [{
+                    label: 'Nombre d\'utilisateurs',
+                    data: [8, 24, 15, 12, 25],
+                    backgroundColor: [
+                        '#F59E0B',
+                        '#3B82F6',
+                        '#10B981',
+                        '#8B5CF6',
+                        '#64748B'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>

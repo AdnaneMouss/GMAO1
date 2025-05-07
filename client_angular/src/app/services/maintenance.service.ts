@@ -65,6 +65,11 @@ getMaintenancesByTechnicien(technicienId: number): Observable<maintenance[]> {
   startTask(id: number): Observable<maintenance> {
     return this.http.put<maintenance>(`${this.apiUrl}/${id}/start`, {});
   }
+  //startTask(id: number, repetitionDate?: string): Observable<maintenance> {
+    //const body = repetitionDate ? { repetitionDate } : {};
+    //return this.http.put<maintenance>(`${this.apiUrl}/${id}/start`, body);
+  //}
+  
 
  
 

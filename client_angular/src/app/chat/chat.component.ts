@@ -39,6 +39,8 @@ export class ChatComponent implements OnInit {
   isSidebarCollapsed = false;
   userSearchText = '';
   activeUsersCount = 0;
+  showNotificationBadge = false;
+notificationCount = 0;
   
 
   username: string = '';
@@ -88,14 +90,14 @@ private unreadMessages: {[key: string]: number} = {};
             this.showNewMessageNotification(newMessage);
           }
         }
-        if (
-          (newMessage.sender === this.username && newMessage.receiver === this.receiver) ||
-          (newMessage.sender === this.receiver && newMessage.receiver === this.username)
-        ) {
-          this.filteredMessages.push(newMessage);
-          this.scrollToBottom();
-          this.cdr.detectChanges();
-        }
+       // if (
+         // (newMessage.sender === this.username && newMessage.receiver === this.receiver) ||
+          //(newMessage.sender === this.receiver && newMessage.receiver === this.username)
+        //) {
+          //this.filteredMessages.push(newMessage);
+          //this.scrollToBottom();
+          //this.cdr.detectChanges();
+        //}
       }); 
       
 
@@ -104,10 +106,26 @@ private unreadMessages: {[key: string]: number} = {};
       // Redirection éventuelle vers login
       return;
     }
+    // Dans votre ngOnInit
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    this.clearNotifications();
+  }
+});
+    
 
     this.loadUsers();
     this.loadMessages();
-    this.originalMessages = [...this.filteredMessages]
+    this.originalMessages = [...this.filteredMessages];
+    
+  }
+  public clearNotifications(): void {
+    this.notificationCount = 0;
+    this.showNotificationBadge = false;
+    this.unreadMessages = {};
+  }
+  navigateToChat() {
+    this.router.navigate(['/CHAT']);
   }
 
   private incrementUnreadCount(sender: string): void {

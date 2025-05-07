@@ -67,15 +67,27 @@ public class InterventionPreventive {
 	    @OneToMany(mappedBy = "interventionPreventive", cascade = CascadeType.ALL , orphanRemoval = true)
 	    private List<PhotosIntervention> photos;
 
-		@ManyToMany(fetch = FetchType.EAGER)
-		@JoinTable(
-				name = "intervention_piece_detachee",
-				joinColumns = @JoinColumn(name = "intervention_id"),
-				inverseJoinColumns = @JoinColumn(name = "piece_detachee_id")
-		)
-	    @JsonManagedReference(value = "intervention-piece")
-		private List<PieceDetachee> piecesDetachees;
+	   // @OneToMany(mappedBy = "interventionPreventive", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	    //@JsonManagedReference(value = "intervention-piece1")
+	    //private List<InterventionPieceDetachee> interventionPieces;
 
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		public Long getId() {
 			return id;
 		}
@@ -132,18 +144,13 @@ public class InterventionPreventive {
 			this.photos = photos;
 		}
 
-		public List<PieceDetachee> getPiecesDetachees() {
-			return piecesDetachees;
-		}
-
-		public void setPiecesDetachees(List<PieceDetachee> piecesDetachees) {
-			this.piecesDetachees = piecesDetachees;
-		}
+	
 
 		public void setDuree(Long duree) {
 			this.duree = duree;
 		}
 
+	
 		
 		
 		
