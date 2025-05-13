@@ -20,6 +20,14 @@ public interface MaintenanceRepository extends JpaRepository<Maintenance, Long> 
 	 List<Maintenance> findByAffecteAId(Long affecteA);
 	 List<Maintenance> findByAffecteAIdAndStatutNotIn(Long technicianId, List<Statut> statuses);
 	
-	 
+	 default Maintenance save2(Maintenance maintenance) {
+	        // Exemple de vérification avant sauvegarde
+	        if (maintenance.getStatut() == Statut.EN_ATTENTE) {
+	            // Logique spécifique avant l'enregistrement
+	            return save(maintenance); // Appel de la méthode save existante de JpaRepository
+	        } else {
+	            throw new IllegalArgumentException("Le statut ne permet pas l'enregistrement de cette maintenance.");
+	        }
+	    }
 	
 }

@@ -37,6 +37,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 
 
 
@@ -74,14 +75,16 @@ private String equipementNom;
 private String labelsuivie;
 private Double valeursuivie;
 
-////HADI////
+
 private long repetition;
 
 private int seuil; // et non pas "double"
 private  String nonSeuil;
 
 @JsonProperty("next_repetition_dates")
-private  List<LocalDate> nextRepetitionDates;
+private List<LocalDate> nextRepetitionDates;
+
+
 
 
 
@@ -121,6 +124,8 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		         this.daterepetition = calculerDateRepetition(this.startDaterep,this.endDaterep,this.repetitiontype);
 		         this.seuil=maintenance.getSeuil();
 		         this.nonSeuil=maintenance.getNonSeuil();
+		         this.nextRepetitionDates = maintenance.getNextRepetitionDates();
+
 		      
 		        
 		         
@@ -255,6 +260,20 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		public void setFrequence(frequence frequence) {
 			this.frequence = frequence;
 		}
+		@Transient
+		public String getNextRepetitionDatesAsString() {
+		    if (nextRepetitionDates == null || nextRepetitionDates.isEmpty()) {
+		        return "";
+		    }
+		    return nextRepetitionDates.stream()
+		        .map(LocalDate::toString)  // Convertir chaque date en chaîne
+		        .collect(Collectors.joining(","));  // Joindre les dates avec une virgule
+		}
+
+
+
+		
+		
 		public long getDureeIntervention() {
 		    if (dateDebutPrevue != null && dateFinPrevue != null) {
 		        // Calculer la différence en jours entre la date de début et la date de fin

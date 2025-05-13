@@ -96,7 +96,7 @@
           <ng-container *ngFor="let maintenance of filteredMaintenace; let i = index">
     
             <!-- Cas : maintenance sans répétition -->
-            <tr *ngIf="!maintenance.nextRepetitionDatesAsList || maintenance.nextRepetitionDatesAsList.length === 0"
+            <tr *ngIf="!maintenance.nextRepetitionDates || maintenance.nextRepetitionDates.length === 0"
                 class="border-b hover:bg-gray-50">
               
               <td class="px-6 py-4">{{ i + 1 }}</td>
@@ -174,7 +174,7 @@
             </tr>
     
             <!-- Cas : maintenance avec répétitions -->
-            <tr *ngFor="let date of maintenance.nextRepetitionDatesAsList; let isFirst = first"
+            <tr *ngFor="let date of maintenance.nextRepetitionDates; let isFirst = first"
                 class="border-b hover:bg-gray-50"
                 [ngClass]="{ 'bg-gray-50': !isFirst }">
               

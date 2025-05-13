@@ -61,6 +61,17 @@ getMaintenancesByTechnicien(technicienId: number): Observable<maintenance[]> {
   return this.http.get<maintenance[]>(`${this.apiUrl}/by-technicien/${technicienId}`);
 }
 
+changerStatutEnTermine(id: number): Observable<any> {
+  return this.http.patch(`${this.apiUrl}/${id}`, { statut: 'ANNULEE' });
+}
+
+cancelTask(id: number): Observable<maintenance> {
+    return this.http.put<maintenance>(`${this.apiUrl}/${id}/cancel`, {});
+  }
+
+
+
+
  // Start a maintenance task
   startTask(id: number): Observable<maintenance> {
     return this.http.put<maintenance>(`${this.apiUrl}/${id}/start`, {});
@@ -77,6 +88,9 @@ getMaintenancesByTechnicien(technicienId: number): Observable<maintenance[]> {
     markAsCompleted(id: number): Observable<maintenance> {
       return this.http.put<maintenance>(`${this.apiUrl}/${id}/complete`, {});
     }
+
+
+    
 
 
 

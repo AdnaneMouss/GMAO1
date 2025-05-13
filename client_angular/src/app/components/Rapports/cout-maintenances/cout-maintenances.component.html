@@ -142,9 +142,23 @@
               </svg>
               Rapport Hebdomadaire
             </h4>
-            <p class="text-sm text-gray-500 ml-8">
-              Dernière génération : {{ lundiSemaineCourante | date:'fullDate' }}
-            </p>
+               <div class="flex items-center gap-2">
+    <label class="text-sm text-gray-700">Du :</label>
+    <input type="date" [(ngModel)]="dateDebutFiltreH" class="border rounded px-2 py-1" />
+    <label class="text-sm text-gray-700">Au :</label>
+    <input type="date" [(ngModel)]="dateFinFiltreH" class="border rounded px-2 py-1" />
+    
+  </div>
+
+ <button (click)="resetFiltreH()"
+  class="px-3 py-1.5 bg-blue-400 text-white rounded hover:bg-blue-500 flex items-center gap-2 text-sm mb-4">
+  <i class="fas fa-sync-alt"></i> Rafraîchir
+</button>
+
+<p class="text-sm text-gray-500 ml-8">
+  Dernière génération : {{ lundiSemaineCourante | date:'fullDate' }}
+</p>
+
           </div>
          
         </div>
@@ -180,12 +194,16 @@
         
         <div class="flex justify-end space-x-3">
        
-          <button (click)="generateWeeklyReport()" class="bg-blue-600 text-white hover:bg-blue-700 flex items-center font-medium px-4 py-2 rounded-lg transition-colors shadow hover:shadow-md">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Télécharger
-          </button>
+         <button 
+(click)="generateWeeklyReport()"
+
+  class="bg-blue-600 text-white hover:bg-blue-700 flex items-center font-medium px-4 py-2 rounded-lg transition-colors shadow hover:shadow-md">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+  </svg>
+  Télécharger
+</button>
+
          <!-- Bouton pour afficher le rapport -->
 <button (click)="viewWeeklyReport()" class="bg-green-600 text-white hover:bg-green-700 flex items-center font-medium px-4 py-2 rounded-lg transition-colors shadow hover:shadow-md">
   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -264,9 +282,24 @@
               </svg>
               Rapport Mensuel Complet
             </h4>
-          
-            Dernière génération : {{ premierJourMoisActuel | date: 'dd MMMM yyyy' }}
-            
+
+                      <div class="flex items-center gap-2">
+    <label class="text-sm text-gray-700">Du :</label>
+    <input type="date" [(ngModel)]="dateDebutFiltreM" class="border rounded px-2 py-1" />
+    <label class="text-sm text-gray-700">Au :</label>
+    <input type="date" [(ngModel)]="dateFinFiltreM" class="border rounded px-2 py-1" />
+    
+  </div>
+
+ <button (click)="resetFiltreM()"
+  class="px-3 py-1.5 bg-green-400 text-white rounded hover:bg-green-500 flex items-center gap-2 text-sm mb-4">
+  <i class="fas fa-sync-alt"></i> Rafraîchir
+</button>
+
+<!-- Texte avec espacement ajouté -->
+<p class="text-sm">Dernière génération : {{ premierJourMoisActuel | date: 'dd MMMM yyyy' }}</p>
+
+     
             
             
           </div>
@@ -319,10 +352,13 @@
   Visualiser
 </button>
 
+
 <!-- Modal affiché si showRapportModal est true -->
 <div *ngIf="showRapportModalM" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-100">
   <div class="bg-white rounded-lg w-full h-full overflow-auto p-4">
     <h2 class="text-xl font-bold mb-4">Rapport hebdomadaire</h2>
+
+  
 
     <!-- Ton contenu ici (exemple statique pour test) -->
     <div *ngIf="rapportMens">

@@ -86,6 +86,7 @@ export class MaintenancesCorrectivesComponent implements OnInit {
     this.setCurrentUser();
     this.loadBatiments();
   }
+  
 
 
 
