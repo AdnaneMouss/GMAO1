@@ -82,7 +82,7 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
 
   confirmationMessage: string = '';
   dateDebutFiltre: string | null = null;
-dateFinFiltre: string | null = null;
+  dateFinFiltre: string | null = null;
 
   technicianId: number | null = null;
   interventions: Intervention[] = [];
@@ -413,7 +413,7 @@ onAttributChange(attribut: any) {
       const debutAujourdhui = m.dateDebutPrevue?.startsWith(aujourdhui.toISOString().split('T')[0]);
 
       // 2. Filtre pour les dates de répétition aujourd'hui
-      const repetitionAujourdhui = m.nextRepetitionDatesAsList?.some((date: string | Date) => {
+      const repetitionAujourdhui = m.nextRepetitionDates?.some((date: string | Date) => {
         // Convertit la date en string si c'est un objet Date
         const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
 
@@ -593,29 +593,29 @@ onAttributChange(attribut: any) {
   }
 
   expandMaintenances() {
-    this.expandedMaintenances = [];
+  this.expandedMaintenances = [];
 
-    this.filteredMaintenace.forEach((maintenance) => {
-      const dates = maintenance.nextRepetitionDatesAsList;
+  this.filteredMaintenace.forEach((maintenance) => {
+    const dates = maintenance.nextRepetitionDates;
 
-      // S'il n'y a pas de dates, on ajoute quand même une ligne avec la date répétition vide
-      if (!dates || dates.length === 0) {
+    // S'il n'y a pas de dates, on ajoute quand même une ligne avec la date répétition vide
+    if (!dates || dates.length === 0) {
+      this.expandedMaintenances.push({
+        ...maintenance,
+        singleRepetitionDate: null
+      });
+    } else {
+      dates.forEach((date) => {
+        // If the date is a string and needs to be treated as Date, parse it
         this.expandedMaintenances.push({
           ...maintenance,
-          singleRepetitionDate: null
+          singleRepetitionDate: new Date(date) // Ensure it's a Date object if necessary
         });
-      } else {
-        dates.forEach((date: string, index: number) => {
-          this.expandedMaintenances.push({
-            ...maintenance,
-            singleRepetitionDate: date
-          });
-        });
-      }
-    });
+      });
+    }
+  });
+}
 
-    console.log("Maintenances étendues:", this.expandedMaintenances);
-  }
 
 
 

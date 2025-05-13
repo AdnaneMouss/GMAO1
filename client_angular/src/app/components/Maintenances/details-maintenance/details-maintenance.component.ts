@@ -43,6 +43,7 @@ export class DetailsMaintenanceComponent implements OnInit {
 
 
 
+
   maintenance: maintenance = {
     equipement: {
       serviceNom: "",
@@ -247,6 +248,21 @@ constructor(
 
   isLoading: boolean = true;
   nextRepetitionDates: Date[] = [];
+    nextRepetitionDatesAsList: Date[] = [];
+isArray(value: any): boolean {
+  return Array.isArray(value);
+}
+
+getJoined(value: any): string {
+  return this.isArray(value) ? value.join(', ') : value;
+}
+
+  joursSemaine: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+  moisAnnee: string[] = [
+    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+  ];
+
 
 
  calculateRepetitionDates(

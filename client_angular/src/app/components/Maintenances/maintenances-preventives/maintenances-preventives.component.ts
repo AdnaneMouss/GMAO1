@@ -1,4 +1,4 @@
-import { Component, OnInit, Pipe } from '@angular/core';
+import { Component, ElementRef, OnInit, Pipe } from '@angular/core';
 import { MaintenanceService } from '../../../services/maintenance.service';
 import * as XLSX from 'xlsx';
 import 'jspdf-autotable';
@@ -33,6 +33,9 @@ import { AuthService } from '../../../services/auth.service';
   templateUrl: './maintenances-preventives.component.html',
   styleUrl: './maintenances-preventives.component.css'
 })
+
+
+
 export class MaintenancesPreventivesComponent implements OnInit {
   maintenance: maintenance[] = [];
   selectedFilter: string = '';
@@ -41,6 +44,9 @@ export class MaintenancesPreventivesComponent implements OnInit {
   isSearchOpen = false;
   searchTerm = '';
   message: string = '';
+  searchText: string = '';
+  isScrolling = false;
+
   filteredMaintenace = [...this.maintenance];
   equipements: Equipement[] = [];
   typesEquipements: TypesEquipements[] = []
@@ -50,7 +56,7 @@ export class MaintenancesPreventivesComponent implements OnInit {
   updateSuccessful: boolean = false;
   addSuccessful: boolean = false;
   successMessage:string= '';
-
+  showEditModal = false;
   showNotificationsPanel: boolean = false;
 notificationCount: number = 0;
 notifications: any[] = []; // Doit être alimenté depuis le backend
@@ -76,7 +82,10 @@ unreadMessagesCount: number = 0;
   notification: {id: number, message: string}[] = [];
   currentPage: number = 0;
   pageSize: number = 15 // 20 éléments par page
-
+ 
+scrollTimeout: any;
+ nextRepetitionDates: Date[] = [];
+    nextRepetitionDatesAsList: Date[] = [];
   selectedAttribut: any;
   selectedEquipementId: number | null = null;
   selectedEquipement: string = '';
@@ -87,6 +96,8 @@ unreadMessagesCount: number = 0;
   selectedSalle: number = 0;
   etages: any[] = [];
   salles: any[] = [];
+  editableDates: string[] = [];
+  
 
 
 
@@ -100,13 +111,16 @@ private checkInterval: Subscription | undefined;
 
 
 generatedDates: Date[] = [];
+maintenanceToCancel: number | null = null;
 
 showNotificationm: boolean = false;
 notificationMessagecHAT: string = '';
 
   private unreadMessages: {[key: string]: number} = {};
 
-
+selectedMaintenance: maintenance | null = null;
+showUpdatePanel: boolean = false;
+showModal: boolean = false;
 
 
 
@@ -123,9 +137,43 @@ showNotifications: boolean = false;
     DIMANCHE: false,
   };
 
+isExpanded = false;
+
+toggleFormSize() {
+  this.isExpanded = !this.isExpanded;
+}
+hasRepetitionDates(): boolean {
+  return Array.isArray(this.selectedMaintenance?.nextRepetitionDatesAsList)
+    && this.selectedMaintenance!.nextRepetitionDatesAsList!.length > 0;
+}
+handleDateChange(event: Event, index: number): void {
+  const input = event.target as HTMLInputElement;
+  const newDate = input.value;
+
+  if (
+    this.selectedMaintenance &&
+    Array.isArray(this.selectedMaintenance.nextRepetitionDatesAsList)
+  ) {
+    this.selectedMaintenance.nextRepetitionDatesAsList[index] = newDate;
+
+    console.log(`Date mise à jour à l'index ${index} : ${newDate}`);
+
+    // Envoie de l'objet complet au backend
+    this.maintenanceService.updateMaintenance(
+      this.selectedMaintenance.id,
+      this.selectedMaintenance // ✅ c'est bien un objet de type "maintenance"
+    ).subscribe({
+      next: () => console.log('Maintenance mise à jour avec succès'),
+      error: (err) => console.error('Erreur lors de la mise à jour :', err)
+    });
+  }
+}
 
 
 
+selectMaintenance(maintenance: any): void {
+    this.selectedMaintenance = maintenance;  // Affecte la maintenance sélectionnée
+  }
   // Méthode pour mettre à jour le seuil à partir de l'attribut sélectionné
 updateSeuilFromAttribut() {
   if (this.selectedAttribut && this.selectedAttribut.valeur) {
@@ -174,6 +222,7 @@ applyFilters(): void {
   this.currentPage = 0;
 }
 
+selectedMoiss: { [key: string]: boolean } = {};
 
 
 
@@ -196,17 +245,27 @@ applyFilters(): void {
 
 
   };
-  getMois(): string[] {
-    return Object.keys(this.selectedMois);
-  }
+ getMois(): string[] {
+  return ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+}
+
   toggleDay(day: string): void {
     this.selectedDays[day] = !this.selectedDays[day];
     this.updateSelectedJours();
   }
+ toggleMois(mois: string): void {
+  this.selectedMoiss[mois] = !this.selectedMoiss[mois];
+}
 
-  updateSelectedJours(): void {
+
+   updateSelectedJours(): void {
     this.newMaintenance.selectedjours = Object.keys(this.selectedDays)
       .filter(day => this.selectedDays[day]);
+  }
+
+  updateSelectedMois(): void {
+    this.newMaintenance.selectedmois = Object.keys(this.selectedMois)
+      .filter(mois => this.selectedMois[mois]);
   }
   joursSemaine: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
   moisAnnee: string[] = [
@@ -216,6 +275,14 @@ applyFilters(): void {
 
 
   selectedAttributs: AttributEquipements[] = [];
+addRepetitionDate(): void {
+  if (!this.newMaintenance.nextRepetitionDatesAsList) {
+    this.newMaintenance.nextRepetitionDatesAsList = [];
+  }
+  this.newMaintenance.nextRepetitionDatesAsList.push('');
+}
+
+
 
 
   closeForm() {
@@ -365,15 +432,206 @@ applyFilters(): void {
     ) || null;
 
   }
+  onEquipementSelected() {
+    const selected = this.equipements.find(e => e.id === this.newMaintenance.equipementId);
+    if (selected) {
+      this.newMaintenance.equipementNom = selected.nom;
+      this.newMaintenance.equipement = selected; // si tu veux stocker tout l'objet
+    }
+  }
+
+ 
+  
 
 
 
-  nextRepetitionDates: Date[] = [];
+ 
+onToggleJour(jour: string, event: Event): void {
+  const checked = (event.target as HTMLInputElement).checked;
+  if (!this.newMaintenance.selectedjours) {
+    this.newMaintenance.selectedjours = [];
+  }
+
+  if (checked) {
+    if (!this.newMaintenance.selectedjours.includes(jour)) {
+      this.newMaintenance.selectedjours.push(jour);
+    }
+  } else {
+    this.newMaintenance.selectedjours = this.newMaintenance.selectedjours.filter(j => j !== jour);
+  }
+}
+
+// Ajouter ou retirer un mois sélectionné
+onToggleMois(mois: string, event: Event): void {
+  const checked = (event.target as HTMLInputElement).checked;
+  if (!this.newMaintenance.selectedmois) {
+    this.newMaintenance.selectedmois = [];
+  }
+
+  if (checked) {
+    if (!this.newMaintenance.selectedmois.includes(mois)) {
+      this.newMaintenance.selectedmois.push(mois);
+    }
+  } else {
+    this.newMaintenance.selectedmois = this.newMaintenance.selectedmois.filter(m => m !== mois);
+  }
+}
 
 
   showPanel = false; // Controls the panel visibility
   searchVisible: boolean = false;
   maintenances: any[] = []; // Tableau pour stocker les maintenances
+
+ updateMaintenance() {
+  if (!this.selectedMaintenance || !this.selectedMaintenance.id) return;
+  
+  // Préparer les données de répétition
+  if (this.selectedMaintenance.repetitiontype !== 'Ne_pas_repeter') {
+    this.selectedMaintenance.selectedjours = Object.keys(this.selectedDays)
+      .filter(day => this.selectedDays[day]);
+    
+    // Pour les mois si c'est mensuel
+    if (this.selectedMaintenance.repetitiontype === 'MENSUEL') {
+      // Rien à faire car les mois sont déjà dans selectedMaintenance.selectedmois
+    }
+    
+    // Calculer le nombre de répétitions
+    this.calculateRepetitionDatesForUpdate();
+  }
+  const startDate = this.newMaintenance.startDaterep instanceof Date
+        ? this.newMaintenance.startDaterep
+        : new Date(this.newMaintenance.startDaterep);
+  
+      const endDate = this.newMaintenance.endDaterep instanceof Date
+        ? this.newMaintenance.endDaterep
+        : new Date(this.newMaintenance.endDaterep)
+   this.nextRepetitionDates = this.calculateRepetitionDates(
+      startDate,
+      endDate,
+      this.newMaintenance.repetitiontype,
+      this.newMaintenance.selectedjours || []
+     // this.newMaintenance.selectedmois || []
+    );
+    this.newMaintenance.nextRepetitionDates=this.nextRepetitionDates;
+  this.maintenanceService.updateMaintenance(this.selectedMaintenance.id, this.selectedMaintenance)
+    .subscribe({
+      next: (updated) => {
+        console.log('Maintenance mise à jour avec succès :', updated);
+        this.closeEditModal();
+        this.chargerMaintenance();
+        this.toastr.success('Maintenance mise à jour avec succès');
+      },
+      error: (err) => {
+        console.error('Erreur lors de la mise à jour :', err);
+        this.toastr.error('Erreur lors de la mise à jour');
+      }
+    });
+}
+calculateRepetitionDatesForUpdate(): void {
+  if (!this.selectedMaintenance) return;
+  
+  if (this.selectedMaintenance.startDaterep && this.selectedMaintenance.endDaterep) {
+    const start = new Date(this.selectedMaintenance.startDaterep);
+    const end = new Date(this.selectedMaintenance.endDaterep);
+    
+    switch(this.selectedMaintenance.repetitiontype) {
+      case 'TOUS_LES_JOURS':
+        this.selectedMaintenance.repetition = this.calculateDaysBetween(start, end);
+        break;
+      case 'TOUS_LES_SEMAINES':
+        this.selectedMaintenance.repetition = this.calculateWeeksBetween(start, end);
+        break;
+      case 'MENSUEL':
+        // Calcul spécial pour les mois sélectionnés
+        this.selectedMaintenance.repetition = this.calculateSelectedMonthsBetween(
+          start, 
+          end, 
+          this.selectedMaintenance.selectedmois || []
+        );
+        break;
+      case 'ANNUEL':
+        this.selectedMaintenance.repetition = this.calculateYearsBetween(start, end);
+        break;
+      default:
+        this.selectedMaintenance.repetition = 0;
+    }
+  }
+}
+private calculateSelectedMonthsBetween(start: Date, end: Date, selectedMonths: string[]): number {
+  if (selectedMonths.length === 0) return 0;
+  
+  const monthNames = [
+    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+  ];
+  
+  let count = 0;
+  let current = new Date(start);
+  current.setDate(1); // Commencer au premier du mois
+  
+  while (current <= end) {
+    const currentMonthName = monthNames[current.getMonth()];
+    if (selectedMonths.includes(currentMonthName)) {
+      count++;
+    }
+    current.setMonth(current.getMonth() + 1);
+  }
+  
+  return count;
+}
+private calculateDaysBetween(start: Date, end: Date): number {
+  const diffTime = Math.abs(end.getTime() - start.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+private calculateWeeksBetween(start: Date, end: Date): number {
+  const diffTime = Math.abs(end.getTime() - start.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+}
+
+private calculateMonthsBetween(start: Date, end: Date): number {
+  let months = (end.getFullYear() - start.getFullYear()) * 12;
+  months -= start.getMonth();
+  months += end.getMonth();
+  return months <= 0 ? 0 : months;
+}
+
+private calculateYearsBetween(start: Date, end: Date): number {
+  return end.getFullYear() - start.getFullYear();
+}
+handleFrequenceChange() {
+  if (!this.selectedMaintenance) return;
+  
+  // Réinitialiser les sélections
+  if (this.selectedMaintenance.repetitiontype !== 'TOUS_LES_SEMAINES') {
+    
+  }
+  
+  if (this.selectedMaintenance.repetitiontype !== 'MENSUEL') {
+    this.selectedMaintenance.selectedmois = [];
+  }
+  
+  this.calculateRepetitionDatesForUpdate();
+}
+  toggleMoisSelection(mois: string, event: any) {
+  const isChecked = event.target.checked;
+  
+  if (!this.newMaintenance.selectedmois) {
+    this.newMaintenance.selectedmois = [];
+  }
+  
+  if (isChecked) {
+    if (!this.newMaintenance.selectedmois.includes(mois)) {
+      this.newMaintenance.selectedmois.push(mois);
+    }
+  } else {
+    this.newMaintenance.selectedmois = this.newMaintenance.selectedmois.filter(m => m !== mois);
+  }
+  
+  this.calculateRepetitionDatesForUpdate();
+}
+  
+  
 
   constructor(private maintenanceService: MaintenanceService,
     private cdr: ChangeDetectorRef,private equipementService: EquipementService,
@@ -382,16 +640,16 @@ applyFilters(): void {
      private route: ActivatedRoute,private toastr: ToastrService,
      private http: HttpClient,private notificationService: NotificationService,
      private batimentService: BatimentService ,
-<<<<<<< HEAD
-      private etageService: EtageService,
+
+      
       private webSocketService: WebSocketService,
       private chatService: ChatService,
-      private authService: AuthService) { }
+      private authService: AuthService,
       
-=======
-      private etageService: EtageService,) { }
 
->>>>>>> 09f36ca348373641df32f78480c553e24b38263b
+      private etageService: EtageService) { }
+
+
 
 
   validateDates() {
@@ -452,20 +710,27 @@ applyFilters(): void {
     }
   }
 
-  filterMaintenancesByEquipement(){
-    console.log("Maintenances Data:", this.equipements);
-
+  filterMaintenancesByEquipement() {
+    console.log("Maintenances Data:", this.maintenances);
+  
+    let filtered = this.maintenances;
+  
+    // Filtrer par équipement sélectionné
     if (this.selectedEquipement) {
-      // Filtrer en fonction de la priorité sélectionnée
-      this.filteredMaintenace = this.maintenances.filter(e => e.equipementNom === this.selectedEquipement);
-      console.log("Filtered Maintenances:", this.filteredMaintenace);  // Afficher les maintenances filtrées
-      console.log("Selected equipement:", this.selectedEquipement);  // Afficher la priorité sélectionnée
-    } else {
-      // Réinitialiser la liste filtrée si aucune priorité n'est sélectionnée
-      this.filteredMaintenace = [...this.maintenances];
-      console.log("No priorite selected, showing all maintenances:", this.filteredMaintenace);
+      filtered = filtered.filter(e => e.equipementNom === this.selectedEquipement);
+      console.log("Filtered by selected equipment:", filtered);
     }
+  
+    // Filtrer par texte tapé dans la barre de recherche (insensible à la casse)
+    if (this.searchText && this.searchText.trim() !== '') {
+      const searchLower = this.searchText.toLowerCase();
+      filtered = filtered.filter(e => e.equipementNom.toLowerCase().includes(searchLower));
+      console.log("Filtered by search text:", filtered);
+    }
+  
+    this.filteredMaintenace = filtered;
   }
+  
 
   filterMaintenancesBydateDebutPrevue(){
     console.log("Maintenances Data:", this.maintenances);
@@ -498,6 +763,25 @@ applyFilters(): void {
     }
 
   }
+  resetDates() {
+    this.dateDebutPrevue = '';
+    this.dateFinPrevue = '';
+    this.filteredMaintenace = [...this.maintenances]; // Réaffiche tout
+    console.log("Dates réinitialisées. Toutes les maintenances affichées.");
+  }
+  terminerMaintenance(id: number) {
+    this.maintenanceService.changerStatutEnTermine(id).subscribe(() => {
+      const item = this.maintenances.find(m => m.id === id);
+      if (item) {
+        item.statut = 'ANNULEE';
+      }
+    }, error => {
+      console.error('Erreur lors du changement de statut', error);
+    });
+  }
+  
+ 
+  
 
 
 
@@ -516,7 +800,74 @@ applyFilters(): void {
     }
   }
 
+  cancelTask(id: number): void {
+    this.maintenanceService.cancelTask(id).subscribe(
+      (updatedMaintenance) => {
+        const index = this.maintenances.findIndex(m => m.id === id);
+        if (index !== -1) {
+          this.maintenances[index] = updatedMaintenance;
+          this.chargerMaintenance();
+          this.maintenanceToCancel=null;
+        }
+      },
+      (error) => {
+        console.error('Error cancelling task:', error);
+      }
+    );
+  }
+  
+  
 
+  confirmCancelTask(id: number): void {
+    console.log('Confirm cancel task for ID:', id);
+    this.maintenanceToCancel = id;
+  }
+  
+
+  cancelCancelTask(id: number): void {
+    this.maintenanceService.cancelTask(id).subscribe(() => {
+      const item = this.maintenances.find(m => m.id === id);
+      if (item) {
+        item.statut = 'ANNULEE';
+      }
+    }, error => {
+      console.error('Erreur lors du changement de statut', error);
+    });
+  }
+  
+
+  openAddModal() {
+    this.showModal = true;
+  }
+
+  openEditModal(maintenance: any) {
+  this.selectedMaintenance = { ...maintenance };
+  
+  // Initialiser les jours sélectionnés
+  if (this.newMaintenance.selectedjours) {
+    this.selectedDays = {
+      'LUNDI': this.newMaintenance.selectedjours.includes('LUNDI'),
+      'MARDI': this.newMaintenance.selectedjours.includes('MARDI'),
+      'MERCREDI': this.newMaintenance.selectedjours.includes('MERCREDI'),
+      'JEUDI': this.newMaintenance.selectedjours.includes('JEUDI'),
+      'VENDREDI': this.newMaintenance.selectedjours.includes('VENDREDI'),
+      'SAMEDI': this.newMaintenance.selectedjours.includes('SAMEDI'),
+      'DIMANCHE': this.newMaintenance.selectedjours.includes('DIMANCHE')
+    };
+  }
+  if (this.newMaintenance.repetitiontype === 'MENSUEL') {
+    this.newMaintenance.selectedmois = this.newMaintenance.selectedmois || [];
+  }
+  
+  this.showEditModal = true;
+}
+  
+  
+
+  closeEditModal() {
+    this.showEditModal = false;
+  }
+  
 
 
 
@@ -603,6 +954,58 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     return dates;
 }
 
+getDatesFromSelectedMonthsInRange(): Date[] {
+  const start = this.newMaintenance.startDaterep;
+  const end = this.newMaintenance.endDaterep;
+  const selectedMonths = this.newMaintenance.selectedmois;
+
+  if (!start || !end || !selectedMonths || selectedMonths.length === 0) {
+    return [];
+  }
+
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const result: Date[] = [];
+
+  const monthNames = [
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+  ];
+
+  let current = new Date(startDate);
+  current.setDate(1); // pour toujours partir du premier du mois
+
+  while (current <= endDate) {
+    const currentMonthName = monthNames[current.getMonth()];
+    if (selectedMonths.includes(currentMonthName)) {
+      result.push(new Date(current));
+    }
+
+    // passer au mois suivant
+    current.setMonth(current.getMonth() + 1);
+  }
+
+  return result;
+}
+filteredDates: Date[] = [];
+
+updateFilteredDates() {
+  this.filteredDates = this.getDatesFromSelectedMonthsInRange();
+}
+toggleMoisSelectionn(mois: string, event: any) {
+  if (event.target.checked) {
+    this.newMaintenance.selectedmois.push(mois);
+  } else {
+    this.newMaintenance.selectedmois = this.newMaintenance.selectedmois.filter(m => m !== mois);
+  }
+  this.updateFilteredDates(); // Mettre à jour les dates affichées
+}
+
+
+
+
+
+
 
 
 
@@ -637,8 +1040,19 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     this.chargerEquipements();
     this.loadBatiments();
     this.setupChatNotifications();
+    window.addEventListener('scroll', this.handleScroll.bind(this));
 
-    
+     for (let mois of this.getMois()) {
+    this.selectedMoiss[mois] = false;
+
+    if (this.newMaintenance?.nextRepetitionDatesAsList) {
+    this.editableDates = this.newMaintenance.nextRepetitionDatesAsList.map(dateStr =>
+      new Date(dateStr).toISOString().slice(0, 10)
+    );
+  }
+  }
+  
+  
 
   }
   private setupChatNotifications(): void {
@@ -668,6 +1082,18 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     this.unreadMessagesCount = 0;
     this.unreadMessages = {};
     this.cdr.detectChanges();
+  }
+
+
+
+
+  handleScroll() {
+    this.isScrolling = true;
+  
+    clearTimeout(this.scrollTimeout);
+    this.scrollTimeout = setTimeout(() => {
+      this.isScrolling = false;
+    }, 1000); // 1 seconde après arrêt du scroll
   }
 
 
@@ -921,12 +1347,7 @@ calculateWeeklyDatesWithSelectedDays(startDate: Date, endDate: Date, selectedDay
     // Télécharger le fichier Excel
     XLSX.writeFile(wb, 'maintenances.xlsx');
   }
-  handleFrequenceChange() {
-    if (this.newMaintenance.frequence) {
-      this.newMaintenance.indicateurs = undefined; // Mettre les indicateurs à undefined
-    }
-    this.showJournalierForm = this.newMaintenance.frequence === 'JOURNALIER';
-  }
+ 
 
 
 
@@ -1522,18 +1943,7 @@ toggleJourSelection(jour: string, event: Event): void {
 
 
 
-toggleMoisSelection(mois: string, event: Event) {
-  const checkbox = event.target as HTMLInputElement; // Assure que c'est bien une case à cocher
-  if (!this.newMaintenance.selectedmois) {
-    this.newMaintenance.selectedmois = []; // Initialise si c'est null
-  }
 
-  if (checkbox.checked) {
-    this.newMaintenance.selectedmois.push(mois);
-  } else {
-    this.newMaintenance.selectedmois = this.newMaintenance.selectedmois.filter(m => m !== mois);
-  }
-}
 
 
 checkMaintenanceStartDate(): void {

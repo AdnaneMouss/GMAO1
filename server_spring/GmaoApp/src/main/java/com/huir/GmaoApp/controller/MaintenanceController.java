@@ -2,6 +2,9 @@ package com.huir.GmaoApp.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
@@ -11,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,6 +39,7 @@ import com.huir.GmaoApp.model.User;
 import com.huir.GmaoApp.repository.AttributEquipementsRepository;
 import com.huir.GmaoApp.repository.AttributEquipementsValeursRepository;
 import com.huir.GmaoApp.repository.IndiceRepository;
+import com.huir.GmaoApp.repository.MaintenanceRepository;
 import com.huir.GmaoApp.service.MaintenanceService;
 
 import jakarta.persistence.criteria.Path;
@@ -53,7 +58,7 @@ import org.slf4j.LoggerFactory;
 @RestController
 @RequestMapping("/api/maintenances")
 public class MaintenanceController {
-	 private static final Logger logger = LoggerFactory.getLogger(MaintenanceController.class);
+	 
 	
 		@Autowired
 		private AttributEquipementsRepository attributEquipementsRepository;
@@ -61,6 +66,8 @@ public class MaintenanceController {
 		private AttributEquipementsValeursRepository attributEquipementsValeursRepository;
 		@Autowired
 	    private  IndiceRepository indiceRepository;
+		@Autowired
+	    private  MaintenanceRepository maintenanceRepository;
 
     @Autowired
     private MaintenanceService maintenanceService;
@@ -86,7 +93,23 @@ public class MaintenanceController {
             return ResponseEntity.badRequest().body(Map.of("error", "Error adding ."));
         }
     }
-  
+    private static final Logger logger = LoggerFactory.getLogger(MaintenanceController.class);
+
+    
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelMaintenance(@PathVariable Long id) {
+        
+            Maintenance updated = maintenanceService.cancelTask(id);
+            if (updated != null) {
+                return ResponseEntity.ok(updated);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Maintenance non trouvée ou statut invalide");
+            }
+       
+    }
+
+
+
   //ethode de  batiment 
     
     @PutMapping("/{id}/complete")
@@ -181,7 +204,22 @@ public class MaintenanceController {
         int workload = maintenanceService.getTechnicianWorkload(technicianId);
         return ResponseEntity.ok(workload);
 
-    }  }
+    }  
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> changerStatutEnTermine(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String nouveauStatut = body.get(Statut.ANNULEE);
+
+        if (!"terminé".equalsIgnoreCase(nouveauStatut)) {
+            return ResponseEntity.badRequest().body("Seul le statut 'annulle' est accepté.");
+        }
+
+        maintenanceService.changerStatutEnTermine(id);
+        return ResponseEntity.ok().build();
+    }
+
+
+
+}
 
     
  

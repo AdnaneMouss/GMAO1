@@ -29,11 +29,19 @@ export class CoutMaintenancesComponent implements OnInit {
   }
   
 
- 
+dateDebutFiltreH!: Date | null;
+dateFinFiltreH!: Date | null;
+
+
+dateDebutFiltreM!: Date | null;
+dateFinFiltreM!: Date | null;
 
 
 
-filteredEquipment: Equipement[] = [];
+
+
+filteredEquipmentH: Equipement[] = [];
+filteredEquipmentM: Equipement[] = [];
 weeklyStats = {
   pannes: 0,
   maintenances: 0,
@@ -76,13 +84,29 @@ currentWeekEnd: Date = new Date();
     this.lundiSemaineCourante = new Date(today);
     this.lundiSemaineCourante.setDate(today.getDate() - diff);
     this.lundiSemaineCourante.setHours(0, 0, 0, 0);
-    //this.generateWeeklyReport();
+   if (this.dateDebutFiltreH && this.dateFinFiltreH) {
+  this.generateWeeklyReport();
+} else {
+  console.warn("Les dates de filtrage ne sont pas définies.");
+}
+
      //this.scheduleWeeklyReport();
    
   }
   get premierJourMoisActuel(): Date {
     const maintenant = new Date();
     return new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
+  }
+
+   resetFiltreH() {
+    this.dateDebutFiltreH = null;
+    this.dateFinFiltreH = null;
+    this.filteredEquipmentH = [...this.equipements]; // ou juste this.maintenances si tu n’as pas besoin de copie
+  }
+     resetFiltreM() {
+    this.dateDebutFiltreM = null;
+    this.dateFinFiltreM = null;
+    this.filteredEquipmentM = [...this.equipements]; // ou juste this.maintenances si tu n’as pas besoin de copie
   }
   
 
@@ -172,82 +196,97 @@ currentWeekEnd: Date = new Date();
     }
   }
 
-  async generateWeeklyReport(): Promise<void> {
+ async generateWeeklyReport(): Promise<void> {
     const currentDate = new Date();
     const dayOfWeek = currentDate.getDay();
     const diffToMonday = (dayOfWeek + 6) % 7;
-  
+
     const dateDebut = new Date(currentDate);
     dateDebut.setDate(currentDate.getDate() - diffToMonday);
     dateDebut.setHours(0, 0, 0, 0);
-  
+
     const dateFin = new Date(dateDebut);
     dateFin.setDate(dateDebut.getDate() + 6);
     dateFin.setHours(23, 59, 59, 999);
-  
+
+    
+
+    
+
     const pannesCetteSemaine = this.getPannesForPeriod(dateDebut, dateFin);
     const maintenancesCetteSemaine = this.getMaintenancesForPeriod(dateDebut, dateFin);
-  
+
     const equipementsDansPeriode = this.equipements.filter(eq => {
-      const achat = eq.dateAchat ? new Date(eq.dateAchat) : null;
-      const miseService = eq.dateMiseEnService ? new Date(eq.dateMiseEnService) : null;
-      const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
-    
-      return (
-        
-        (dateDerniereMaintenance && dateDerniereMaintenance >= dateDebut && dateDerniereMaintenance <= dateFin)
-      );
+      
+        const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
+
+        return (
+            dateDerniereMaintenance && 
+            dateDerniereMaintenance >= dateDebut && 
+            dateDerniereMaintenance <= dateFin
+        );
     });
-    
+
+    // Filtrage des équipements pour l'intervalle personnalisé
+    //const equipementsDansIntervalleFiltre = this.equipements.filter(eq => {
+      //  const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
+
+        //return (
+           // dateDerniereMaintenance && 
+          //  dateDerniereMaintenance >= dateDebutFiltreH && 
+            //dateDerniereMaintenance <= dateFinFiltreH
+        //);
+    //});
+
     const rapport = {
-      dateGeneration: currentDate,
-      periode: { debut: dateDebut, fin: dateFin },
-      stats: {
-        totalEquipements: this.stats.totalEquipements,
-        pannes: pannesCetteSemaine.length,
-        maintenances: maintenancesCetteSemaine.length,
-        tauxDisponibilite: (
-          ((this.stats.totalEquipements - pannesCetteSemaine.length) / this.stats.totalEquipements) * 100
-        ).toFixed(2),
-      },
-      pannes: pannesCetteSemaine,
-      maintenances: maintenancesCetteSemaine,
-      equipementsCritiques: equipementsDansPeriode
+        dateGeneration: currentDate,
+        periode: { debut: dateDebut, fin: dateFin },
+        //periodeFiltrage: { debut: dateDebutFiltreH, fin: dateFinFiltreH }, // Ajout de la période filtrée
+        stats: {
+            totalEquipements: this.stats.totalEquipements,
+            pannes: pannesCetteSemaine.length,
+            maintenances: maintenancesCetteSemaine.length,
+            tauxDisponibilite: (
+                ((this.stats.totalEquipements - pannesCetteSemaine.length) / this.stats.totalEquipements) * 100
+            ).toFixed(2),
+        },
+        pannes: pannesCetteSemaine,
+        maintenances: maintenancesCetteSemaine,
+        equipementsCritiques: equipementsDansPeriode,
+       // equipementsDansIntervalleFiltre: equipementsDansIntervalleFiltre, // Équipements dans l'intervalle filtré
     };
-  
+
     const doc = new jsPDF();
     const primaryColor = [22, 160, 133];
-   
+
     const marginLeft = 20;
     let yPosition = 30;
 
     // Load and add logo
     try {
-      const logoImg = new Image();
-      logoImg.src = 'assets/logo.png';
-      
-      // Wait for image to load
-      await new Promise((resolve, reject) => {
-          logoImg.onload = resolve;
-          logoImg.onerror = reject;
-      });
+        const logoImg = new Image();
+        logoImg.src = 'assets/logo.png';
+        
+        // Wait for image to load
+        await new Promise((resolve, reject) => {
+            logoImg.onload = resolve;
+            logoImg.onerror = reject;
+        });
 
-      doc.addImage(logoImg, 'PNG', marginLeft, yPosition, 30, 30);
-      doc.setFontSize(8);
-   
-      doc.text('Hôpital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
-      doc.text('Système de Gestion des Équipements', marginLeft + 35, yPosition + 15);
-      
-      yPosition += 40;
-  } catch (e) {
-      console.warn('Logo not found or failed to load, proceeding without it');
-      yPosition += 20;
-  }
+        doc.addImage(logoImg, 'PNG', marginLeft, yPosition, 30, 30);
+        doc.setFontSize(8);
 
+        doc.text('Hôpital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
+        doc.text('Système de Gestion des Équipements', marginLeft + 35, yPosition + 15);
+
+        yPosition += 40;
+    } catch (e) {
+        console.warn('Logo not found or failed to load, proceeding without it');
+        yPosition += 20;
+    }
 
     // Report title
     doc.setFontSize(16);
-   
     doc.setFont('helvetica', 'bold');
     const titleText = "Rapport Hebdomadaire des Équipements";
     const titleWidth = doc.getTextWidth(titleText);
@@ -267,41 +306,72 @@ currentWeekEnd: Date = new Date();
     doc.text(`Date de génération : ${rapport.dateGeneration.toLocaleString()}`, marginLeft, yPosition);
     yPosition += 15;
 
-   
+    // Display custom filtering period
+    doc.setFontSize(12);
+    //doc.text(`Filtrage personnalisé : du ${rapport.periodeFiltrage.debut.toLocaleDateString()} au ${rapport.periodeFiltrage.fin.toLocaleDateString()}`, marginLeft, yPosition);
+    yPosition += 15;
 
     // Critical equipment section
     doc.setFontSize(14);
-   
     doc.setFont('helvetica', 'bold');
     doc.text('Équipements en activité cette semaine', marginLeft, yPosition);
     yPosition += 10;
 
     // Generate table for filtered equipment
     autoTable(doc, {
-      startY: yPosition,
-      head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'Dernière Maintenance']],
-      body: rapport.equipementsCritiques.map((eq: any, index: number) => [
-        index + 1,
-        eq.nom || 'N/A',
-        eq.dateAchat ? new Date(eq.dateAchat).toLocaleDateString() : 'N/A',
-        eq.dateMiseEnService ? new Date(eq.dateMiseEnService).toLocaleDateString() : 'N/A',
-        eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance).toLocaleDateString() : 'N/A'
-      ]),
-      styles: {
-        fontSize: 9,
-      },
-      headStyles: {
-      
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      alternateRowStyles: {
-        fillColor: [240, 240, 240]
-      }
+        startY: yPosition,
+        head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'Dernière Maintenance']],
+        body: rapport.equipementsCritiques.map((eq: any, index: number) => [
+            index + 1,
+            eq.nom || 'N/A',
+            eq.dateAchat ? new Date(eq.dateAchat).toLocaleDateString() : 'N/A',
+            eq.dateMiseEnService ? new Date(eq.dateMiseEnService).toLocaleDateString() : 'N/A',
+            eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance).toLocaleDateString() : 'N/A'
+        ]),
+        styles: {
+            fontSize: 9,
+        },
+        headStyles: {
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+            fillColor: [240, 240, 240]
+        }
     });
-  
+
+    // Equipment in custom filtering period section
+    //doc.setFontSize(14);
+    //doc.setFont('helvetica', 'bold');
+    //doc.text('Équipements dans la période de filtrage personnalisée', marginLeft, yPosition);
+    //yPosition += 10;
+
+    // Generate table for custom filtered equipment
+   // autoTable(doc, {
+     //   startY: yPosition,
+       /// head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'Dernière Maintenance']],
+        //body: rapport.equipementsDansIntervalleFiltre.map((eq: any, index: number) => [
+          //  index + 1,
+            //eq.nom || 'N/A',
+            //eq.dateAchat ? new Date(eq.dateAchat).toLocaleDateString() : 'N/A',
+            //eq.dateMiseEnService ? new Date(eq.dateMiseEnService).toLocaleDateString() : 'N/A',
+            //eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance).toLocaleDateString() : 'N/A'
+       // ]),
+       // styles: {
+         //   fontSize: 9,
+        //},
+        //headStyles: {
+          //  textColor: [255, 255, 255],
+           // fontStyle: 'bold'
+        //},
+        //alternateRowStyles: {
+          //  fillColor: [240, 240, 240]
+        //}
+    //});
+
     doc.save(`rapport-maintenance-${new Date().toISOString().split('T')[0]}.pdf`);
 }
+
 
 async generateMonthlyReport(): Promise<void> {
   // Déterminer le mois précédent
@@ -319,8 +389,7 @@ async generateMonthlyReport(): Promise<void> {
 
   // Filtrer les équipements actifs ce mois-ci
   const equipementsDansPeriode = this.equipements.filter(eq => {
-    const achat = eq.dateAchat ? new Date(eq.dateAchat) : null;
-    const miseService = eq.dateMiseEnService ? new Date(eq.dateMiseEnService) : null;
+   
     const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
   
     return (

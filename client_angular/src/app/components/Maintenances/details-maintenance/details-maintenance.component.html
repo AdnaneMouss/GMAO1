@@ -2,10 +2,12 @@
   <!-- Header avec bouton retour -->
   <div class="flex justify-between items-center mb-6">
     <button
-      class="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg shadow transition duration-300"
+      class="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow transition duration-300"
       [routerLink]="'/maintenances/preventives'"
     >
-      <i class="fas fa-arrow-left"></i>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+      </svg>
       <span>Retour</span>
     </button>
     <h1 class="text-2xl font-bold text-gray-800">Détails de la Maintenance Préventive</h1>
@@ -13,52 +15,42 @@
 
   <!-- Message d'erreur -->
   <div *ngIf="errorMessage" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
-    {{ errorMessage }}
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+      {{ errorMessage }}
+    </div>
   </div>
 
   <div *ngIf="maintenance" class="bg-white rounded-xl shadow-md overflow-hidden">
-    <!-- Barre d'actions -->
+    <!-- Barre d'état -->
     <div class="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
-      <div class="flex items-center space-x-2">
-        <span class="px-3 py-1 rounded-full text-xs font-semibold"
+      <div class="flex items-center space-x-3">
+        <span class="px-3 py-1 rounded-full text-xs font-semibold flex items-center"
           [ngClass]="{
             'bg-yellow-100 text-yellow-800': maintenance.statut === 'EN_ATTENTE',
             'bg-blue-100 text-blue-800': maintenance.statut === 'EN_COURS',
             'bg-green-100 text-green-800': maintenance.statut === 'TERMINEE',
             'bg-red-100 text-red-800': maintenance.statut === 'ANNULEE'
           }">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           {{ maintenance.statut }}
         </span>
-        <span class="px-3 py-1 rounded-full text-xs font-semibold"
+        
+        <span class="px-3 py-1 rounded-full text-xs font-semibold flex items-center"
           [ngClass]="{
             'bg-green-100 text-green-800': maintenance.priorite === 'FAIBLE',
             'bg-blue-100 text-blue-800': maintenance.priorite === 'NORMALE',
             'bg-red-100 text-red-800': maintenance.priorite === 'URGENTE'
           }">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
           {{ maintenance.priorite }}
         </span>
-      </div>
-      
-      <div class="flex space-x-3">
-        <button *ngIf="!isEditMode" 
-          class="flex items-center space-x-1 bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-sm font-medium transition"
-          (click)="enableEditMode()">
-          <i class="fas fa-edit"></i>
-          <span>Modifier</span>
-        </button>
-        
-        <div *ngIf="isEditMode" class="flex space-x-2">
-          <button class="flex items-center space-x-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition"
-            (click)="saveChanges()">
-            <i class="fas fa-save"></i>
-            <span>Sauvegarder</span>
-          </button>
-          <button class="flex items-center space-x-1 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded-lg text-sm font-medium transition"
-            (click)="isEditMode = false">
-            <i class="fas fa-times"></i>
-            <span>Annuler</span>
-          </button>
-        </div>
       </div>
     </div>
 
@@ -68,183 +60,181 @@
       <div class="space-y-4">
         <!-- Équipement -->
         <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-2">
-            <i class="fas fa-server text-blue-500"></i>
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="p-2 bg-blue-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+              </svg>
+            </div>
             <h3 class="font-semibold text-gray-700">Équipement</h3>
           </div>
-          <p class="text-gray-600">{{ maintenance.equipementNom }}</p>
+          <div class="ml-11 space-y-1">
+            <p class="text-gray-600">{{ maintenance.equipementNom }}</p>
+          </div>
         </div>
 
         <!-- Technicien -->
         <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-2">
-            <i class="fas fa-user-tie text-purple-500"></i>
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="p-2 bg-purple-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
             <h3 class="font-semibold text-gray-700">Technicien</h3>
           </div>
-          <div *ngIf="!isEditMode">
-            <p class="text-gray-600">{{ maintenance.user.nom }} {{ maintenance.user.role }}</p>
-          </div>
-          <div *ngIf="isEditMode">
-            <select class="w-full p-2 border rounded" [(ngModel)]="maintenance.user">
-              <option *ngFor="let user of filteredTechnicienUsers" [ngValue]="user">
-                {{ user.nom }} {{ user.prenom }}
-              </option>
-            </select>
-          </div>
+          <p class="text-gray-600 ml-11">{{ maintenance.user?.nom }} {{ maintenance.user?.role }}</p>
         </div>
 
         <!-- Action -->
         <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-2">
-            <i class="fas fa-tools text-orange-500"></i>
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="p-2 bg-orange-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
             <h3 class="font-semibold text-gray-700">Action</h3>
           </div>
-          <div *ngIf="!isEditMode">
-            <p class="text-gray-600">{{ maintenance.action }}</p>
-            <p *ngIf="maintenance.autreAction" class="text-gray-600 mt-1">
-              <span class="font-medium">Détail:</span> {{ maintenance.autreAction }}
-            </p>
-          </div>
-          <div *ngIf="isEditMode" class="space-y-2">
-            <select class="w-full p-2 border rounded" [(ngModel)]="maintenance.action">
-              <option value="VERIFICATION_PERFORMANCES">Vérification des performances</option>
-              <option value="NETTOYAGE_EQUIPEMENTS">Nettoyage des équipements</option>
-              <option value="CALIBRATION_EQUIPEMENTS">Calibration des équipements</option>
-              <option value="TEST_SECURITE">Test de sécurité</option>
-              <option value="MISE_A_JOUR">Mise à jour</option>
-              <option value="REMPLACEMENT_PIECES">Remplacement des pièces</option>
-              <option value="INSPECTION_VISUELLE">Inspection visuelle</option>
-              <option value="CONTROLE_CONNECTIVITE">Contrôle de connectivité</option>
-              <option value="VERIFICATION_SAUVEARDES">Vérification des sauvegardes</option>
-              <option value="FORMATION_ENTRETIEN">Formation entretien</option>
-              <option value="AUTRE">Autre</option>
-            </select>
-            <input *ngIf="maintenance.action === 'AUTRE'" type="text" class="w-full p-2 border rounded" 
-              [(ngModel)]="maintenance.autreAction" placeholder="Précisez l'action">
-          </div>
+          <p class="text-gray-600 ml-11">{{ maintenance.action }}</p>
+          <p *ngIf="maintenance.autreAction" class="text-gray-600 ml-11 mt-2">
+            <span class="font-medium">Détail:</span> {{ maintenance.autreAction }}
+          </p>
         </div>
 
-        <!-- Indicateurs -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-2">
-            <i class="fas fa-chart-line text-green-500"></i>
+        <!-- Indicateurs (visible seulement si type_maintenance n'est pas 'frequence') -->
+        <div *ngIf="maintenance.type_maintenance !== 'frequence'" class="bg-gray-50 p-4 rounded-lg">
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="p-2 bg-green-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
             <h3 class="font-semibold text-gray-700">Indicateurs</h3>
           </div>
-          <div *ngIf="!isEditMode">
-            <p class="text-gray-600">{{ maintenance.indicateurs }}</p>
-          </div>
-          <div *ngIf="isEditMode">
-            <input type="text" class="w-full p-2 border rounded" [(ngModel)]="maintenance.indicateurs">
-          </div>
+          <p class="text-gray-600 ml-11">{{ maintenance.indicateurs }}</p>
         </div>
       </div>
 
-      <!-- Colonne 2: Planning -->
-      <div class="space-y-4">
-        <!-- Dates importantes -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-2">
-            <i class="fas fa-calendar-alt text-red-500"></i>
-            <h3 class="font-semibold text-gray-700">Planning</h3>
-          </div>
-          
-          <div class="space-y-3">
-            <div>
-              <label class="text-sm font-medium text-gray-500">Date début prévue</label>
-              <p *ngIf="!isEditMode" class="text-gray-600">{{ maintenance.dateDebutPrevue | date:'dd/MM/yyyy' }}</p>
-              <input *ngIf="isEditMode" type="date" class="w-full p-2 border rounded" 
-                [(ngModel)]="maintenance.dateDebutPrevue">
-            </div>
-            
-            <div>
-              <label class="text-sm font-medium text-gray-500">Date fin prévue</label>
-              <p *ngIf="!isEditMode" class="text-gray-600">{{ maintenance.dateFinPrevue | date:'dd/MM/yyyy' }}</p>
-              <input *ngIf="isEditMode" type="date" class="w-full p-2 border rounded" 
-                [(ngModel)]="maintenance.dateFinPrevue">
-            </div>
-            
-            <div>
-              <label class="text-sm font-medium text-gray-500">Prochaine maintenance</label>
-              <p *ngIf="!isEditMode" class="text-gray-600">{{ maintenance.dateProchainemaintenance | date:'dd/MM/yyyy' }}</p>
-              <input *ngIf="isEditMode" type="date" class="w-full p-2 border rounded" 
-                [(ngModel)]="maintenance.dateProchainemaintenance">
-            </div>
-            
-            <div>
-              <label class="text-sm font-medium text-gray-500">Durée (jours)</label>
-              <p *ngIf="!isEditMode" class="text-gray-600">{{ maintenance.dureeIntervention }}</p>
-              <input *ngIf="isEditMode" type="number" class="w-full p-2 border rounded" 
-                [(ngModel)]="maintenance.dureeIntervention">
-            </div>
-          </div>
-        </div>
+    <!-- Colonne 2: Planning (visible seulement si type_maintenance n'est pas 'indicateur') -->
+<div *ngIf="maintenance.type_maintenance !== 'indicateur'" class="space-y-4">
 
-        <!-- Fréquence -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-2">
-            <i class="fas fa-sync-alt text-blue-500"></i>
-            <h3 class="font-semibold text-gray-700">Fréquence</h3>
-          </div>
-          <div *ngIf="!isEditMode">
-            <p class="text-gray-600">{{ maintenance.repetitiontype }}</p>
-          </div>
-          <div *ngIf="isEditMode">
-            <select class="w-full p-2 border rounded" [(ngModel)]="maintenance.repetitiontype">
-              <option value="Ne_pas_repeter">Ne pas répéter</option>
-              <option value="TOUS_LES_JOURS">Tous les jours</option>
-              <option value="TOUS_LES_SEMAINES">Toutes les semaines</option>
-              <option value="MENSUEL">Mensuel</option>
-              <option value="ANNUEL">Annuel</option>
-            </select>
-          </div>
-          
-          <!-- Jours/Mois spécifiques -->
-          <div class="mt-3" *ngIf="maintenance.repetitiontype !== 'Ne_pas_repeter'">
-            <label class="text-sm font-medium text-gray-500">Paramètres de répétition</label>
-            <div *ngIf="!isEditMode">
-              <p *ngIf="maintenance.selectedjours" class="text-gray-600">Jours: {{ maintenance.selectedjours }}</p>
-              <p *ngIf="maintenance.selectedmois" class="text-gray-600">Mois: {{ maintenance.selectedmois }}</p>
-            </div>
-            <div *ngIf="isEditMode" class="space-y-2">
-              <input *ngIf="maintenance.repetitiontype === 'TOUS_LES_SEMAINES'" 
-                type="text" class="w-full p-2 border rounded" placeholder="Jours (ex: Lundi,Mercredi)"
-                [(ngModel)]="maintenance.selectedjours">
-              <input *ngIf="maintenance.repetitiontype === 'MENSUEL' || maintenance.repetitiontype === 'ANNUEL'" 
-                type="text" class="w-full p-2 border rounded" placeholder="Mois (ex: Janvier,Avril)"
-                [(ngModel)]="maintenance.selectedmois">
-            </div>
-          </div>
-        </div>
-
-        <!-- Prochaines dates -->
-        <div *ngIf="nextRepetitionDates" class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-2">
-            <i class="fas fa-calendar-check text-green-500"></i>
-            <h3 class="font-semibold text-gray-700">Prochaines dates</h3>
-          </div>
-          <ul class="space-y-1">
-            <li *ngFor="let date of nextRepetitionDates" class="text-gray-600">
-              {{ date | date:'dd/MM/yyyy' }}
-            </li>
-          </ul>
-        </div>
+  <!-- Dates importantes -->
+  <div class="bg-gray-50 p-4 rounded-lg">
+    <div class="flex items-center space-x-3 mb-3">
+      <div class="p-2 bg-red-100 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
       </div>
+      <h3 class="font-semibold text-gray-700">Planning</h3>
+    </div>
+
+    <div class="space-y-3 ml-11">
+      <div>
+        <label class="text-sm font-medium text-gray-500 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          Date début prévue
+        </label>
+        <p class="text-gray-600">{{ maintenance.dateDebutPrevue | date:'dd/MM/yyyy' }}</p>
+      </div>
+
+      <div>
+        <label class="text-sm font-medium text-gray-500 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          Date fin prévue
+        </label>
+        <p class="text-gray-600">{{ maintenance.dateFinPrevue | date:'dd/MM/yyyy' }}</p>
+      </div>
+
+      <div>
+        <label class="text-sm font-medium text-gray-500 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Durée
+        </label>
+        <p class="text-gray-600">{{ maintenance.dureeIntervention }} jours</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fréquence -->
+  <div class="bg-gray-50 p-4 rounded-lg">
+    <div class="flex items-center space-x-3 mb-3">
+      <div class="p-2 bg-blue-100 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      </div>
+      <h3 class="font-semibold text-gray-700">Fréquence</h3>
+    </div>
+
+    <p class="text-gray-600 ml-11">{{ maintenance.repetitiontype }}</p>
+
+    <!-- Jours / Mois spécifiques -->
+   <!-- Affichage des jours spécifiques -->
+<div *ngIf="maintenance.selectedjours && maintenance.selectedjours.length">
+  <label class="text-sm font-medium text-gray-500">Jours spécifiques</label>
+  <p class="text-gray-600">
+    {{ getJoined(maintenance.selectedjours) }}
+  </p>
+</div>
+
+<!-- Affichage des mois spécifiques -->
+<div *ngIf="maintenance.selectedmois && maintenance.selectedmois.length">
+  <label class="text-sm font-medium text-gray-500">Mois spécifiques</label>
+  <p class="text-gray-600">
+    {{ getJoined(maintenance.selectedmois) }}
+  </p>
+</div>
+
+  </div>
+
+  <!-- Prochaines dates -->
+  <div *ngIf="nextRepetitionDates && maintenance.type_maintenance !== 'indicateur'" class="bg-gray-50 p-4 rounded-lg">
+    <div class="flex items-center space-x-3 mb-3">
+      <div class="p-2 bg-green-100 rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+      </div> 
+      <h3 class="font-semibold text-gray-700">Prochaines dates</h3>
+    </div>
+
+    <ul class="space-y-1 ml-11">
+      <li *ngFor="let date of nextRepetitionDates" class="text-gray-600 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+        </svg>
+        {{ date | date:'dd/MM/yyyy' }}
+      </li>
+    </ul>
+  </div>
+</div>
+
 
       <!-- Colonne 3: Détails techniques -->
       <div class="space-y-4">
-        <!-- Seuil et surveillance -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-2">
-            <i class="fas fa-tachometer-alt text-purple-500"></i>
+        <!-- Seuil et surveillance (visible seulement si type_maintenance n'est pas 'frequence') -->
+        <div *ngIf="maintenance.type_maintenance !== 'frequence'" class="bg-gray-50 p-4 rounded-lg">
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="p-2 bg-purple-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
             <h3 class="font-semibold text-gray-700">Surveillance</h3>
           </div>
           
-          <div class="space-y-3">
+          <div class="space-y-3 ml-11">
             <div>
               <label class="text-sm font-medium text-gray-500">Seuil</label>
-              <p *ngIf="!isEditMode" class="text-gray-600">{{ maintenance.seuil }}</p>
-              <input *ngIf="isEditMode" type="text" class="w-full p-2 border rounded" 
-                [(ngModel)]="maintenance.seuil">
+              <p class="text-gray-600">{{ maintenance.seuil }}</p>
             </div>
             
             <div *ngIf="selectedAttribut">
@@ -252,12 +242,15 @@
               <p class="text-gray-600">{{ selectedAttribut.attributEquipementType }}</p>
               <p class="text-gray-600">Valeur actuelle: {{ selectedAttribut.valeur }}</p>
               
-              <div *ngIf="messageSeuil" class="mt-2 p-2 rounded text-sm"
+              <div *ngIf="messageSeuil" class="mt-2 p-2 rounded text-sm flex items-center"
                 [ngClass]="{
                   'bg-green-100 text-green-800': messageSeuil.includes('normal'),
                   'bg-yellow-100 text-yellow-800': messageSeuil.includes('attention'),
                   'bg-red-100 text-red-800': messageSeuil.includes('dépassé')
                 }">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                 {{ messageSeuil }}
               </div>
             </div>
@@ -266,86 +259,66 @@
 
         <!-- Commentaires -->
         <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-2">
-            <i class="fas fa-comment-alt text-blue-500"></i>
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="p-2 bg-blue-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+            </div>
             <h3 class="font-semibold text-gray-700">Commentaires</h3>
           </div>
-          <div *ngIf="!isEditMode">
-            <p class="text-gray-600" [class.text-gray-400]="!maintenance.commentaires">
-              {{ maintenance.commentaires || 'Aucun commentaire' }}
-            </p>
-          </div>
-          <div *ngIf="isEditMode">
-            <textarea class="w-full p-2 border rounded h-24" 
-              [(ngModel)]="maintenance.commentaires" 
-              placeholder="Ajoutez des commentaires..."></textarea>
-          </div>
+          <p class="text-gray-600 ml-11" [class.text-gray-400]="!maintenance.commentaires">
+            {{ maintenance.commentaires || 'Aucun commentaire' }}
+          </p>
         </div>
 
         <!-- Statut -->
         <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-2">
-            <i class="fas fa-info-circle text-orange-500"></i>
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="p-2 bg-orange-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
             <h3 class="font-semibold text-gray-700">Statut</h3>
           </div>
-          <div *ngIf="!isEditMode">
-            <span class="px-3 py-1 rounded-full text-sm font-semibold"
-              [ngClass]="{
-                'bg-yellow-100 text-yellow-800': maintenance.statut === 'EN_ATTENTE',
-                'bg-blue-100 text-blue-800': maintenance.statut === 'EN_COURS',
-                'bg-green-100 text-green-800': maintenance.statut === 'TERMINEE',
-                'bg-red-100 text-red-800': maintenance.statut === 'ANNULEE'
-              }">
-              {{ maintenance.statut }}
-            </span>
-          </div>
-          <div *ngIf="isEditMode">
-            <select class="w-full p-2 border rounded" [(ngModel)]="maintenance.statut">
-              <option value="EN_ATTENTE">En attente</option>
-              <option value="EN_COURS">En cours</option>
-              <option value="TERMINEE">Terminée</option>
-              <option value="ANNULEE">Annulée</option>
-            </select>
-          </div>
+          <span class="px-3 py-1 rounded-full text-sm font-semibold ml-11 flex items-center w-fit"
+            [ngClass]="{
+              'bg-yellow-100 text-yellow-800': maintenance.statut === 'EN_ATTENTE',
+              'bg-blue-100 text-blue-800': maintenance.statut === 'EN_COURS',
+              'bg-green-100 text-green-800': maintenance.statut === 'TERMINEE',
+              'bg-red-100 text-red-800': maintenance.statut === 'ANNULEE'
+            }">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {{ maintenance.statut }}
+          </span>
         </div>
 
         <!-- Priorité -->
         <div class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-2">
-            <i class="fas fa-exclamation-triangle text-red-500"></i>
+          <div class="flex items-center space-x-3 mb-3">
+            <div class="p-2 bg-red-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
             <h3 class="font-semibold text-gray-700">Priorité</h3>
           </div>
-          <div *ngIf="!isEditMode">
-            <span class="px-3 py-1 rounded-full text-sm font-semibold"
-              [ngClass]="{
-                'bg-green-100 text-green-800': maintenance.priorite === 'FAIBLE',
-                'bg-blue-100 text-blue-800': maintenance.priorite === 'NORMALE',
-                'bg-red-100 text-red-800': maintenance.priorite === 'URGENTE'
-              }">
-              {{ maintenance.priorite }}
-            </span>
-          </div>
-          <div *ngIf="isEditMode">
-            <select class="w-full p-2 border rounded" [(ngModel)]="maintenance.priorite">
-              <option value="FAIBLE">Faible</option>
-              <option value="NORMALE">Normale</option>
-              <option value="URGENTE">Urgente</option>
-            </select>
-          </div>
+          <span class="px-3 py-1 rounded-full text-sm font-semibold ml-11 flex items-center w-fit"
+            [ngClass]="{
+              'bg-green-100 text-green-800': maintenance.priorite === 'FAIBLE',
+              'bg-blue-100 text-blue-800': maintenance.priorite === 'NORMALE',
+              'bg-red-100 text-red-800': maintenance.priorite === 'URGENTE'
+            }">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+            </svg>
+            {{ maintenance.priorite }}
+          </span>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<!-- Styles et icônes -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-<style>
-  .card-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-  }
-  .transition {
-    transition: all 0.3s ease;
-  }
-</style>

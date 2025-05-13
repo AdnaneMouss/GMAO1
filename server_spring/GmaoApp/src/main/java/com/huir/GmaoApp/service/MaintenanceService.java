@@ -2,6 +2,9 @@ package com.huir.GmaoApp.service;
 
 
 import java.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.huir.GmaoApp.dto.EquipementDTO;
 import com.huir.GmaoApp.dto.EventDTO;
 import com.huir.GmaoApp.dto.IndicateurDTO;
 import com.huir.GmaoApp.dto.MaintenanceCorrectiveDTO;
@@ -75,6 +79,7 @@ public class MaintenanceService {
     private  IndiceRepository indiceRepository;
 
 	private EquipementRepository EquipementRepository;
+	private static final Logger logger = LoggerFactory.getLogger(MaintenanceService.class);
 
     
     public MaintenanceService(MaintenanceRepository maintenanceRepository , EventRepository eventRepository,EmailService emailService,EquipementRepository equipementRepository,UserRepository userRepository) {
@@ -230,65 +235,48 @@ public class MaintenanceService {
     }
     
    
-    
-    
-    // Méthode pour mettre à jour une maintenance
     @Transactional
-    public MaintenanceDTO updateMaintenancEe(Long id, MaintenanceDTO maintenancedto) {
-        Optional<Maintenance> optionalMaintenance = maintenanceRepository.findById(id);
-        if (optionalMaintenance.isPresent()) {
-            Maintenance maintenance = optionalMaintenance.get();
+    public MaintenanceDTO updateMaintenance(Long id, MaintenanceDTO maintenancedto) {
+        Maintenance maintenance = maintenanceRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Maintenance non trouvée avec ID : " + id));
 
-            // Mise à jour des champs
-            maintenance.setCommentaires(maintenancedto.getCommentaires());
-            maintenance.setPriorite(maintenancedto.getPriorite());
-            maintenance.setStatut(maintenancedto.getStatut());
-            maintenance.setDateDebutPrevue(maintenancedto.getDateDebutPrevue());
-            maintenance.setDateFinPrevue(maintenancedto.getDateFinPrevue());
-            maintenance.setDateProchainemaintenance(maintenancedto.getDateProchainemaintenance());
-            maintenance.setDocumentPath(maintenancedto.getDocumentPath());
-            maintenance.setFrequence(maintenancedto.getFrequence());
-            maintenance.setAction(maintenancedto.getAction());   
-            maintenance.setAutreAction(maintenancedto.getAutreAction());
-            maintenance.setUser(maintenancedto.getUser());
-            maintenance.setRepetitiontype(maintenancedto.getRepetitiontype());  
-            maintenance.setStartDaterep(maintenancedto.getStartDaterep());
-            maintenance.setEndDaterep(maintenancedto.getEndDaterep());
-            maintenance.setSelectedjours(maintenancedto.getSelectedjours());
-            maintenance.setSelectedmois(maintenancedto.getSelectedmois());
-            maintenance.setSeuil(maintenancedto.getSeuil());
-            maintenance .setEquipementId(maintenancedto.getEquipementId());
-            maintenance.setNonSeuil(maintenancedto.getNonSeuil());
-            
-        //    if (maintenancedto.getIndicateurs() != null && !maintenancedto.getIndicateurs().isEmpty()) {
-          //      ObjectMapper objectMapper = new ObjectMapper();
-            //    try {
-              //      String indicateursJson = objectMapper.writeValueAsString(maintenancedto.getIndicateurs());
-                //    maintenance.setIndicateurs(indicateursJson);
-                //} catch (JsonProcessingException e) {
-                  //  e.printStackTrace();
-                //}
-            //}
-            
-            // hadi/////
-            long count = calculerRepetition(maintenancedto.getStartDaterep(), maintenancedto.getEndDaterep(),maintenancedto.getRepetitiontype());
-            maintenance.setRepetition(count);
-            // Calcul de la durée d'intervention
-            long duree = calculerDureeIntervention(maintenancedto.getDateDebutPrevue(), maintenancedto.getDateFinPrevue());
-            maintenance.setDureeIntervention(duree);
+        // Met à jour tous les champs simples
+        maintenance.setCommentaires(maintenancedto.getCommentaires());
+        maintenance.setPriorite(maintenancedto.getPriorite());
+        maintenance.setStatut(maintenancedto.getStatut());
+        maintenance.setDateDebutPrevue(maintenancedto.getDateDebutPrevue());
+        maintenance.setDateFinPrevue(maintenancedto.getDateFinPrevue());
+        maintenance.setDateProchainemaintenance(maintenancedto.getDateProchainemaintenance());
+        maintenance.setFrequence(maintenancedto.getFrequence());
+        maintenance.setAction(maintenancedto.getAction());
+        maintenance.setUser(maintenancedto.getUser());
+        maintenance.setRepetitiontype(maintenancedto.getRepetitiontype());
+        maintenance.setStartDaterep(maintenancedto.getStartDaterep());
+        maintenance.setEndDaterep(maintenancedto.getEndDaterep());
+        maintenance.setSelectedjours(maintenancedto.getSelectedjours());
+        maintenance.setSelectedmois(maintenancedto.getSelectedmois());
+        maintenance.setSeuil(maintenancedto.getSeuil());
+        maintenance.setNonSeuil(maintenancedto.getNonSeuil());
+        maintenance.setNextRepetitionDates(maintenancedto.getNextRepetitionDates());
 
-            // Sérialisation des indicateurs sous forme JSON
-           
+        // Calculs
+        long repetition = calculerRepetition(maintenancedto.getStartDaterep(), maintenancedto.getEndDaterep(), maintenancedto.getRepetitiontype());
+        maintenance.setRepetition(repetition);
 
-            // Sauvegarder la maintenance mise à jour dans la base de données
-            maintenanceRepository.save(maintenance);
-            return new MaintenanceDTO(maintenance); // Retourne le DTO de la maintenance mise à jour
-        } else {
-            return null; // La maintenance n'a pas été trouvée ma
-        }
-        
-        
+        long duree = calculerDureeIntervention(maintenancedto.getDateDebutPrevue(), maintenancedto.getDateFinPrevue());
+        maintenance.setDureeIntervention(duree);
+
+        // ✅ Corriger ici : associer l'objet Equipement
+        Equipement equipement = equipementRepository.findById(maintenancedto.getEquipementId())
+        	    .orElseThrow(() -> new RuntimeException("Équipement non trouvé avec ID : " + maintenancedto.getEquipementId()));
+        	maintenance.setEquipement(equipement); // ✅ géré par JPA
+
+       
+        // Sauvegarde finale
+        Maintenance savedMaintenance = maintenanceRepository.save(maintenance);
+        return new MaintenanceDTO(savedMaintenance);
     }
+
 
     
     
@@ -350,11 +338,34 @@ public class MaintenanceService {
     }
     
     ////////////////////////
-    
+    public Maintenance cancelTask(Long id) {
+        Optional<Maintenance> maintenanceOpt = maintenanceRepository.findById(id);
+        if (maintenanceOpt.isPresent()) {
+            Maintenance maintenance = maintenanceOpt.get();
+            if (maintenance.getStatut() == Statut.EN_ATTENTE) {
+                maintenance.setStatut(Statut.ANNULEE);
+                 maintenance.setSkipRepetitionCalculation(true);
+                try {
+                    return maintenanceRepository.save(maintenance);
+                } catch (Exception e) {
+                    System.err.println("Erreur lors du save : " + e.getMessage());
+                    e.printStackTrace(); // Ceci va afficher la vraie cause dans la console
+                    throw e;
+                }
+            } else {
+                System.out.println("Statut non modifiable: " + maintenance.getStatut());
+            }
+        } else {
+            System.out.println("Maintenance introuvable avec l'ID: " + id);
+        }
+        return null;
+    }
+
+
   
     
-    /////////////////HADO////////////
-/////HADI/////////
+    /////////////////////////////
+//////////////
 		 private long calculerRepetition( Date startDaterep, Date endDaterep,repetitiontype repetitiontype) {
 		        if (startDaterep == null || endDaterep == null || repetitiontype == null) {
 		            return 0; // Si les données sont manquantes, retourner 0
@@ -459,7 +470,7 @@ public class MaintenanceService {
 		        }
 		    }
 		 
-		   public MaintenanceDTO updateMaintenance(Long maintenanceId, MaintenanceDTO dto) {
+		   public MaintenanceDTO updateMaintenancee(Long maintenanceId, MaintenanceDTO dto) {
 		        // Retrieve the existing MaintenanceCorrective by its ID
 		        Optional<Maintenance> existingMaintenanceOptional = maintenanceRepository.findById(maintenanceId);
 
@@ -539,6 +550,14 @@ public class MaintenanceService {
 		        return null;
 		    }
 		    
+		    
+		    public void changerStatutEnTermine(Long id) {
+		        Maintenance maintenance = maintenanceRepository.findById(id)
+		            .orElseThrow(() -> new RuntimeException("Maintenance non trouvée avec id: " + id));
+
+		        maintenance.setStatut(Statut.ANNULEE);
+		        maintenanceRepository.save(maintenance);
+		    }
 		    
 		    
 		   

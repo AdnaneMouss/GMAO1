@@ -130,7 +130,10 @@ public class Maintenance {
     @ManyToOne
     @JoinColumn(name = "technicien_id")
     private User affecteA;
-	
+    
+    @JsonManagedReference("maintenance-interventions2")
+    @OneToMany(mappedBy = "maintenance", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Intervention> interventions;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonManagedReference // Gestion de la relation parent
@@ -199,30 +202,38 @@ public class Maintenance {
 	    private String selectedjours;	
 	    private String selectedmois;
 	    
+	    
+	    
+	 // Champ stocké en base de données
 	    @Column(name = "next_repetition_dates")
-	    private String nextRepetitionDates;
-	    
-	    
+	    private String nextRepetitionDatesString;
+
+	    // Champ non stocké, utilisé uniquement en Java (optionnel)
 	    @Transient
-	    public List<LocalDate> getNextRepetitionDatesAsList() {
-	        if (nextRepetitionDates == null || nextRepetitionDates.trim().isEmpty()) {
+	    private List<LocalDate> nextRepetitionDates;
+
+	    public List<LocalDate> getNextRepetitionDates() {
+	        if (nextRepetitionDatesString == null || nextRepetitionDatesString.trim().isEmpty()) {
 	            return new ArrayList<>();
 	        }
-	        return Arrays.stream(nextRepetitionDates.split(","))
+	        return Arrays.stream(nextRepetitionDatesString.split(","))
 	                     .map(LocalDate::parse)
 	                     .collect(Collectors.toList());
 	    }
 
-	    public void setNextRepetitionDatesAsList(List<LocalDate> dates) {
+	    public void setNextRepetitionDates(List<LocalDate> dates) {
 	        if (dates == null || dates.isEmpty()) {
-	            this.nextRepetitionDates = null;
+	            this.nextRepetitionDatesString = null;
 	        } else {
-	            this.nextRepetitionDates = dates.stream()
-	                                          .map(LocalDate::toString)
-	                                          .collect(Collectors.joining(","));
+	            this.nextRepetitionDatesString = dates.stream()
+	                                                  .map(LocalDate::toString)
+	                                                  .collect(Collectors.joining(","));
 	        }
+	        this.nextRepetitionDates = dates;
 	    }
+
 	    
+	   
 	    private List<LocalDate> calculateRepetitionDates(
 	    	    LocalDate start,
 	    	    LocalDate end,
@@ -337,20 +348,35 @@ public class Maintenance {
 	                    .map(String::toUpperCase)
 	                    .collect(Collectors.toList());
 	    }
+	    private Boolean skipRepetitionCalculation = false;
 	    @PrePersist
 	    @PreUpdate
 	    private void calculateNextRepetitionDates() {
-	        if (this.repetitiontype != null && this.startDaterep != null) {
-	            List<LocalDate> dates = calculateRepetitionDates(
-	                startDaterep.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-	                endDaterep != null ? endDaterep.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() : null,
-	                repetitiontype,
-	                getSelectedjours(),
-	                getSelectedmois()
-	            );
-	            this.setNextRepetitionDatesAsList(dates);
+	        // Si skipRepetitionCalculation est true, ne pas calculer les dates de répétition
+	        if (Boolean.FALSE.equals(skipRepetitionCalculation)) {
+	            if (this.repetitiontype != null && this.startDaterep != null) {
+	                List<LocalDate> dates = calculateRepetitionDates(
+	                    startDaterep.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+	                    endDaterep != null ? endDaterep.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() : null,
+	                    repetitiontype,
+	                    getSelectedjours(),
+	                    getSelectedmois()
+	                );
+	                this.setNextRepetitionDates(dates);
+	            }
 	        }
 	    }
+
+	    // Getter et Setter pour skipRepetitionCalculation
+	    public Boolean getSkipRepetitionCalculation() {
+	        return skipRepetitionCalculation;
+	    }
+
+	    public void setSkipRepetitionCalculation(Boolean skipRepetitionCalculation) {
+	        this.skipRepetitionCalculation = skipRepetitionCalculation;
+	    }
+	
+
 	    
 	    private String convertDayToFrench(DayOfWeek day) {
 	        switch (day) {
