@@ -5,6 +5,7 @@ import com.huir.GmaoApp.dto.*;
 import com.huir.GmaoApp.model.Batiment;
 import com.huir.GmaoApp.model.Services;
 import com.huir.GmaoApp.repository.BatimentRepository;
+import com.huir.GmaoApp.repository.EquipementRepository;
 import com.huir.GmaoApp.service.BatimentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ public class BatimentController {
     private BatimentService batimentService;
     @Autowired
     private BatimentRepository batimentRepository;
+    @Autowired
+    private EquipementRepository equipementRepository;
 
 
     @GetMapping
@@ -150,6 +153,11 @@ public class BatimentController {
         Batiment batiment = batimentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bâtiment non trouvé"));
 
+        boolean hasLinkedEquipements = equipementRepository.existsByBatiment(batiment);
+        if (hasLinkedEquipements) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d’archiver : ce bâtiment est lié à au moins un équipement.");
+        }
+
         batiment.setActif(false);
         batimentRepository.save(batiment);
 
@@ -159,17 +167,31 @@ public class BatimentController {
     }
 
     @PutMapping("/archiver-multiple")
-    public ResponseEntity<Map<String, String>> archiverBatiments(@RequestBody List<Long> ids) {
+    public ResponseEntity<Map<String, Object>> archiverBatiments(@RequestBody List<Long> ids) {
         List<Batiment> batiments = batimentRepository.findAllById(ids);
-        for (Batiment batiment : batiments) {
-            batiment.setActif(false);
-        }
-        batimentRepository.saveAll(batiments);
+        List<String> archived = new ArrayList<>();
+        List<String> skipped = new ArrayList<>();
 
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Bâtiments archivés avec succès");
+        for (Batiment batiment : batiments) {
+            boolean isLinked = equipementRepository.existsByBatiment(batiment);
+            if (isLinked) {
+                skipped.add("Bâtiment " + batiment.getIntitule() + " lié à des équipements");
+                continue;
+            }
+
+            batiment.setActif(false);
+            batimentRepository.save(batiment);
+            archived.add("Bâtiment ID " + batiment.getId());
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("archivés", archived);
+        response.put("ignorés", skipped);
+        response.put("message", "Archivage terminé avec succès.");
+
         return ResponseEntity.ok(response);
     }
+
 
 
     @PutMapping("/{id}/restaurer")

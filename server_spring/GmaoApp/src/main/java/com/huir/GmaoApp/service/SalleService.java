@@ -1,4 +1,5 @@
 package com.huir.GmaoApp.service;
+import com.huir.GmaoApp.model.Equipement;
 import com.huir.GmaoApp.model.Etage;
 import com.huir.GmaoApp.model.Salle;
 import com.huir.GmaoApp.repository.EtageRepository;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -39,4 +41,8 @@ public class SalleService {
     }
 
 
-}
+    public Optional<Salle> findSalleById(Long salleId) {
+            return sallesRepository.findById(salleId);
+        }
+
+    }

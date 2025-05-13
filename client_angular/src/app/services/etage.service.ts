@@ -18,6 +18,9 @@ export class EtageService {
     return this.http.get<any>(`${this.apiUrl}/${etageId}/salles`);
   }
 
+  getSallesInactivesByEtageId(etageId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${etageId}/salles/inactifs`);
+  }
 
 // Create Etage (using query params)
   createEtage(etage: any): Observable<any> {
@@ -32,11 +35,13 @@ export class EtageService {
 
   // Update Etage (send full object in body)
   updateEtage(id: number, etage: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, etage).pipe(
+    const params = new HttpParams()
+      .set('num', etage.num)
+      .set('batimentId', etage.batimentId);
+    return this.http.put<any>(`${this.apiUrl}/${id}`, null, { params }).pipe(
       catchError(error => throwError(() => error.error))
     );
   }
-
 
   getEtageById(id: number): Observable<Etage[]> {
     return this.http.get<Etage[]>(`${this.apiUrl}/${id}`);

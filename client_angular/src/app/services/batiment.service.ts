@@ -37,12 +37,17 @@ export class BatimentService {
     );
   }
 
-  // Method to update Batiment
   updateBatiment(id: number, batiment: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, batiment).pipe(
+    const params = new HttpParams()
+      .set('intitule', batiment.intitule)
+      .set('numBatiment', batiment.numBatiment)
+      .set('actif', batiment.actif);
+
+    return this.http.put<any>(`${this.apiUrl}/${id}`, null, { params }).pipe(
       catchError(error => throwError(() => error.error))
     );
   }
+
 
 
   // ✅ Get a Batiment by ID

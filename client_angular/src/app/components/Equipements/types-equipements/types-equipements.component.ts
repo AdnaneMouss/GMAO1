@@ -20,11 +20,15 @@ export class TypesEquipementsComponent implements OnInit {
   searchTermNom = '';
   typeIdToArchive: number | null | undefined;
   showTrash: boolean = false;
+  selectionModeOn: boolean = true;
   bulkMode = false;
   selectedTypeIds: number[] = [];
   bulkRestoreError: string | null = null;
   isBulkRestored: boolean = false;
+  isBulkArchived: boolean = false;
   typeTakenBulk: boolean = false;
+  viewMode: 'table' | 'card' = 'card'; // default to table
+
   showConfirmationModal: boolean = false;
   showToolTip: boolean = false;
   filteredTypes = [...this.typesEquipementsActifs];
@@ -33,6 +37,7 @@ export class TypesEquipementsComponent implements OnInit {
   isRestored: boolean = false;
   isArchived: boolean = false;
   showTooltip: boolean = false;
+  impossibleToArchive: boolean = false;
   newAttribute: AttributEquipements = {
     obligatoire: true,
     actif: true, // Add actif here
@@ -76,6 +81,11 @@ export class TypesEquipementsComponent implements OnInit {
     this.imageError='';
   }
 
+
+  toggleView(mode: 'table' | 'card') {
+    this.viewMode = mode;
+    this.selectionModeOn = this.viewMode != "table";
+  }
 
   getImageUrl(imagePath: string): string {
     return `${environment.apiUrl}${imagePath}`;  // Use the apiUrl dynamically
@@ -148,16 +158,24 @@ export class TypesEquipementsComponent implements OnInit {
     if (this.selectedTypeIds.length === 0) return;
 
     this.typesEquipementsService.archiverMultiple(this.selectedTypeIds).subscribe(
-      (response) => {
-        console.log('Archive successful:', response);
+      (response: any) => {
         this.getInactifTypes();
         this.getActifTypes();
-        this.selectedTypeIds = [];  // Reset selected IDs after archiving
+        this.selectedTypeIds = [];
         this.showTrash = false;
+        this.isBulkArchived = true;
+        this.errorMessage = '';
+        setTimeout(() => {
+          this.isBulkArchived = false;
+        }, 3000);
       },
       (error) => {
-        console.log("Error occurred during archiving:", error);
-        this.errorMessage = 'Erreur lors de l\'archivage des types.';
+        if (error.status === 400) {
+          this.impossibleToArchive = true;
+          this.errorMessage = error.error.message || "Impossible d’archiver ces types.";
+        } else {
+          this.errorMessage = "Une erreur inattendue s'est produite. Veuillez réessayer.";
+        }
       }
     );
   }
@@ -195,18 +213,29 @@ export class TypesEquipementsComponent implements OnInit {
   archiverType(id: number): void {
     this.typesEquipementsService.archiver(id).subscribe(
       (response) => {
-        console.log('Response from archiver:', response);  // Check what comes from the backend
-        this.isArchived = true;  // Flag to show the type has been archived
+        console.log('Response from archiver:', response);
+        this.isArchived = true;
+        this.errorMessage = ''; // Clear previous errors
+
         this.getInactifTypes();
         this.getActifTypes();
-        this.showTrash = false;  // Close the trash modal after action
+        this.showTrash = false;
 
         setTimeout(() => {
           this.isArchived = false;
-        }, 3000);  // Hide the success flag after 3 seconds
+        }, 3000);
       },
       (error) => {
         console.error('Erreur lors de l\'archivage', error);
+
+        if (error.status === 400) {
+          this.impossibleToArchive = true;
+          this.errorMessage = error.error.message || "Impossible d’archiver ce type.";
+        } else {
+          this.errorMessage = "Une erreur inattendue s'est produite. Veuillez réessayer.";
+        }
+
+
       }
     );
   }

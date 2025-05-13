@@ -81,7 +81,7 @@
              routerLink="/equipements/categories"
              class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
             <i class="fas fa-folder text-sm"></i>
-            <span *ngIf="!isSidebarCollapsed">Catégories d'équipements</span>
+            <span *ngIf="!isSidebarCollapsed">Services de l'hôpital</span>
           </a>
         </div>
       </div>
@@ -120,7 +120,7 @@
         <button class="flex items-center justify-between w-full py-3 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300"
                 (click)="toggleSubmenu('stock')">
           <div class="flex items-center space-x-3">
-            <i class="fas fa-tools text-xl"></i>
+            <i class="fas fa-cubes text-xl"></i>
             <span *ngIf="!isSidebarCollapsed" class="font-medium">Gestion des stocks</span>
           </div>
           <i class="fas" [ngClass]="{'fa-chevron-down': !isSubmenuOpen('stock'), 'fa-chevron-up': isSubmenuOpen('stock')}"></i>
@@ -136,21 +136,6 @@
             <span *ngIf="!isSidebarCollapsed">Liste des pièces détachées</span>
           </a>
 
-          <a *ngIf="user?.role === 'RESPONSABLE'"
-             [ngClass]="{'bg-green-800 text-white': isActive('/stock/alertes')}"
-             routerLink="/stock/alertes"
-             class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
-            <i class="fas fa-bell text-sm"></i>
-            <span *ngIf="!isSidebarCollapsed">Suivi et alertes</span>
-          </a>
-
-          <a *ngIf="user?.role === 'RESPONSABLE'"
-             [ngClass]="{'bg-green-800 text-white': isActive('/stock/demande')}"
-             routerLink="/stock/demande"
-             class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
-            <i class="fas fa-hand-paper text-sm"></i>
-            <span *ngIf="!isSidebarCollapsed">Demande des pièces</span>
-          </a>
         </div>
       </div>
       <!-- Separator -->
@@ -183,17 +168,11 @@
               <i class="fas fa-wrench text-sm"></i>
               <span *ngIf="!isSidebarCollapsed">Maintenances correctives</span>
             </a>
-            <a [ngClass]="{'bg-green-800 text-white': isActive('/maintenances/historique')}"
-               routerLink="/maintenances/historique"
-               class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
-              <i class="fas fa-history text-sm"></i>
-              <span *ngIf="!isSidebarCollapsed">Historique des maintenances</span>
-            </a>
             <a [ngClass]="{'bg-green-800 text-white': isActive('/maintenances/calendar')}"
             routerLink="/maintenances/calendar"
             class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
             <i class="fas fa-calendar-alt text-sm"></i>
-           <span *ngIf="!isSidebarCollapsed">calendrier des maintenances</span>
+           <span *ngIf="!isSidebarCollapsed">Calendrier des maintenances</span>
          </a>
           </ng-container>
         </div>
@@ -206,7 +185,7 @@
           <button class="flex items-center justify-between w-full py-3 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300"
           (click)="toggleSubmenu('reports')">
     <div class="flex items-center space-x-3">
-      <i class="fas fa-tools text-xl"></i>
+      <i class="fas fa-clipboard-list text-xl"></i>
       <span *ngIf="!isSidebarCollapsed" class="font-medium">Rapports</span>
     </div>
     <i class="fas" [ngClass]="{'fa-chevron-down': !isSubmenuOpen('reports'), 'fa-chevron-up': isSubmenuOpen('reports')}"></i>
@@ -307,8 +286,6 @@
       <div *ngIf="user?.role === 'TECHNICIEN'" class="border-t border-gray-200 my-2"></div>
       <div *ngIf="user?.role === 'TECHNICIEN'" class="h-[20px]"></div>
 
-
-        <div  *ngIf="user?.role === 'ADMIN' || user?.role ==='RESPONSABLE'" class="border-t border-gray-200 my-2"></div> <!-- Separator -->
 
         <!-- Settings -->
         <a routerLink="/parametres" class="flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-green-700 hover:text-white transition-all ease-in-out duration-300"

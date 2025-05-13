@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {catchError, Observable, throwError} from 'rxjs';
+import {Service} from "../models/service";
+import {Salle} from "../models/salle";
 
 
 @Injectable({
@@ -24,9 +26,18 @@ export class SalleService {
     );
   }
 
+  getSalleById(salleId: string): Observable<Salle> {
+    return this.http.get<Salle>(`${this.apiUrl}/${salleId}`);
+  }
+
+
   // Update Salle (send full object in body)
   updateSalle(id: number, salle: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, salle).pipe(
+    const params = new HttpParams()
+      .set('num', salle.num)
+      .set('prefixe', salle.prefixe)
+      .set('etageId', salle.etageId);
+    return this.http.put<any>(`${this.apiUrl}/${id}`, null, { params }).pipe(
       catchError(error => throwError(() => error.error))
     );
   }

@@ -1,17 +1,17 @@
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import {Equipement} from "../../../models/equipement";
 import {ActivatedRoute, Router} from "@angular/router";
 import {EquipementService} from "../../../services/equipement.service";
-import {Equipement} from "../../../models/equipement";
 import {ServiceService} from "../../../services/service.service";
 import {environment} from "../../../../environments/environment";
+import {SalleService} from "../../../services/salle.service";
 
 @Component({
-  selector: 'app-equipements-par-categorie',
-  templateUrl: './equipements-par-categorie.component.html',
-  styleUrl: './equipements-par-categorie.component.css'
+  selector: 'app-equipements-par-salle',
+  templateUrl: './equipements-par-salle.component.html',
+  styleUrl: './equipements-par-salle.component.css'
 })
-export class EquipementsParCategorieComponent implements OnInit{
-
+export class EquipementsParSalleComponent implements OnInit {
   equipements: any[] = [];
   showForm: boolean = false;
   filteredEquipements = [...this.equipements];
@@ -28,25 +28,27 @@ export class EquipementsParCategorieComponent implements OnInit{
   showEditPanel: boolean = false;
   selectedEquipement: Equipement | null = null; // Store selected user details
   sortDirection: 'asc' | 'desc' = 'asc';
-  serviceName: string = '';
+  sallePrefixe: string = '';
+  salleNumber: number = 0;
   equipementsAttributs: { [key: number]: Map<string, string> } = {};
   constructor(
     private route: ActivatedRoute,
     private equipementService: EquipementService,
-    private serviceService: ServiceService
+    private salleService: SalleService
   ) {
   }
 
   ngOnInit(): void {
     this.getEquipements();
-    this.getServiceName();
+    this.getSalleName();
   }
 
-  getServiceName() {
-    const serviceId = this.route.snapshot.paramMap.get('serviceId');
-    if (serviceId) {
-      this.serviceService.getServiceById(serviceId).subscribe(service => {
-        this.serviceName = service.nom;
+  getSalleName() {
+    const salleId = this.route.snapshot.paramMap.get('salleId');
+    if (salleId) {
+      this.salleService.getSalleById(salleId).subscribe(salle => {
+        this.salleNumber = salle.num;
+        this.sallePrefixe = salle.prefixe;
       });
     }
   }
@@ -81,15 +83,6 @@ export class EquipementsParCategorieComponent implements OnInit{
   }
 
 
-  sortTable(column: string): void {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
-    }
-  }
-
   viewDetails(eqId: number): void {
     this.equipementService.getEquipementById(eqId).subscribe({
       next: (eq) => {
@@ -106,8 +99,8 @@ export class EquipementsParCategorieComponent implements OnInit{
 
 
   getEquipements(): void {
-    const serviceId = Number(this.route.snapshot.paramMap.get('serviceId'));
-    this.equipementService.getEquipementsByService(serviceId).subscribe((data: Equipement[]) => {
+    const salleId = Number(this.route.snapshot.paramMap.get('salleId'));
+    this.equipementService.getEquipementsBySalle(salleId).subscribe((data: Equipement[]) => {
       console.log(this.equipements);
       this.equipements = data;
       this.filteredEquipements = data;

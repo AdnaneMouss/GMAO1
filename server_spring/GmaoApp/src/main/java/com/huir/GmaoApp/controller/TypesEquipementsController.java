@@ -4,6 +4,7 @@ import com.huir.GmaoApp.dto.*;
 import com.huir.GmaoApp.model.AttributEquipements;
 import com.huir.GmaoApp.model.Services;
 import com.huir.GmaoApp.model.TypesEquipements;
+import com.huir.GmaoApp.repository.EquipementRepository;
 import com.huir.GmaoApp.repository.TypesEquipementsRepository;
 import com.huir.GmaoApp.service.TypesEquipementsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ public class TypesEquipementsController {
     private TypesEquipementsService typesEquipementsService;
     @Autowired
     private TypesEquipementsRepository typesEquipementsRepository;
+    @Autowired
+    private EquipementRepository equipementRepository;
+
 
     @GetMapping
     public List<TypesEquipementsDTO> getTypesEquipementsActifs() {
@@ -113,10 +117,16 @@ public class TypesEquipementsController {
 
     //Corbeille
 
+
     @PutMapping("/{id}/archiver")
     public ResponseEntity<Map<String, String>> archiver(@PathVariable Long id) {
         TypesEquipements type = typesEquipementsRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Type non trouvé"));
+
+        boolean hasLinkedEquipements = equipementRepository.existsByTypeEquipement(type);
+        if (hasLinkedEquipements) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d’archiver : ce type est lié à au moins un équipement.");
+        }
 
         type.setActif(false);
         typesEquipementsRepository.save(type);
@@ -127,26 +137,41 @@ public class TypesEquipementsController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/archiver-multiple")
+    @PutMapping("/archiver-multiple")
     public ResponseEntity<?> archiverMultipleTypes(@RequestBody List<Long> ids) {
-        try {
-            // Archiving each type by setting its 'actif' status to false
-            List<TypesEquipements> typesToArchive = typesEquipementsRepository.findAllById(ids);
+        List<TypesEquipements> typesToArchive = typesEquipementsRepository.findAllById(ids);
 
-            if (typesToArchive.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Aucun type trouvé pour les IDs donnés.");
-            }
-
-            for (TypesEquipements type : typesToArchive) {
-                type.setActif(false);
-                typesEquipementsRepository.save(type);
-            }
-
-            return ResponseEntity.ok("Types archivés avec succès !");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de l'archivage des types.");
+        if (typesToArchive.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun type trouvé pour les IDs donnés.");
         }
+
+        List<String> linkedTypes = new ArrayList<>();
+
+        for (TypesEquipements type : typesToArchive) {
+            boolean isLinked = equipementRepository.existsByTypeEquipement(type);
+            if (isLinked) {
+                linkedTypes.add("Type '" + type.getType() + "' est lié à des équipements");
+            }
+        }
+
+        if (!linkedTypes.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Archivage impossible :\n" + String.join("\n", linkedTypes)
+            );
+        }
+
+        // Archivage en masse maintenant que tout est clean
+        for (TypesEquipements type : typesToArchive) {
+            type.setActif(false);
+            typesEquipementsRepository.save(type);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Tous les types ont été archivés avec succès.");
+        response.put("archivés", typesToArchive.stream().map(TypesEquipements::getType).toList());
+
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/restaurer")
@@ -170,7 +195,7 @@ public class TypesEquipementsController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/restaurer-multiple")
+    @PutMapping("/restaurer-multiple")
     public ResponseEntity<?> restaurerMultipleTypes(@RequestBody List<Long> ids) {
         try {
             typesEquipementsService.restaurerMultiple(ids);

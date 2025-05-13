@@ -45,37 +45,7 @@ export class DetailsMaintenanceComponent implements OnInit {
 
 
   maintenance: maintenance = {
-    equipement: {
-      serviceNom: "",
-      id: 0,
-      image: '',
-      nom: '',
-      description: '',
-      numeroSerie: '',
-      modele: '',
-      marque: '',
-      statut: '',
-      actif: false, // Default value for 'actif'
-      dateAchat: '',
-      dateMiseEnService: '',
-      garantie: '',
-      dateDerniereMaintenance: '',
-      frequenceMaintenance: '',
-      historiquePannes: '',
-      coutAchat: '',
-      valeurSuivi: 0,
-      labelSuivi: '',
-
-
-      typeEquipement: {} as TypesEquipements, // Initial empty type
-      service: {} as Service,
-      piecesDetachees: [],
-      salle: {} as Salle,
-      etage: {} as Etage,
-      batiment: {} as Batiment,
-      repetition: 0,
-      attributsValeurs: []
-    },
+    equipement: {} as Equipement,
     batiment: {
       id: 0,
       numBatiment: 0,
@@ -468,35 +438,7 @@ getJoined(value: any): string {
 
         // Initialiser l'équipement si non présent
         if (!this.maintenance.equipement) {
-          this.maintenance.equipement = {
-            serviceNom: "",
-            id: 0,
-            image: '',
-            nom: '',
-            description: '',
-            numeroSerie: '',
-            modele: '',
-            marque: '',
-            statut: '',
-            actif: false, // Valeur par défaut
-            dateAchat: '',
-            dateMiseEnService: '',
-            garantie: '',
-            dateDerniereMaintenance: '',
-            frequenceMaintenance: '',
-            historiquePannes: '',
-            coutAchat: '',
-            valeurSuivi: 0,
-            labelSuivi: '',
-            typeEquipement: {} as TypesEquipements, // Type vide
-            service: {} as Service,
-            piecesDetachees: [],
-            salle: {} as Salle,
-            etage: {} as Etage,
-            batiment: {} as Batiment,
-            repetition: 0,
-            attributsValeurs: []
-          };
+          this.maintenance.equipement = {} as Equipement;
         }
 
         // Initialiser l'utilisateur si non présent

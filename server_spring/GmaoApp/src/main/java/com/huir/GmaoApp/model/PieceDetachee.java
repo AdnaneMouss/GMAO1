@@ -48,9 +48,6 @@ public class PieceDetachee {
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> historiqueUtilisation;  // Liste des utilisations de la pièce
 
-    @ManyToMany(mappedBy = "piecesDetachees", fetch = FetchType.EAGER)
-    private List<Equipement> equipements;
-
     @OneToMany(mappedBy = "pieceDetachee", cascade = CascadeType.ALL)
     @JsonBackReference(value = "intervention-piece")
     private List<InterventionPieceDetachee> interventionPieces;

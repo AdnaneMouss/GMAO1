@@ -1,63 +1,287 @@
-<div class="container mx-auto p-8">
-  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 border border-gray-200">
-    <div *ngIf="showSalleForm" class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
-      <div class="bg-white rounded-lg w-full max-w-2xl p-6 relative overflow-y-auto max-h-[90vh]">
+<div *ngIf="salleUpdated" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Salle modifiée avec succès !</span>
+</div>
 
-        <!-- Bouton de fermeture -->
-        <button (click)="showSalleForm = false" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-semibold">
-          <i class="fas fa-times"></i>
+<div *ngIf="salleAdded" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Salle ajoutée avec succès !</span>
+</div>
+
+
+<div *ngIf="isRestored" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Salle restaurée avec succès !</span>
+</div>
+
+<div *ngIf="isArchived" class="fixed top-5 right-5 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Salle archivée avec succès et placé à la corbeille !</span>
+</div>
+
+<div *ngIf="isBulkRestored" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Salles restaurées avec succès !</span>
+</div>
+
+<div *ngIf="isBulkArchived" class="fixed top-5 right-5 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Salles archivées avec succès !</span>
+</div>
+
+<div *ngIf="showTrash" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+  <!-- Modal Content -->
+  <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-xl relative overflow-y-auto max-h-[90vh]">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-semibold text-gray-800">🗑️ Salles archivées</h3>
+      <button (click)="toggleTrash()" class="text-gray-400 hover:text-red-500 text-lg">
+        ✖
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="sallesInactives.length > 0; else noArchived" class="space-y-4">
+
+      <!-- Error Alert -->
+      <div *ngIf="salleTaken" class="error flex items-start justify-between bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg relative shadow-sm">
+        <div class="error__icon mr-3">
+          <!-- SVG icon -->
+        </div>
+        <div class="flex-1">
+          <div class="error__title font-semibold">{{ errorMessage }}</div>
+        </div>
+        <div class="error__close cursor-pointer" (click)="salleTaken = false">
+          <!-- Close icon SVG -->
+        </div>
+      </div>
+
+      <div *ngIf="salleTakenBulk" class="error flex items-start justify-between bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg relative shadow-sm">
+        <div class="error__icon mr-3">
+          <!-- SVG icon -->
+        </div>
+        <div class="flex-1">
+          <div class="error__title font-semibold">{{ errorMessage }}</div>
+        </div>
+        <div class="error__close cursor-pointer" (click)="salleTakenBulk = false">
+          <!-- Close icon SVG -->
+        </div>
+      </div>
+
+
+      <!-- Bulk Restore Button -->
+      <div *ngIf="selectedSalleIds.length > 0" class="flex justify-end">
+        <button
+          class="mb-2 px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition"
+          (click)="restaurerSelection()"
+        >
+          Restaurer la sélection ({{ selectedSalleIds.length }})
         </button>
+      </div>
+      <!-- Select All / Reset Buttons -->
+      <div class="flex justify-between items-center">
+        <div>
+          <button
+            class="mr-2 px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            (click)="selectAll()"
+          >
+            Tout sélectionner
+          </button>
 
-        <h2 class="text-2xl font-semibold mb-4 text-center text-green-700">Ajouter une salle</h2>
+          <button
+            class="px-4 py-2 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+            (click)="resetSelection()"
+          >
+            Réinitialiser
+          </button>
+        </div>
+      </div>
 
-        <form (ngSubmit)="addSalle()" #salleForm="ngForm">
-          <div class="grid grid-cols-1 gap-6 mb-6">
-            <!-- Préfixe (lettre) -->
-            <div>
-              <label for="prefixe" class="block text-sm font-medium text-gray-700">Bloc / Préfixe <span class="text-red-500">*</span></label>
-              <input
-                id="prefixe"
-                type="text"
-                maxlength="1"
-                [(ngModel)]="newSalle.prefixe"
-                name="prefixe"
-                required
-                #prefixe="ngModel"
-                class="mt-2 p-3 border border-gray-300 rounded-md w-full uppercase" />
-              <div *ngIf="prefixe.invalid && prefixe.touched" class="text-red-500 text-sm">Le préfixe est requis.</div>
-            </div>
+      <!-- Cards -->
+      <div
+        *ngFor="let salle of sallesInactives"
+        class="flex flex-col border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
+      >
+        <div class="flex items-center justify-between p-4">
+          <div class="flex items-center space-x-4">
+            <!-- Checkbox -->
+            <input
+              type="checkbox"
+              [checked]="selectedSalleIds.includes(salle.id)"
+              (change)="toggleSelection(salle.id)"
+              class="form-checkbox h-5 w-5 text-green-600 border-gray-300"
+            />
 
-            <!-- Numéro de salle -->
-            <div>
-              <label for="numSalle" class="block text-sm font-medium text-gray-700">Numéro de la salle <span class="text-red-500">*</span></label>
-              <input
-                id="numSalle"
-                type="number"
-                min="1"
-                [(ngModel)]="newSalle.num"
-                name="numSalle"
-                required
-                #numSalle="ngModel"
-                class="mt-2 p-3 border border-gray-300 rounded-md w-full" />
-              <div *ngIf="numSalle.invalid && numSalle.touched" class="text-red-500 text-sm">Le numéro est requis.</div>
-            </div>
 
-            <div *ngIf="errorMessage" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
+            <span class="text-gray-700 font-medium text-lg">{{salle.prefixe}}{{ salle.num }}</span>
           </div>
 
-          <div class="flex justify-end space-x-4">
-            <button type="button" (click)="showSalleForm = false" class="text-gray-500 hover:text-gray-700 text-sm">Annuler</button>
-            <button type="submit" [disabled]="salleForm.invalid" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
-              <i class="fas fa-plus"></i> Ajouter
-            </button>
-          </div>
-        </form>
+          <!-- Single Restore Button -->
+          <button
+            class="px-3 py-1 text-sm text-green-600 border border-green-500 rounded hover:bg-green-50"
+            (click)="restaurerSalle(salle.id)"
+          >
+            Restaurer
+          </button>
+        </div>
       </div>
     </div>
 
+    <!-- No archived types -->
+    <ng-template #noArchived>
+      <p class="text-gray-400 italic text-sm">Aucun Salle supprimé pour le moment.</p>
+    </ng-template>
+  </div>
+</div>
+
+<!-- Error Modal -->
+<div *ngIf="impossibleToArchive" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-center">
+    <h2 class="text-2xl font-semibold text-red-600 mb-4">⚠️ Erreur</h2>
+    <p class="text-gray-700 mb-6">{{ errorMessage }}</p>
+    <button
+      (click)="impossibleToArchive = false"
+      class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+    >
+      Fermer
+    </button>
+  </div>
+</div>
+
+<!-- Archive Confirmation Modal -->
+<div *ngIf="showConfirmationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md text-center">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Confirmer l'archivage</h2>
+    <p class="text-gray-600 mb-6">Voulez-vous vraiment archiver cette salle?</p>
+    <small class="text-gray-600 mb-6">Vous pourrez toujours la restaurer depuis la corbeille.</small>
+
+    <div class="flex justify-center gap-4">
+      <button
+        class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+        (click)="showConfirmationModal = false">
+        Annuler
+      </button>
+
+      <button
+        class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+        (click)="archiverBatiment(selectedSalleToArchive?.id); showConfirmationModal = false">
+        Confirmer
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Formulaire de modification pour Salle -->
+<div *ngIf="showEditForm && selectedSalle?.id !== 0"
+     class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-lg w-full max-w-3xl p-6 relative overflow-y-auto max-h-[90vh]">
+    <!-- Bouton de fermeture -->
+    <button (click)="toggleForm()" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-semibold">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <h2 class="text-2xl font-semibold mb-4 text-center">Modifier un Salle</h2>
+
+    <form (ngSubmit)="updateSalle()" #editBatForm="ngForm" enctype="multipart/form-data">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+
+        <div>
+          <label for="edit-intitule" class="block text-sm font-medium text-gray-700">Préfixe <span class="text-red-500">*</span></label>
+          <input id="edit-intitule" type="text" [(ngModel)]="selectedSalle.prefixe" name="editIntitule" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #editIntitule="ngModel">
+          <div *ngIf="editIntitule.invalid && editIntitule.touched" class="text-red-500 text-sm">L’intitulé est requis.</div>
+        </div>
+
+
+        <div>
+          <label for="edit-num" class="block text-sm font-medium text-gray-700">Numéro de lasalle <span class="text-red-500">*</span></label>
+          <input id="edit-num" type="text" [(ngModel)]="selectedSalle.num" name="editNum" class="mt-2 p-3 border border-gray-300 rounded-md w-full" required #editNum="ngModel">
+          <div *ngIf="editNum.invalid && editNum.touched" class="text-red-500 text-sm">Le numéro est requis.</div>
+        </div>
+
+
+      </div>
+
+      <!-- Erreur de duplication -->
+      <div *ngIf="salleTaken" class="text-red-500 text-sm mb-4 text-center">
+        {{ errorMessage }}
+      </div>
+
+      <div class="flex justify-end space-x-4">
+        <button type="submit" [disabled]="editBatForm.invalid" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600">
+          <i class="fas fa-save"></i> Mettre à jour
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div *ngIf="showSalleForm" class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-lg w-full max-w-2xl p-6 relative overflow-y-auto max-h-[90vh]">
+
+    <!-- Bouton de fermeture -->
+    <button (click)="showSalleForm = false" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-semibold">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <h2 class="text-2xl font-semibold mb-4 text-center text-green-700">Ajouter une salle</h2>
+
+    <form (ngSubmit)="addSalle()" #salleForm="ngForm">
+      <div class="grid grid-cols-1 gap-6 mb-6">
+        <!-- Préfixe (lettre) -->
+        <div>
+          <label for="prefixe" class="block text-sm font-medium text-gray-700">Bloc / Préfixe <span class="text-red-500">*</span></label>
+          <input
+            id="prefixe"
+            type="text"
+            maxlength="1"
+            [(ngModel)]="newSalle.prefixe"
+            name="prefixe"
+            required
+            #prefixe="ngModel"
+            class="mt-2 p-3 border border-gray-300 rounded-md w-full uppercase" />
+          <div *ngIf="prefixe.invalid && prefixe.touched" class="text-red-500 text-sm">Le préfixe est requis.</div>
+        </div>
+
+        <!-- Numéro de salle -->
+        <div>
+          <label for="numSalle" class="block text-sm font-medium text-gray-700">Numéro de la salle <span class="text-red-500">*</span></label>
+          <input
+            id="numSalle"
+            type="number"
+            min="1"
+            [(ngModel)]="newSalle.num"
+            name="numSalle"
+            required
+            #numSalle="ngModel"
+            class="mt-2 p-3 border border-gray-300 rounded-md w-full" />
+          <div *ngIf="numSalle.invalid && numSalle.touched" class="text-red-500 text-sm">Le numéro est requis.</div>
+        </div>
+
+        <div *ngIf="errorMessage" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
+      </div>
+
+      <div class="flex justify-end space-x-4">
+        <button type="button" (click)="showSalleForm = false" class="text-gray-500 hover:text-gray-700 text-sm">Annuler</button>
+        <button type="submit" [disabled]="salleForm.invalid" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
+          <i class="fas fa-plus"></i> Ajouter
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+
+<div class="container mx-auto p-8">
+  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 border border-gray-200">
+
     <button
       class="bg-transparent w-32 h-10 rounded-2xl relative text-green-700 text-sm font-semibold overflow-hidden group transition-all duration-300"
-      (click)="goBack(etageId)">
+      (click)="goBack()">
 
 
       <div
@@ -76,9 +300,33 @@
     </button>
 
     <!-- Conteneur principal en flex -->
-    <h2 class="text-2xl font-bold text-gray-700">Salles de l'étage <strong style="color:#388e3c">{{selectedEtage!.intitule}}</strong></h2>
-    <p class="text-gray-500 text-sm">Gérez facilement tous les étages d'un bâtiment.</p>
+    <h2 class="text-2xl font-bold text-gray-700">Salles de l'étage <strong style="color:#388e3c">{{selectedEtage!.num}}</strong></h2>
+    <p class="text-gray-500 text-sm">Gérez facilement tous les étages d'un Salle.</p>
+    <div style="margin-top:60px;" class="absolute top-6 right-10 z-50">
+      <button
+        (click)="showTrash = !showTrash"
+        class="flex items-center gap-2 px-3 py-1.5 border border-red-300 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition shadow-md"
+        title="Afficher les Salles supprimés"
+      >
+        <div class="relative w-5 h-5">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a2 2 0 012 2v0a2 2 0 01-2 2H7a2 2 0 01-2-2v0a2 2 0 012-2h10z" />
+          </svg>
 
+          <span
+            *ngIf="sallesInactives?.length"
+            class="absolute -top-1.5 -right-1.5 text-[11px] bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold shadow"
+          >
+    {{ sallesInactives.length }}
+  </span>
+        </div>
+
+
+        <span class="font-medium">Corbeille</span>
+      </button>
+    </div>
 
     <div class="flex flex-wrap md:flex-nowrap justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
       <div class="flex space-x-4 w-full md:w-auto">
@@ -139,8 +387,81 @@
         </div>
       </div>
     </div>
+
+    <div class="mb-4 flex justify-between items-center">
+      <div class="text-2xl font-semibold text-gray-800"></div>
+      <button
+        class="bg-green-600 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition duration-300"
+        (click)="toggleBulkMode()"
+      >
+        {{ bulkMode ? 'Quitter le mode sélection' : 'Activer le mode sélection' }}
+      </button>
+    </div>
+
+
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-      <div *ngFor="let salle of salles"  class="bg-white rounded-2xl shadow-md p-6 border border-gray-200 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105">
+      <div *ngFor="let salle of sallesActives"  class="bg-white rounded-2xl shadow-md p-6 border border-gray-200 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105">
+
+        <div *ngIf="bulkMode" class="absolute top-3 left-3 z-20">
+          <input
+            type="checkbox"
+            [checked]="isSelected(salle)"
+            (change)="toggleSelection(salle.id)"
+            class="form-checkbox w-5 h-5 text-green-600"
+          />
+        </div>
+
+        <!-- Top-right Actions: Delete + Edit -->
+        <div class="absolute top-3 right-3 z-10 flex gap-2">
+          <!-- Edit Button -->
+          <button class="edit-button" (click)="editSalle(salle)" >
+            <svg class="edit-svgIcon" viewBox="0 0 512 512">
+              <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
+            </svg>
+          </button>
+
+          <!-- Delete Button -->
+          <button class="bin-button"
+                  (click)="selectedSalleToArchive = salle; showConfirmationModal = true">
+            <svg
+              class="bin-top"
+              viewBox="0 0 39 7"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+              <line
+                x1="12"
+                y1="1.5"
+                x2="26.0357"
+                y2="1.5"
+                stroke="white"
+                stroke-width="3"
+              ></line>
+            </svg>
+            <svg
+              class="bin-bottom"
+              viewBox="0 0 33 39"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <mask id="path-1-inside-1_8_19" fill="white">
+                <path
+                  d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"
+                ></path>
+              </mask>
+              <path
+                d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+                fill="white"
+                mask="url(#path-1-inside-1_8_19)"
+              ></path>
+              <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+              <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+            </svg>
+          </button>
+        </div>
+
+
         <div class="flex flex-col items-center">
           <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center shadow-sm">
             <span class="text-green-700 font-bold text-xl">{{salle.prefixe}}{{ salle.num }}</span>
@@ -148,10 +469,21 @@
         </div>
         <button
           class="w-full bg-green-700 text-white px-4 py-2 rounded-lg mt-4 font-medium shadow-md hover:bg-green-900 transition-all duration-300 transform hover:-translate-y-1"
-          >
-          Voir équipements
+          [routerLink]="['/equipements/salle', salle.id]">
+          Voir les équipements
         </button>
       </div>
+    </div>
+    <div
+      *ngIf="bulkMode && selectedSalleIds.length > 0"
+      class="fixed bottom-6 right-6 z-50"
+    >
+      <button
+        class="bg-green-700 text-white px-6 py-3 rounded-full shadow-xl hover:bg-green-900 transition duration-300"
+        (click)="archiverSelection()"
+      >
+        🗂 Archiver tout ({{ selectedSalleIds.length }})
+      </button>
     </div>
   </div>
 

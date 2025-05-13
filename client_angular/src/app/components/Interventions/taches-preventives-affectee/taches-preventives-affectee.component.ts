@@ -240,34 +240,7 @@ onAttributChange(attribut: any) {
     this.selectedForm= null; // Ferme le formulaire
   }
   newMaintenance: maintenance = {
-    equipement: {
-      id: 0,
-      image: '',
-      nom: '',
-      description: '',
-      numeroSerie: '',
-      modele: '',
-      marque: '',
-      statut: '',
-      actif: true,
-      dateAchat: '',
-      dateMiseEnService: '',
-      garantie: '',
-      dateDerniereMaintenance: '',
-      frequenceMaintenance: '',
-      historiquePannes: '',
-      coutAchat: '',
-      serviceNom: '',
-      typeEquipement: {} as TypesEquipements, // Initial empty type
-      service: {} as Service,
-      piecesDetachees: [],
-      salle: {} as Salle,
-      etage: {} as Etage,
-      batiment: {} as Batiment,
-      valeurSuivi: 0,
-      labelSuivi: '',
-      attributsValeurs: []
-    },
+    equipement: {} as Equipement,
     batiment: {
       id: 0,
       numBatiment: 0,

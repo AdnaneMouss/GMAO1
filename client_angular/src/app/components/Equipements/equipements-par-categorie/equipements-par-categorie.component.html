@@ -4,122 +4,334 @@
 
   <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6">
     <!-- Conteneur principal en flex -->
-    <h2 class="text-2xl font-bold text-gray-700">Équipements du service <b>{{serviceName}}</b></h2>
+    <h2 class="text-2xl font-bold text-gray-700">Équipements du service <b style="color: darkgreen">{{serviceName}}</b></h2>
     <p class="text-gray-500 text-sm">Recherchez, triez et gérez facilement tous les équipements hospitaliers.</p>
+    <div class="flex flex-wrap md:flex-nowrap justify-between items-center gap-4 mb-6">
+      <!-- 🔍 Search Inputs & Filters -->
+      <div class="flex flex-col md:flex-row flex-wrap items-center gap-4 w-full">
 
-    <div class="flex flex-wrap md:flex-nowrap justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
-      <!-- Conteneur des champs de recherche -->
-      <div class="flex space-x-4 w-full md:w-auto">
-        <div class="relative">
-          <input type="text" class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
-                 [(ngModel)]="searchTermNom" (input)="filterEquipementsByName()" placeholder="Rechercher par Nom">
-          <span class="absolute right-3 top-2 text-gray-500"><i class="fa fa-search"></i></span>
+        <!-- Search by Nom -->
+        <div class="relative w-full md:w-60">
+          <input
+            type="text"
+            class="w-full py-2 pl-3 pr-10 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            [(ngModel)]="searchTermNom"
+            (input)="applyAllFilters()"
+            placeholder="Nom de l'équipement"
+          />
+          <span class="absolute right-3 top-2.5 text-gray-500"><i class="fa fa-search"></i></span>
         </div>
 
-        <div class="relative w-full md:w-96"> <!-- Change width here -->
-          <input type="text" class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
-                 [(ngModel)]="searchTermNum" (input)="filterEquipementsByNumSerie()" placeholder="Rechercher par Numéro de série">
-          <span class="absolute right-3 top-2 text-gray-500"><i class="fa fa-search"></i></span>
+        <!-- Search by Numéro de Série -->
+        <div class="relative w-full md:w-72">
+          <input
+            type="text"
+            class="w-full py-2 pl-3 pr-10 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            [(ngModel)]="searchTermNum"
+            (input)="applyAllFilters()"
+            placeholder="Numéro de série"
+          />
+          <span class="absolute right-3 top-2.5 text-gray-500"><i class="fa fa-search"></i></span>
+        </div>
+
+        <!-- Filter by Statut -->
+        <div class="w-full md:w-52">
+          <select
+            [(ngModel)]="selectedStatus"
+            (change)="applyAllFilters()"
+            class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          >
+            <option value="">Filtrer par Statut</option>
+            <option value="EN_SERVICE">En service</option>
+            <option value="EN_PANNE">En panne</option>
+            <option value="EN_MAINTENANCE">En maintenance</option>
+          </select>
+        </div>
+
+        <!-- Filter by Date d'Achat -->
+        <div class="w-full md:w-64">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Filtrer par Date d'Achat</label>
+          <div class="flex gap-2">
+            <input
+              type="date"
+              [(ngModel)]="startDate"
+              (change)="applyAllFilters()"
+              class="py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="Date début"
+            />
+            <input
+              type="date"
+              [(ngModel)]="endDate"
+              (change)="applyAllFilters()"
+              class="py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="Date fin"
+            />
+          </div>
         </div>
       </div>
-      <div class="relative w-full md:w-auto">
-        <select [(ngModel)]="selectedStatus" (change)="filterEquipementsByStatus()"
-                class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out">
-          <option value="">Trier par Statut</option>
-          <option value="En service">En service</option>
-          <option value="En panne">En panne</option>
-          <option value="En maintenance">En maintenance</option>
-          <option value="Hors service">Hors service</option>
-        </select>
+
+      <!-- 🧭 View Toggle + Actions -->
+      <!-- Container with vertical stacking -->
+      <div class="flex flex-col items-end gap-2 md:ml-4 mt-4 md:mt-0">
+
+        <br><br>
+        <!-- View Toggle placed below -->
+        <div class="inline-flex border border-gray-300 rounded-md overflow-hidden bg-white shadow-sm">
+          <button
+            (click)="toggleView('table')"
+            [ngClass]="{
+        'bg-green-700 text-white': viewMode === 'table',
+        'text-gray-600 hover:bg-gray-100': viewMode !== 'table'
+      }"
+            class="px-2 py-1 text-lg transition"
+            title="Vue Table"
+          >
+            <i class="fas fa-table"></i>
+          </button>
+          <button
+            (click)="toggleView('card')"
+            [ngClass]="{
+        'bg-green-700 text-white': viewMode === 'card',
+        'text-gray-600 hover:bg-gray-100': viewMode !== 'card'
+      }"
+            class="px-2 py-1 text-lg transition border-l border-gray-300"
+            title="Vue Carte"
+          >
+            <i class="fas fa-th-large"></i>
+          </button>
+        </div>
       </div>
 
     </div>
 
+
     <br>
-    <div class="overflow-x-auto">
-      <table class="min-w-max border-collapse rounded-lg overflow-hidden shadow-lg">
-        <thead class="bg-green-700 text-white uppercase text-sm font-semibold">
-        <tr>
-          <th class="px-8 py-4 text-left">Image</th>
-          <th class="px-8 py-4 text-left cursor-pointer" (click)="sortTable('nom')">Nom</th>
-          <th class="px-8 py-4 text-left">Description</th>
-          <th class="px-8 py-4 text-left cursor-pointer" (click)="sortTable('numeroSerie')">Numéro de Série</th>
-          <th class="px-8 py-4 text-left">Modèle</th>
-          <th class="px-8 py-4 text-left">Marque</th>
-          <th class="px-8 py-4 text-left">Statut</th>
-          <th class="px-8 py-4 text-left">Actif</th>
-          <th class="px-8 py-4 text-left">Date Achat</th>
-          <th class="px-8 py-4 text-left">Date Mise en Service</th>
-          <th class="px-8 py-4 text-left">Garantie</th>
-          <th class="px-8 py-4 text-left">Dernière Maintenance</th>
-          <th class="px-8 py-4 text-left">Fréquence Maintenance</th>
-          <th class="px-8 py-4 text-left">Historique Pannes</th>
-          <th class="px-8 py-4 text-left">Coût Achat</th>
-          <th class="px-8 py-4 text-left">Attributs secondaires</th>
-          <th class="px-8 py-4 text-left">Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let equipement of filteredEquipements" class="border-b hover:bg-gray-100 transition duration-200">
-          <td class="px-8 py-4">
-            <img [src]="equipement.image || 'https://via.placeholder.com/50'"
-                 alt="equipement image"
-                 class="w-14 h-14 rounded-full border border-gray-300 shadow-sm">
-          </td>
-          <td class="px-8 py-4 whitespace-nowrap">{{ equipement.nom }}</td>
-          <td class="px-8 py-4">{{ equipement.description }}</td>
-          <td class="px-8 py-4 whitespace-nowrap">{{ equipement.numeroSerie }}</td>
-          <td class="px-8 py-4">{{ equipement.modele }}</td>
-          <td class="px-8 py-4">{{ equipement.marque }}</td>
-          <td class="px-8 py-4">
+    <div *ngIf="viewMode === 'table'" class="max-w-full overflow-x-auto">
+      <div class="w-[1800px] overflow-x-scroll scrollbar-thin scrollbar-track-gray-100">
+        <table class="min-w-max border-collapse rounded-lg overflow-hidden shadow-lg">
+          <thead class="bg-green-700 text-white uppercase text-sm font-semibold">
+          <tr>
+            <th class="px-8 py-4 text-left">Image</th>
+            <th class="px-8 py-4 text-left cursor-pointer" (click)="sortTable('nom')">Nom</th>
+            <th class="px-8 py-4 text-left">Description</th>
+            <th class="px-8 py-4 text-left cursor-pointer" (click)="sortTable('numeroSerie')">Numéro de Série</th>
+            <th class="px-8 py-4 text-left">Modèle</th>
+            <th class="px-8 py-4 text-left">Marque</th>
+            <th class="px-8 py-4 text-left">Statut</th>
+            <th class="px-8 py-4 text-left">Actif</th>
+            <th class="px-8 py-4 text-left">Date Achat</th>
+            <th class="px-8 py-4 text-left">Dernière Maintenance</th>
+            <th class="px-8 py-4 text-left">Coût Achat</th>
+            <th class="px-8 py-4 text-left">Attributs secondaires</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let equipement of filteredEquipements" class="border-b hover:bg-gray-100 transition duration-200">
+            <td class="px-8 py-4">
+              <img [src]="getImageUrl(equipement.image)"
+                   alt="equipement image"
+                   class="w-14 h-14">
+            </td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ equipement.nom }}</td>
+            <td class="px-8 py-4">{{ equipement.description }}</td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ equipement.numeroSerie }}</td>
+            <td class="px-8 py-4">{{ equipement.modele }}</td>
+            <td class="px-8 py-4">{{ equipement.marque }}</td>
+            <td class="px-8 py-4">
       <span class="px-4 py-2 text-xs font-semibold rounded-full"
             [ngClass]="{
-              'bg-green-100 text-green-700': equipement.statut === 'En service',
-              'bg-orange-100 text-orange-700': equipement.statut === 'En panne',
-              'bg-yellow-100 text-yellow-700': equipement.statut === 'En maintenance',
-              'bg-red-100 text-red-700': equipement.statut === 'Hors service'
+              'bg-green-100 text-green-700': equipement.statut === 'EN_SERVICE',
+              'bg-orange-100 text-orange-700': equipement.statut === 'EN_PANNE',
+              'bg-yellow-100 text-yellow-700': equipement.statut === 'EN_MAINTENANCE'
+
             }">
         {{ equipement.statut }}
       </span>
-          </td>
-          <td class="px-8 py-4">
+            </td>
+            <td class="px-8 py-4">
       <span [ngClass]="{'text-green-600 font-bold': equipement.actif, 'text-red-600 font-bold': !equipement.actif}">
         {{ equipement.actif ? 'Oui' : 'Non' }}
       </span>
-          </td>
-          <td class="px-8 py-4 whitespace-nowrap">{{ equipement.dateAchat }}</td>
-          <td class="px-8 py-4 whitespace-nowrap">{{ equipement.dateMiseEnService }}</td>
-          <td class="px-8 py-4 whitespace-nowrap">{{ equipement.garantie }}</td>
-          <td class="px-8 py-4 whitespace-nowrap">{{ equipement.dateDerniereMaintenance }}</td>
-          <td class="px-8 py-4 whitespace-nowrap">{{ equipement.frequenceMaintenance }}</td>
-          <td class="px-8 py-4">{{ equipement.historiquePannes }}</td>
-          <td class="px-8 py-4">{{ equipement.coutAchat }}</td>
+            </td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ equipement.dateAchat }}</td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ equipement.dateDerniereMaintenance }}</td>
+            <td class="px-8 py-4">{{ equipement.coutAchat }}</td>
 
-          <!-- New TD for displaying attributes -->
-          <td class="px-8 py-4">
-            <!-- Check if equipement.id exists -->
-            <div *ngIf="equipement.id">
-              <div *ngFor="let attribut of getAttributs(equipement.id)">
-                <p><b>{{ attribut.key }}</b>: {{ attribut.value }}</p>
+            <!-- New TD for displaying attributes -->
+            <td class="px-8 py-4 max-w-xs">
+              <div *ngIf="equipement.id" class="flex flex-wrap gap-2">
+                <div *ngFor="let attribut of getAttributs(equipement.id)"
+                     class="bg-gray-100 text-gray-800 rounded-full px-3 py-1 text-sm whitespace-nowrap overflow-hidden text-ellipsis"
+                     title="{{ attribut.key }}: {{ attribut.value }}">
+                  <b>{{ attribut.key }}</b>: {{ attribut.value }}
+                </div>
               </div>
-            </div>
-          </td>
+            </td>
 
-          <td class="px-8 py-4 text-center space-x-2">
-            <button [routerLink]="['/details-equipements', equipement.id]"
-                    class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition duration-200">
-              🔍 Voir détails
-            </button>
-            <button [routerLink]="['/equipement', equipement.id, 'pieces']"
-                    class="px-4 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-md transition duration-200">
-              🛠️ Gérer les pièces
-            </button>
-          </td>
-        </tr>
-        </tbody>
 
-      </table>
+          </tr>
+          </tbody>
+
+        </table>
+      </div>
     </div>
+
+
+    <div *ngIf="viewMode === 'card'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      <div *ngFor="let equipement of filteredEquipements"
+           class="bg-white rounded-xl shadow-lg p-6 border border-gray-300 hover:shadow-xl transition-transform transform hover:-translate-y-2 duration-300">
+
+        <!-- Image container -->
+        <div class="relative w-full h-40 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100">
+          <img [src]="getImageUrl(equipement.image)" alt="Équipement" class="w-auto h-28 object-cover transition-transform duration-300 hover:scale-110">
+        </div>
+
+        <!-- Nom -->
+        <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2 text-center">
+          {{ equipement.nom }}
+        </h3>
+
+        <!-- Numéro de série -->
+        <p class="text-sm text-gray-600 text-center break-words whitespace-normal">
+          #{{ equipement.numeroSerie }}
+        </p>
+
+        <!-- Statut -->
+        <p class="text-xs text-center mt-2 font-medium px-2 py-1 rounded-full inline-block"
+           [ngClass]="{
+        'bg-green-100 text-green-700': equipement.statut === 'EN_SERVICE',
+        'bg-orange-100 text-orange-700': equipement.statut === 'EN_PANNE',
+        'bg-yellow-100 text-yellow-700': equipement.statut === 'EN_MAINTENANCE'
+      }">
+          {{ equipement.statut }}
+        </p>
+        <div style="margin-left: 30px;" class="flex justify-between mt-6">
+          <button (click)="viewDetails(equipement.id)"
+                  class="px-4 py-2 text-sm font-semibold text-white bg-green-700 hover:bg-green-700 rounded-lg shadow-md transition duration-200">
+            Voir détails  >
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
+</div>
+<div *ngIf="showEditPanel" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white p-6 rounded-xl shadow-lg w-1/3 relative">
+    <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" (click)="closeEquipmentPanel()">
+      ✖
+    </button>
+    <h2 class="text-xl font-semibold text-gray-800">Détails de l’équipement</h2>
+
+    <!-- Equipment Info -->
+    <div class="mt-8 p-8 bg-white overflow-x-scroll shadow-lg rounded-lg w-full max-w-2xl mx-auto transition-all ease-in-out duration-300" *ngIf="!isEditing">
+      <div class="relative">
+        <button style="margin-left: 380px;"
+                class="bg-green-700 text-white hover:bg-green-800 p-2 rounded-md text-sm"
+                (click)="enableEditingEquipment()">
+          <i class="fas fa-pen text-lg"></i>
+        </button>
+      </div>
+
+      <div class="text-center space-y-4 w-full">
+        <div class="text-center">
+          <p class="text-xl font-semibold text-gray-800">
+            {{ selectedEquipement?.nom }}
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left text-sm text-gray-600">
+          <p><strong><i class="fas fa-barcode"></i> Numéro de série :</strong> {{ selectedEquipement?.numeroSerie }}</p>
+          <p><strong><i class="fas fa-align-left"></i> Description :</strong> {{ selectedEquipement?.description }}</p>
+          <p><strong><i class="fas fa-box-open"></i> Modèle :</strong> {{ selectedEquipement?.modele }}</p>
+          <p><strong><i class="fas fa-industry"></i> Marque :</strong> {{ selectedEquipement?.marque }}</p>
+          <p><strong><i class="fas fa-tags"></i> Statut :</strong> {{ selectedEquipement?.statut }}</p>
+          <p><strong><i class="fas fa-cogs"></i> Type d’équipement :</strong> {{ selectedEquipement?.typeEquipement }}</p>
+          <p><strong><i class="fas fa-briefcase-medical"></i> Service :</strong> {{ selectedEquipement?.serviceNom }}</p>
+          <p><strong><i class="fas fa-calendar-plus"></i> Date d’achat :</strong> {{ selectedEquipement?.dateAchat }}</p>
+          <p><strong><i class="fas fa-tools"></i> Dernière maintenance :</strong> {{ selectedEquipement?.dateDerniereMaintenance }}</p>
+          <p><strong><i class="fas fa-euro-sign"></i> Coût d’achat :</strong> {{ selectedEquipement?.coutAchat }} €</p>
+
+          <p><strong><i class="fas fa-building"></i> Bâtiment :</strong> {{ selectedEquipement?.batimentNom }}</p>
+          <p><strong><i class="fas fa-layer-group"></i> Étage :</strong> {{ selectedEquipement?.etageNum }}</p>
+          <p><strong><i class="fas fa-door-closed"></i> Salle :</strong> {{ selectedEquipement?.salleNum }}</p>
+
+          <p>
+            <strong><i class="fas fa-check-circle"></i> Actif :</strong>
+            <span [ngClass]="{
+              'text-green-500': selectedEquipement?.actif,
+              'text-red-500': !selectedEquipement?.actif
+            }">
+              {{ selectedEquipement?.actif ? 'Oui' : 'Non' }}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Form
+    <div class="mt-4" *ngIf="isEditing">
+      <div class="overflow-hidden px-4 py-4 bg-white rounded-lg shadow-md">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block mb-2 text-gray-700">Nom</label>
+            <input type="text" [(ngModel)]="selectedEquipement!.nom" class="w-full px-4 py-2 border rounded-lg focus:ring-green-500">
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-700">Description</label>
+            <input type="text" [(ngModel)]="selectedEquipement!.description" class="w-full px-4 py-2 border rounded-lg focus:ring-green-500">
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-700">Catégorie</label>
+            <select [(ngModel)]="selectedEquipement!.categorieId" class="w-full px-4 py-2 border rounded-lg focus:ring-green-500">
+              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.nom }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-700">Marque</label>
+            <input type="text" [(ngModel)]="selectedEquipement!.marque" class="w-full px-4 py-2 border rounded-lg focus:ring-green-500">
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-700">Date d’achat</label>
+            <input type="date" [(ngModel)]="selectedEquipement!.dateAchat" class="w-full px-4 py-2 border rounded-lg focus:ring-green-500">
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-700">Service</label>
+            <select [(ngModel)]="selectedEquipement!.serviceId" class="w-full px-4 py-2 border rounded-lg focus:ring-green-500">
+              <option *ngFor="let service of services" [value]="service.id">{{ service.nom }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-700">Stock</label>
+            <input type="number" [(ngModel)]="selectedEquipement!.stock" class="w-full px-4 py-2 border rounded-lg focus:ring-green-500">
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-700">État</label>
+            <select [(ngModel)]="selectedEquipement!.etat" class="w-full px-4 py-2 border rounded-lg focus:ring-green-500">
+              <option value="Nouveau">Nouveau</option>
+              <option value="En service">En service</option>
+              <option value="Hors service">Hors service</option>
+            </select>
+          </div>
+
+          <div class="col-span-2">
+            <label class="block mt-3 mb-2 text-gray-700">Actif</label>
+            <input type="checkbox" [(ngModel)]="selectedEquipement!.actif" class="form-checkbox text-green-600">
+            <span class="ml-2 text-sm">{{ selectedEquipement!.actif ? 'Actif' : 'Inactif' }}</span>
+          </div>
+        </div>
+
+        <div class="flex justify-end mt-4">
+          <button class="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2 hover:bg-gray-600" (click)="isEditingEquipment = false">
+            Annuler
+          </button>
+          <button class="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800" (click)="saveEquipmentChanges()">
+            Sauvegarder
+          </button>
+        </div>
+      </div>
+    </div>
+    -->
+  </div>
 </div>

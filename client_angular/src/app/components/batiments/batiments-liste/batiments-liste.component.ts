@@ -10,6 +10,7 @@ import {SalleService} from "../../../services/salle.service";
 
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import {TypesEquipements} from "../../../models/types-equipements";
 
 @Component({
   selector: 'app-batiments-liste',
@@ -17,11 +18,12 @@ import { saveAs } from 'file-saver';
   styleUrls: ['./batiments-liste.component.css']
 })
 export class BatimentsListeComponent implements OnInit {
-
+  impossibleToArchive: boolean = false;
   batimentsActifs: Batiment[] = [];
   batimentsInActifs: Batiment[] = [];
   searchTermNom: string = '';
   isBulkRestored: boolean= false;
+  isBulkArchived: boolean= false;
   bulkRestoreError: string | null = null;
   batimentTakenBulk: boolean = false;
   bulkMode: boolean = false;
@@ -106,8 +108,12 @@ export class BatimentsListeComponent implements OnInit {
         }, 3000);  // Hide the success flag after 3 seconds
       },
       (error) => {
-        console.error('Erreur lors de l\'archivage', error);
-      }
+        if (error.status === 400) {
+          this.impossibleToArchive = true;
+          this.errorMessage = error.error.message || "Impossible d’archiver ce bâtiment.";
+        } else {
+          this.errorMessage = "Une erreur inattendue s'est produite. Veuillez réessayer.";
+        }}
     );
   }
 
@@ -133,7 +139,7 @@ export class BatimentsListeComponent implements OnInit {
       (error) => {
         if (error.status != 200) {
           this.batimentTakenBulk = true;
-          this.errorMessage = 'Un ou plusieurs types actifs portant les mêmes noms existe déjà!';
+          this.errorMessage = 'Un ou plusieurs bâtiments actifs portant les mêmes informations existent déjà!';
         }
       }
     );
@@ -149,13 +155,22 @@ export class BatimentsListeComponent implements OnInit {
         this.getActifs();
         this.selectedBatimentIds = [];  // Reset selected IDs after archiving
         this.showTrash = false;
+        this.isBulkArchived = true;
+        setTimeout(() => {
+          this.isArchived = false;
+        }, 3000);  // Hide the success flag after 3 seconds
       },
       (error) => {
-        console.log("Error occurred during archiving:", error);
-        this.errorMessage = 'Erreur lors de l\'archivage des types.';
-      }
+        if (error.status === 400) {
+          this.impossibleToArchive = true;
+          this.errorMessage = error.error.message || "Impossible d’archiver ces bâtiments.";
+        } else {
+          this.errorMessage = "Une erreur inattendue s'est produite. Veuillez réessayer.";
+        }
+        }
     );
-  }
+      }
+
 
 
   toggleBulkMode(): void {
@@ -216,6 +231,7 @@ export class BatimentsListeComponent implements OnInit {
         console.log('Service ajouté avec succès:', savedBatiment);
         this.batimentsActifs.push(savedBatiment);
         this.filterBatimentsByName();
+        this.batimentAdded=true;
         this.resetForm();
       },
       (error) => {
@@ -228,25 +244,32 @@ export class BatimentsListeComponent implements OnInit {
   }
 
   updateBatiment(): void {
+    console.log('Sending to backend:', this.selectedBatiment);
+    this.errorMessage = '';
+    this.batimentTaken = false;
+
+    // Sanity checks 🔒
     if (!this.selectedBatiment || this.selectedBatiment.id === undefined) {
       this.errorMessage = 'Aucun bâtiment sélectionné pour la mise à jour!';
       return;
     }
 
-    if (!this.selectedBatiment.nom) {
-      this.errorMessage = 'Le nom du bâtiment est obligatoire';
+    if (!this.selectedBatiment.numBatiment || !this.selectedBatiment.intitule) {
+      this.errorMessage = 'Tous les champs sont obligatoires.';
       return;
     }
 
-    this.isLoading = true;
-
+    // API call 🔁
     this.batimentService.updateBatiment(this.selectedBatiment.id, this.selectedBatiment)
-      .subscribe(
-        (updatedBatiment) => {
+      .subscribe({
+        next: (updatedBatiment) => {
+          // Replace updated item in the actifs list 🛠️
           const index = this.batimentsActifs.findIndex(b => b.id === updatedBatiment.id);
           if (index !== -1) {
             this.batimentsActifs[index] = updatedBatiment;
           }
+
+          // Reset UI and feedback 💫
           this.resetForm();
           this.getActifs();
           this.getInactifs();
@@ -257,25 +280,29 @@ export class BatimentsListeComponent implements OnInit {
           setTimeout(() => {
             this.batimentUpdated = false;
           }, 3000);
-
-          this.isLoading = false;
         },
-        (error) => {
-          if (error.status === 409) {
+        error: (error) => {
+          if (error.status !=200) {
             this.batimentTaken = true;
-            this.errorMessage = 'Un bâtiment avec le même nom existe déjà.';
+            this.errorMessage = 'Un bâtiment avec les mêmes informations existe déjà.';
           } else {
             this.errorMessage = 'Échec de la mise à jour du bâtiment.';
           }
-          this.isLoading = false;
+          console.error('Update failed:', error);
         }
-      );
+      });
   }
+
 
   toggleForm(): void{
     this.resetForm();
     this.showEditForm=false;
     this.showForm=false;
+  }
+
+  editBatiment(bat: Batiment): void {
+    this.selectedBatiment = { ...bat }; // Clone to avoid modifying original before saving
+    this.showEditForm = true;
   }
 
   exportExcel(): void {
