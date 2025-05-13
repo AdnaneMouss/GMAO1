@@ -613,7 +613,7 @@ handleFrequenceChange() {
      private route: ActivatedRoute,private toastr: ToastrService,
      private http: HttpClient,private notificationService: NotificationService,
      private batimentService: BatimentService ,
-<<<<<<< HEAD
+
 
       
       private webSocketService: WebSocketService,
@@ -625,12 +625,8 @@ handleFrequenceChange() {
 
 
 
-=======
-      private etageService: EtageService,
-      private webSocketService: WebSocketService,
-      private chatService: ChatService,
-      private authService: AuthService,) { }
->>>>>>> a5c55b18f0be14a6db6c328e7858cf0302fafee9
+     
+
 
   validateDates() {
     if (this.newMaintenance.dateDebutPrevue && this.newMaintenance.dateFinPrevue) {
@@ -1022,7 +1018,7 @@ toggleMoisSelectionn(mois: string, event: any) {
     this.setupChatNotifications();
     window.addEventListener('scroll', this.handleScroll.bind(this));
 
-<<<<<<< HEAD
+
      for (let mois of this.getMois()) {
     this.selectedMoiss[mois] = false;
 
@@ -1034,9 +1030,7 @@ toggleMoisSelectionn(mois: string, event: any) {
   }
   
   
-=======
 
->>>>>>> a5c55b18f0be14a6db6c328e7858cf0302fafee9
 
   }
   private setupChatNotifications(): void {

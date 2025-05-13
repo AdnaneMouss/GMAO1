@@ -23,29 +23,34 @@ export class CoutMaintenancesComponent implements OnInit {
   showRapportModal = false;
   selectedEquipementId: number | null = null;
 
-  showRapportModalM= false
-  showEquipementDetails(eq: any): void {
-    this.selectedEquipementId = eq.id; // ou eq.nom si pas d'ID
-  }
-
-<<<<<<< HEAD
-dateDebutFiltreH!: Date | null;
+  dateDebutFiltreH!: Date | null;
 dateFinFiltreH!: Date | null;
 
 
 dateDebutFiltreM!: Date | null;
 dateFinFiltreM!: Date | null;
-=======
+
+  showRapportModalM= false
+  showEquipementDetails(eq: any): void {
+    this.selectedEquipementId = eq.id; // ou eq.nom si pas d'ID
+  }
 
 
->>>>>>> a5c55b18f0be14a6db6c328e7858cf0302fafee9
-
-
-
-
-
+resetFiltreH() {
+    this.dateDebutFiltreH = null;
+    this.dateFinFiltreH = null;
+    this.filteredEquipmentH = [...this.equipements]; // ou juste this.maintenances si tu n’as pas besoin de copie
+  }
+     resetFiltreM() {
+    this.dateDebutFiltreM = null;
+    this.dateFinFiltreM = null;
+    this.filteredEquipmentM = [...this.equipements]; // ou juste this.maintenances si tu n’as pas besoin de copie
+  }
 filteredEquipmentH: Equipement[] = [];
 filteredEquipmentM: Equipement[] = [];
+
+
+filteredEquipment: Equipement[] = [];
 weeklyStats = {
   pannes: 0,
   maintenances: 0,
@@ -55,9 +60,9 @@ weeklyStats = {
   equipements: Equipement[] = [];
 
   criticalEquipments: Equipement[] = [];
-  initialItemsToShow: number = 5; // Nombre d'éléments à afficher initialement
-showAll: boolean = false; // Contrôle l'affichage complet ou partiel
-reportGenerated: boolean = false;  // Indicateur si un rapport a été généré
+  initialItemsToShow: number = 5; // Nombre d'Ã©lÃ©ments Ã  afficher initialement
+showAll: boolean = false; // ContrÃ´le l'affichage complet ou partiel
+reportGenerated: boolean = false;  // Indicateur si un rapport a Ã©tÃ© gÃ©nÃ©rÃ©
 lastGeneratedReport: any = null;
 
 
@@ -88,12 +93,7 @@ currentWeekEnd: Date = new Date();
     this.lundiSemaineCourante = new Date(today);
     this.lundiSemaineCourante.setDate(today.getDate() - diff);
     this.lundiSemaineCourante.setHours(0, 0, 0, 0);
-   if (this.dateDebutFiltreH && this.dateFinFiltreH) {
-  this.generateWeeklyReport();
-} else {
-  console.warn("Les dates de filtrage ne sont pas définies.");
-}
-
+    //this.generateWeeklyReport();
      //this.scheduleWeeklyReport();
 
   }
@@ -101,21 +101,6 @@ currentWeekEnd: Date = new Date();
     const maintenant = new Date();
     return new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
   }
-<<<<<<< HEAD
-
-   resetFiltreH() {
-    this.dateDebutFiltreH = null;
-    this.dateFinFiltreH = null;
-    this.filteredEquipmentH = [...this.equipements]; // ou juste this.maintenances si tu n’as pas besoin de copie
-  }
-     resetFiltreM() {
-    this.dateDebutFiltreM = null;
-    this.dateFinFiltreM = null;
-    this.filteredEquipmentM = [...this.equipements]; // ou juste this.maintenances si tu n’as pas besoin de copie
-  }
-  
-=======
->>>>>>> a5c55b18f0be14a6db6c328e7858cf0302fafee9
 
 
 
@@ -123,10 +108,10 @@ currentWeekEnd: Date = new Date();
   scheduleWeeklyReport(): void {
     const now = new Date();
 
-    // Calcul du prochain lundi à 8:00
+    // Calcul du prochain lundi Ã  8:00
     const nextMonday = new Date(now);
     nextMonday.setDate(now.getDate() + ((1 + 7 - now.getDay()) % 7 || 7)); // Prochain lundi
-    nextMonday.setHours(8, 0, 0, 0); // À 8h00
+    nextMonday.setHours(8, 0, 0, 0); // Ã€ 8h00
 
 
 
@@ -147,11 +132,11 @@ currentWeekEnd: Date = new Date();
   loadEquipements(): void {
     this.equipementService.getAllEquipements().subscribe({
       next: (data) => {
-        console.log('Données reçues:', data);
+        console.log('DonnÃ©es reÃ§ues:', data);
         this.equipements = data;
-        this.calculateStats(); // Ajouté
-        this.filterCriticalEquipments(); // Ajouté
-        this.initChart(); // Ajouté pour initialiser le graphique
+        this.calculateStats(); // AjoutÃ©
+        this.filterCriticalEquipments(); // AjoutÃ©
+        this.initChart(); // AjoutÃ© pour initialiser le graphique
       },
       error: (err) => {
         console.error('Error loading equipment:', err);
@@ -159,12 +144,12 @@ currentWeekEnd: Date = new Date();
     });
   }
 
-  // Ajoutez cette méthode pour initialiser le graphique
+  // Ajoutez cette mÃ©thode pour initialiser le graphique
   initChart(): void {
     if (this.statutChartRef) {
       const ctx = this.statutChartRef.nativeElement.getContext('2d');
 
-      // Détruire le graphique existant s'il y en a un
+      // DÃ©truire le graphique existant s'il y en a un
       if (this.statutChart) {
         this.statutChart.destroy();
       }
@@ -174,7 +159,7 @@ currentWeekEnd: Date = new Date();
         data: {
           labels: ['Actif', 'En panne', 'Hors service', 'En maintenance'],
           datasets: [{
-            label: 'Statut des équipements',
+            label: 'Statut des Ã©quipements',
             data: this.prepareChartData(),
             backgroundColor: [
               'rgba(75, 192, 192, 0.2)',
@@ -204,7 +189,7 @@ currentWeekEnd: Date = new Date();
     }
   }
 
- async generateWeeklyReport(): Promise<void> {
+  async generateWeeklyReport(): Promise<void> {
     const currentDate = new Date();
     const dayOfWeek = currentDate.getDay();
     const diffToMonday = (dayOfWeek + 6) % 7;
@@ -217,40 +202,10 @@ currentWeekEnd: Date = new Date();
     dateFin.setDate(dateDebut.getDate() + 6);
     dateFin.setHours(23, 59, 59, 999);
 
-<<<<<<< HEAD
-    
-
-    
-
-=======
->>>>>>> a5c55b18f0be14a6db6c328e7858cf0302fafee9
     const pannesCetteSemaine = this.getPannesForPeriod(dateDebut, dateFin);
     const maintenancesCetteSemaine = this.getMaintenancesForPeriod(dateDebut, dateFin);
 
     const equipementsDansPeriode = this.equipements.filter(eq => {
-<<<<<<< HEAD
-      
-        const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
-
-        return (
-            dateDerniereMaintenance && 
-            dateDerniereMaintenance >= dateDebut && 
-            dateDerniereMaintenance <= dateFin
-        );
-    });
-
-    // Filtrage des équipements pour l'intervalle personnalisé
-    //const equipementsDansIntervalleFiltre = this.equipements.filter(eq => {
-      //  const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
-
-        //return (
-           // dateDerniereMaintenance && 
-          //  dateDerniereMaintenance >= dateDebutFiltreH && 
-            //dateDerniereMaintenance <= dateFinFiltreH
-        //);
-    //});
-
-=======
       const achat = eq.dateAchat ? new Date(eq.dateAchat) : null;
       const miseService = eq.dateMiseEnService ? new Date(eq.dateMiseEnService) : null;
       const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
@@ -261,23 +216,20 @@ currentWeekEnd: Date = new Date();
       );
     });
 
->>>>>>> a5c55b18f0be14a6db6c328e7858cf0302fafee9
     const rapport = {
-        dateGeneration: currentDate,
-        periode: { debut: dateDebut, fin: dateFin },
-        //periodeFiltrage: { debut: dateDebutFiltreH, fin: dateFinFiltreH }, // Ajout de la période filtrée
-        stats: {
-            totalEquipements: this.stats.totalEquipements,
-            pannes: pannesCetteSemaine.length,
-            maintenances: maintenancesCetteSemaine.length,
-            tauxDisponibilite: (
-                ((this.stats.totalEquipements - pannesCetteSemaine.length) / this.stats.totalEquipements) * 100
-            ).toFixed(2),
-        },
-        pannes: pannesCetteSemaine,
-        maintenances: maintenancesCetteSemaine,
-        equipementsCritiques: equipementsDansPeriode,
-       // equipementsDansIntervalleFiltre: equipementsDansIntervalleFiltre, // Équipements dans l'intervalle filtré
+      dateGeneration: currentDate,
+      periode: { debut: dateDebut, fin: dateFin },
+      stats: {
+        totalEquipements: this.stats.totalEquipements,
+        pannes: pannesCetteSemaine.length,
+        maintenances: maintenancesCetteSemaine.length,
+        tauxDisponibilite: (
+          ((this.stats.totalEquipements - pannesCetteSemaine.length) / this.stats.totalEquipements) * 100
+        ).toFixed(2),
+      },
+      pannes: pannesCetteSemaine,
+      maintenances: maintenancesCetteSemaine,
+      equipementsCritiques: equipementsDansPeriode
     };
 
     const doc = new jsPDF();
@@ -288,19 +240,6 @@ currentWeekEnd: Date = new Date();
 
     // Load and add logo
     try {
-<<<<<<< HEAD
-        const logoImg = new Image();
-        logoImg.src = 'assets/logo.png';
-        
-        // Wait for image to load
-        await new Promise((resolve, reject) => {
-            logoImg.onload = resolve;
-            logoImg.onerror = reject;
-        });
-
-        doc.addImage(logoImg, 'PNG', marginLeft, yPosition, 30, 30);
-        doc.setFontSize(8);
-=======
       const logoImg = new Image();
       logoImg.src = 'assets/logo.png';
 
@@ -313,33 +252,21 @@ currentWeekEnd: Date = new Date();
       doc.addImage(logoImg, 'PNG', marginLeft, yPosition, 30, 30);
       doc.setFontSize(8);
 
-      doc.text('Hôpital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
-      doc.text('Système de Gestion des Équipements', marginLeft + 35, yPosition + 15);
+      doc.text('HÃ´pital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
+      doc.text('SystÃ¨me de Gestion des Ã‰quipements', marginLeft + 35, yPosition + 15);
 
       yPosition += 40;
   } catch (e) {
       console.warn('Logo not found or failed to load, proceeding without it');
       yPosition += 20;
   }
->>>>>>> a5c55b18f0be14a6db6c328e7858cf0302fafee9
 
-        doc.text('Hôpital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
-        doc.text('Système de Gestion des Équipements', marginLeft + 35, yPosition + 15);
-
-        yPosition += 40;
-    } catch (e) {
-        console.warn('Logo not found or failed to load, proceeding without it');
-        yPosition += 20;
-    }
 
     // Report title
     doc.setFontSize(16);
-<<<<<<< HEAD
-=======
 
->>>>>>> a5c55b18f0be14a6db6c328e7858cf0302fafee9
     doc.setFont('helvetica', 'bold');
-    const titleText = "Rapport Hebdomadaire des Équipements";
+    const titleText = "Rapport Hebdomadaire des Ã‰quipements";
     const titleWidth = doc.getTextWidth(titleText);
     doc.text(titleText, 105, yPosition, { align: 'center' });
     // Underline the title
@@ -352,86 +279,24 @@ currentWeekEnd: Date = new Date();
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0); // Black
     doc.setFont('helvetica', 'normal');
-    doc.text(`Période : du ${rapport.periode.debut.toLocaleDateString()} au ${rapport.periode.fin.toLocaleDateString()}`, marginLeft, yPosition);
+    doc.text(`PÃ©riode : du ${rapport.periode.debut.toLocaleDateString()} au ${rapport.periode.fin.toLocaleDateString()}`, marginLeft, yPosition);
     yPosition += 10;
-    doc.text(`Date de génération : ${rapport.dateGeneration.toLocaleString()}`, marginLeft, yPosition);
+    doc.text(`Date de gÃ©nÃ©ration : ${rapport.dateGeneration.toLocaleString()}`, marginLeft, yPosition);
     yPosition += 15;
 
-<<<<<<< HEAD
-    // Display custom filtering period
-    doc.setFontSize(12);
-    //doc.text(`Filtrage personnalisé : du ${rapport.periodeFiltrage.debut.toLocaleDateString()} au ${rapport.periodeFiltrage.fin.toLocaleDateString()}`, marginLeft, yPosition);
-    yPosition += 15;
-
-    // Critical equipment section
-    doc.setFontSize(14);
-=======
 
 
     // Critical equipment section
     doc.setFontSize(14);
 
->>>>>>> a5c55b18f0be14a6db6c328e7858cf0302fafee9
     doc.setFont('helvetica', 'bold');
-    doc.text('Équipements en activité cette semaine', marginLeft, yPosition);
+    doc.text('Ã‰quipements en activitÃ© cette semaine', marginLeft, yPosition);
     yPosition += 10;
 
     // Generate table for filtered equipment
     autoTable(doc, {
-<<<<<<< HEAD
-        startY: yPosition,
-        head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'Dernière Maintenance']],
-        body: rapport.equipementsCritiques.map((eq: any, index: number) => [
-            index + 1,
-            eq.nom || 'N/A',
-            eq.dateAchat ? new Date(eq.dateAchat).toLocaleDateString() : 'N/A',
-            eq.dateMiseEnService ? new Date(eq.dateMiseEnService).toLocaleDateString() : 'N/A',
-            eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance).toLocaleDateString() : 'N/A'
-        ]),
-        styles: {
-            fontSize: 9,
-        },
-        headStyles: {
-            textColor: [255, 255, 255],
-            fontStyle: 'bold'
-        },
-        alternateRowStyles: {
-            fillColor: [240, 240, 240]
-        }
-    });
-
-    // Equipment in custom filtering period section
-    //doc.setFontSize(14);
-    //doc.setFont('helvetica', 'bold');
-    //doc.text('Équipements dans la période de filtrage personnalisée', marginLeft, yPosition);
-    //yPosition += 10;
-
-    // Generate table for custom filtered equipment
-   // autoTable(doc, {
-     //   startY: yPosition,
-       /// head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'Dernière Maintenance']],
-        //body: rapport.equipementsDansIntervalleFiltre.map((eq: any, index: number) => [
-          //  index + 1,
-            //eq.nom || 'N/A',
-            //eq.dateAchat ? new Date(eq.dateAchat).toLocaleDateString() : 'N/A',
-            //eq.dateMiseEnService ? new Date(eq.dateMiseEnService).toLocaleDateString() : 'N/A',
-            //eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance).toLocaleDateString() : 'N/A'
-       // ]),
-       // styles: {
-         //   fontSize: 9,
-        //},
-        //headStyles: {
-          //  textColor: [255, 255, 255],
-           // fontStyle: 'bold'
-        //},
-        //alternateRowStyles: {
-          //  fillColor: [240, 240, 240]
-        //}
-    //});
-
-=======
       startY: yPosition,
-      head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'Dernière Maintenance']],
+      head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'DerniÃ¨re Maintenance']],
       body: rapport.equipementsCritiques.map((eq: any, index: number) => [
         index + 1,
         eq.nom || 'N/A',
@@ -452,28 +317,27 @@ currentWeekEnd: Date = new Date();
       }
     });
 
->>>>>>> a5c55b18f0be14a6db6c328e7858cf0302fafee9
     doc.save(`rapport-maintenance-${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
-
 async generateMonthlyReport(): Promise<void> {
-  // Déterminer le mois précédent
+  // DÃ©terminer le mois prÃ©cÃ©dent
   const currentDate = new Date();
   const firstDayOfPreviousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
   const lastDayOfPreviousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
 
-  // Ajuster les heures pour couvrir toute la journée
+  // Ajuster les heures pour couvrir toute la journÃ©e
   firstDayOfPreviousMonth.setHours(0, 0, 0, 0);
   lastDayOfPreviousMonth.setHours(23, 59, 59, 999);
 
-  // Récupérer les données pour la période
+  // RÃ©cupÃ©rer les donnÃ©es pour la pÃ©riode
   const pannesCeMois = this.getPannesForPeriod(firstDayOfPreviousMonth, lastDayOfPreviousMonth);
   const maintenancesCeMois = this.getMaintenancesForPeriod(firstDayOfPreviousMonth, lastDayOfPreviousMonth);
 
-  // Filtrer les équipements actifs ce mois-ci
+  // Filtrer les Ã©quipements actifs ce mois-ci
   const equipementsDansPeriode = this.equipements.filter(eq => {
-   
+    const achat = eq.dateAchat ? new Date(eq.dateAchat) : null;
+    const miseService = eq.dateMiseEnService ? new Date(eq.dateMiseEnService) : null;
     const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
 
     return (
@@ -482,7 +346,7 @@ async generateMonthlyReport(): Promise<void> {
     );
   });
 
-  // Préparer les données du rapport
+  // PrÃ©parer les donnÃ©es du rapport
   const rapport = {
     dateGeneration: currentDate,
     periode: {
@@ -503,13 +367,13 @@ async generateMonthlyReport(): Promise<void> {
     equipementsCritiques: equipementsDansPeriode
   };
 
-  // Génération du PDF
+  // GÃ©nÃ©ration du PDF
   const doc = new jsPDF();
   const primaryColor = [22, 160, 133];
   const marginLeft = 20;
   let yPosition = 30;
 
-  // Logo et en-tête
+  // Logo et en-tÃªte
   try {
     const logoImg = new Image();
     logoImg.src = 'assets/logo.png';
@@ -521,18 +385,18 @@ async generateMonthlyReport(): Promise<void> {
 
     doc.addImage(logoImg, 'PNG', marginLeft, yPosition, 30, 30);
     doc.setFontSize(8);
-    doc.text('Hôpital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
-    doc.text('Système de Gestion des Équipements', marginLeft + 35, yPosition + 15);
+    doc.text('HÃ´pital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
+    doc.text('SystÃ¨me de Gestion des Ã‰quipements', marginLeft + 35, yPosition + 15);
     yPosition += 40;
   } catch (e) {
-    console.warn('Logo non trouvé, continuation sans logo');
+    console.warn('Logo non trouvÃ©, continuation sans logo');
     yPosition += 20;
   }
 
   // Titre du rapport
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  const titleText = `Rapport Mensuel des Équipements - ${rapport.periode.nomMois}`;
+  const titleText = `Rapport Mensuel des Ã‰quipements - ${rapport.periode.nomMois}`;
   const titleWidth = doc.getTextWidth(titleText);
   doc.text(titleText, 105, yPosition, { align: 'center' });
   doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -540,13 +404,13 @@ async generateMonthlyReport(): Promise<void> {
   doc.line(105 - titleWidth/2, yPosition + 2, 105 + titleWidth/2, yPosition + 2);
   yPosition += 15;
 
-  // Période et date de génération
+  // PÃ©riode et date de gÃ©nÃ©ration
   doc.setFontSize(12);
   doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Période : du ${rapport.periode.debut.toLocaleDateString()} au ${rapport.periode.fin.toLocaleDateString()}`, marginLeft, yPosition);
+  doc.text(`PÃ©riode : du ${rapport.periode.debut.toLocaleDateString()} au ${rapport.periode.fin.toLocaleDateString()}`, marginLeft, yPosition);
   yPosition += 10;
-  doc.text(`Date de génération : ${rapport.dateGeneration.toLocaleString()}`, marginLeft, yPosition);
+  doc.text(`Date de gÃ©nÃ©ration : ${rapport.dateGeneration.toLocaleString()}`, marginLeft, yPosition);
   yPosition += 15;
 
   // Statistiques
@@ -559,10 +423,10 @@ async generateMonthlyReport(): Promise<void> {
   autoTable(doc, {
     startY: yPosition,
     body: [
-      ['Total des équipements', rapport.stats.totalEquipements],
+      ['Total des Ã©quipements', rapport.stats.totalEquipements],
       ['Pannes ce mois', rapport.stats.pannes],
       ['Maintenances ce mois', rapport.stats.maintenances],
-      ['Taux de disponibilité', rapport.stats.tauxDisponibilite + '%']
+      ['Taux de disponibilitÃ©', rapport.stats.tauxDisponibilite + '%']
     ],
     styles: {
       fontSize: 10,
@@ -576,16 +440,16 @@ async generateMonthlyReport(): Promise<void> {
   });
   yPosition = (doc as any).lastAutoTable.finalY + 10;
 
-  // Équipements en activité
+  // Ã‰quipements en activitÃ©
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Équipements en activité ce mois', marginLeft, yPosition);
+  doc.text('Ã‰quipements en activitÃ© ce mois', marginLeft, yPosition);
   yPosition += 10;
 
-  // Tableau des équipements
+  // Tableau des Ã©quipements
   autoTable(doc, {
     startY: yPosition,
-    head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'Dernière Maintenance']],
+    head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'DerniÃ¨re Maintenance']],
     body: rapport.equipementsCritiques.map((eq: any, index: number) => [
       index + 1,
       eq.nom || 'N/A',
@@ -623,7 +487,7 @@ async generateMonthlyReport(): Promise<void> {
 
 
   private getPannesForPeriod(debut: Date, fin: Date): any[] {
-    // Simulation - en réalité, vous filtreriez depuis votre base de données
+    // Simulation - en rÃ©alitÃ©, vous filtreriez depuis votre base de donnÃ©es
     return this.equipements.filter(eq =>
       eq.statut === 'En panne' &&
       new Date(eq.dateDerniereMaintenance) >= debut &&
@@ -632,7 +496,7 @@ async generateMonthlyReport(): Promise<void> {
   }
 
   private getMaintenancesForPeriod(debut: Date, fin: Date): any[] {
-    // Simulation - en réalité, vous filtreriez depuis votre base de données
+    // Simulation - en rÃ©alitÃ©, vous filtreriez depuis votre base de donnÃ©es
     return this.equipements.filter(eq =>
       eq.dateDerniereMaintenance &&
       new Date(eq.dateDerniereMaintenance) >= debut &&
@@ -690,9 +554,9 @@ this.showRapportModal = true;
   viewMonthlyReport(): void {
     const currentDate = new Date();
 
-    // Mois précédent
+    // Mois prÃ©cÃ©dent
     const dateDebut = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-    const dateFin = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0); // le 0 renvoie le dernier jour du mois précédent
+    const dateFin = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0); // le 0 renvoie le dernier jour du mois prÃ©cÃ©dent
 
     dateDebut.setHours(0, 0, 0, 0);
     dateFin.setHours(23, 59, 59, 999);
@@ -745,12 +609,12 @@ this.showRapportModal = true;
 
     // Titre
     doc.setFontSize(18);
-    doc.text('Rapport Hebdomadaire des Équipements', 14, 20);
+    doc.text('Rapport Hebdomadaire des Ã‰quipements', 14, 20);
 
-    // Période
+    // PÃ©riode
     doc.setFontSize(12);
-    doc.text(`Période: ${new Date(rapportObj.periode.debut).toLocaleDateString()} - ${new Date(rapportObj.periode.fin).toLocaleDateString()}`, 14, 30);
-    doc.text(`Généré le: ${new Date(rapportObj.dateGeneration).toLocaleDateString()}`, 14, 36);
+    doc.text(`PÃ©riode: ${new Date(rapportObj.periode.debut).toLocaleDateString()} - ${new Date(rapportObj.periode.fin).toLocaleDateString()}`, 14, 30);
+    doc.text(`GÃ©nÃ©rÃ© le: ${new Date(rapportObj.dateGeneration).toLocaleDateString()}`, 14, 36);
 
 
 
@@ -767,7 +631,7 @@ this.showRapportModal = true;
 
     autoTable(doc, {
 
-      head: [['Nom', 'Statut', 'Jours sans panne', 'Dernière maintenance']],
+      head: [['Nom', 'Statut', 'Jours sans panne', 'DerniÃ¨re maintenance']],
       body: critData,
       theme: 'grid',
       headStyles: { fillColor: [231, 76, 60] }
@@ -844,7 +708,7 @@ this.showRapportModal = true;
         };
 
         img.onerror = () => {
-          console.warn('Logo non chargé, continuation sans logo');
+          console.warn('Logo non chargÃ©, continuation sans logo');
           resolve('');
         };
       });
@@ -860,20 +724,20 @@ this.showRapportModal = true;
           doc.addImage(logoData, 'PNG', marginLeft, yPosition, 30, 30);
           doc.setFontSize(8);
           doc.setTextColor(secondaryColor);
-          doc.text('Hôpital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
-          doc.text('Système de Gestion des Équipements', marginLeft + 35, yPosition + 15);
+          doc.text('HÃ´pital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
+          doc.text('SystÃ¨me de Gestion des Ã‰quipements', marginLeft + 35, yPosition + 15);
         }
 
         yPosition += logoData ? 40 : 20;
 
-        // B. En-tête du document
+        // B. En-tÃªte du document
         doc.setFontSize(16);
         doc.setTextColor(primaryColor);
         doc.setFont('helvetica', 'bold');
-        doc.text('FICHE TECHNIQUE ÉQUIPEMENT', 105, yPosition, { align: 'center' });
+        doc.text('FICHE TECHNIQUE Ã‰QUIPEMENT', 105, yPosition, { align: 'center' });
         yPosition += 10;
 
-        // Ligne de séparation
+        // Ligne de sÃ©paration
         doc.setDrawColor(primaryColor);
         doc.setLineWidth(0.5);
         doc.line(marginLeft, yPosition, 195, yPosition);
@@ -882,11 +746,11 @@ this.showRapportModal = true;
         // C. Sections d'information
         const sections = [
           {
-            title: 'INFORMATIONS GÉNÉRALES',
+            title: 'INFORMATIONS GÃ‰NÃ‰RALES',
             fields: [
               { label: 'Nom', value: equipment.nom || 'N/A' },
-              { label: 'Numéro de série', value: equipment.numeroSerie || 'N/A' },
-              { label: 'Modèle', value: equipment.modele || 'N/A' },
+              { label: 'NumÃ©ro de sÃ©rie', value: equipment.numeroSerie || 'N/A' },
+              { label: 'ModÃ¨le', value: equipment.modele || 'N/A' },
               { label: 'Marque', value: equipment.marque || 'N/A' },
               { label: 'Description', value: equipment.description || 'N/A' },
               { label: 'Statut', value: equipment.statut || 'N/A', special: 'status' },
@@ -899,31 +763,31 @@ this.showRapportModal = true;
             fields: [
               { label: 'Date achat', value: equipment.dateAchat ? new Date(equipment.dateAchat).toLocaleDateString() : 'N/A' },
               { label: 'Date mise en service', value: equipment.dateMiseEnService ? new Date(equipment.dateMiseEnService).toLocaleDateString() : 'N/A' },
-              { label: 'Date dernière maintenance', value: equipment.dateDerniereMaintenance ? new Date(equipment.dateDerniereMaintenance).toLocaleDateString() : 'N/A' },
+              { label: 'Date derniÃ¨re maintenance', value: equipment.dateDerniereMaintenance ? new Date(equipment.dateDerniereMaintenance).toLocaleDateString() : 'N/A' },
             ]
           },
           {
             title: 'LOCALISATION',
             fields: [
-              { label: 'Bâtiment', value: equipment.batimentNom.toString() || 'N/A' },
-              { label: 'Étage', value: equipment.etageNum?.toString() || 'N/A' },
+              { label: 'BÃ¢timent', value: equipment.batimentNom.toString() || 'N/A' },
+              { label: 'Ã‰tage', value: equipment.etageNum?.toString() || 'N/A' },
               { label: 'Salle', value: equipment.salleNum?.toString() || 'N/A' },
               { label: 'Service', value: equipment.serviceNom || 'N/A' }
             ]
           },
           {
-            title: 'COÛTS ET SUIVI',
+            title: 'COÃ›TS ET SUIVI',
             fields: [
-              { label: 'Coût d\'achat', value: equipment.coutAchat ? `${equipment.coutAchat} DH` : 'N/A' },
+              { label: 'CoÃ»t d\'achat', value: equipment.coutAchat ? `${equipment.coutAchat} DH` : 'N/A' },
               { label: 'Label suivi', value: equipment.labelSuivi || 'N/A' },
               { label: 'Valeur suivi', value: equipment.valeurSuivi?.toString() || 'N/A' }
             ]
           }
         ];
 
-        // D. Génération dynamique des sections
+        // D. GÃ©nÃ©ration dynamique des sections
         for (const section of sections) {
-          // Vérifier si besoin d'une nouvelle page
+          // VÃ©rifier si besoin d'une nouvelle page
           if (yPosition > 250) {
             doc.addPage();
             yPosition = 20;
@@ -968,14 +832,14 @@ this.showRapportModal = true;
         // E. Pied de page
         doc.setFontSize(8);
         doc.setTextColor(secondaryColor);
-        doc.text(`Document généré le ${new Date().toLocaleDateString()} - Système de Gestion des Équipements H.U.I.R`, 105, 285, { align: 'center' });
+        doc.text(`Document gÃ©nÃ©rÃ© le ${new Date().toLocaleDateString()} - SystÃ¨me de Gestion des Ã‰quipements H.U.I.R`, 105, 285, { align: 'center' });
 
         // F. Sauvegarde du PDF
         doc.save(`fiche_technique_${equipment.nom?.replace(/\s+/g, '_') || 'equipement'}.pdf`);
 
       } catch (error) {
-        console.error('Erreur lors de la génération du PDF:', error);
-        // Fallback sans image si échec
+        console.error('Erreur lors de la gÃ©nÃ©ration du PDF:', error);
+        // Fallback sans image si Ã©chec
         this.generateSimplePDF(doc, equipment);
       }
     })();
@@ -992,11 +856,11 @@ this.showRapportModal = true;
     return colors[status] || '#000000';
   }
 
-  // Fallback si échec du PDF complet
+  // Fallback si Ã©chec du PDF complet
   private generateSimplePDF(doc: jsPDF, equipment: Equipement): void {
-    doc.text('FICHE ÉQUIPEMENT SIMPLIFIÉE', 20, 20);
+    doc.text('FICHE Ã‰QUIPEMENT SIMPLIFIÃ‰E', 20, 20);
     doc.text(`Nom: ${equipment.nom || 'N/A'}`, 20, 30);
-    doc.text(`Numéro de série: ${equipment.numeroSerie || 'N/A'}`, 20, 40);
+    doc.text(`NumÃ©ro de sÃ©rie: ${equipment.numeroSerie || 'N/A'}`, 20, 40);
     doc.save(`fiche_simple_${equipment.nom?.replace(/\s+/g, '_') || 'equipement'}.pdf`);
   }
 
@@ -1010,7 +874,7 @@ this.showRapportModal = true;
 
 
 
-  // Méthode addField améliorée
+  // MÃ©thode addField amÃ©liorÃ©e
   private addField(doc: jsPDF, label: string, value: string, x: number, y: number, labelWidth: number): void {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
@@ -1019,7 +883,7 @@ this.showRapportModal = true;
     doc.text(value, x + labelWidth, y);
   }
 
-  // Méthodes utilitaires avec typage strict
+  // MÃ©thodes utilitaires avec typage strict
 
 
 
@@ -1051,17 +915,17 @@ this.showRapportModal = true;
 
 
   private generatePDFWithoutLogo(doc: jsPDF, equipment: Equipement): void {
-    // Version simplifiée sans logo
+    // Version simplifiÃ©e sans logo
     doc.setFontSize(16);
     doc.setTextColor('#4169E1');
-    doc.text('Rapport des Coûts de Maintenance', 40, 40);
+    doc.text('Rapport des CoÃ»ts de Maintenance', 40, 40);
 
     doc.setFontSize(10);
     doc.setTextColor('#A9A9A9');
     doc.text('H.U.I.R - HOPITAL UNIVERSITAIRE INTERNATIONAL DE RABAT', 40, 50);
 
     // Ajouter le reste du contenu comme dans la version avec logo...
-    // (vous pouvez copier le même contenu mais en ajustant les positions Y)
+    // (vous pouvez copier le mÃªme contenu mais en ajustant les positions Y)
 
     doc.save(`rapport_cout_maintenance_simple_${new Date().toISOString().slice(0,10)}.pdf`);
   }
