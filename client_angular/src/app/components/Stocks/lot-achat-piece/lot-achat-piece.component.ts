@@ -58,6 +58,10 @@ export class LotAchatPieceComponent implements OnInit {
     });
   }
 
+  getMontantTotal(achat: any): string {
+    const total = achat.quantite * achat.coutUnitaire;
+    return total.toFixed(2) + ' MAD';
+  }
 
 
   ajouterAchat(): void {

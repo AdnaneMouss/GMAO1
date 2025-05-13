@@ -3,6 +3,7 @@ package com.huir.GmaoApp.service;
 import com.huir.GmaoApp.dto.EquipementDTO;
 import com.huir.GmaoApp.dto.ServiceDTO;
 import com.huir.GmaoApp.dto.UserDTO;
+import com.huir.GmaoApp.model.Batiment;
 import com.huir.GmaoApp.model.Services;
 import com.huir.GmaoApp.model.User;
 import com.huir.GmaoApp.repository.ServicesRepository;
@@ -101,4 +102,17 @@ public class ServicesService {
     public void deleteService(Long id) {
         serviceRepository.deleteById(id);
     }
+
+    public boolean existsByNomAndActifTrue(String nom) {
+        return serviceRepository.existsByNomAndActifTrue(nom);
+    }
+
+    public List<Services> getServicesActifs() {
+        return serviceRepository.findByActifTrue();
+    }
+
+    public List<Services> getServicesInactifs() {
+        return serviceRepository.findByActifFalse();
+    }
+
 }

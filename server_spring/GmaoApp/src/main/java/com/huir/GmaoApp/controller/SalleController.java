@@ -1,12 +1,15 @@
 package com.huir.GmaoApp.controller;
 
 
+import com.huir.GmaoApp.dto.EquipementDTO;
 import com.huir.GmaoApp.dto.EtageDTO;
 import com.huir.GmaoApp.dto.SalleDTO;
 import com.huir.GmaoApp.model.Batiment;
+import com.huir.GmaoApp.model.Equipement;
 import com.huir.GmaoApp.model.Etage;
 import com.huir.GmaoApp.model.Salle;
 import com.huir.GmaoApp.repository.BatimentRepository;
+import com.huir.GmaoApp.repository.EquipementRepository;
 import com.huir.GmaoApp.repository.EtageRepository;
 import com.huir.GmaoApp.repository.SallesRepository;
 import com.huir.GmaoApp.service.EtageService;
@@ -34,7 +37,16 @@ public class SalleController {
     private EtageRepository etageRepository;
     @Autowired
     private SallesRepository salleRepository;
+    @Autowired
+    private EquipementRepository equipementRepository;
 
+
+    @GetMapping("/{id}")
+    public Optional<SalleDTO> getSalleById(@PathVariable("id") Long salleId) {
+        Optional<Salle> salle = salleService.findSalleById(salleId);
+
+        return salle.map(SalleDTO::new);
+    }
 
     @PostMapping
     public ResponseEntity<?> createSalle(
@@ -112,6 +124,12 @@ public class SalleController {
         Salle salle = salleRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Salle non trouvée"));
 
+        // Check if there are any Equipements linked to this Salle
+        boolean isLinked = equipementRepository.existsBySalle(salle);
+        if (isLinked) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d’archiver : la salle est liée à des équipements.");
+        }
+
         salle.setActif(false);
         salleRepository.save(salle);
 
@@ -120,18 +138,37 @@ public class SalleController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/salles/archiver-multiple")
-    public ResponseEntity<Map<String, String>> archiverSalles(@RequestBody List<Long> ids) {
-        List<Salle> salles = salleRepository.findAllById(ids);
-        for (Salle salle : salles) {
-            salle.setActif(false);
-        }
-        salleRepository.saveAll(salles);
 
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Salles archivées avec succès");
+    @PutMapping("/archiver-multiple")
+    public ResponseEntity<Map<String, Object>> archiverSalles(@RequestBody List<Long> ids) {
+        List<Salle> salles = salleRepository.findAllById(ids);
+
+        List<String> archived = new ArrayList<>();
+        List<String> skipped = new ArrayList<>();
+
+        for (Salle salle : salles) {
+            boolean isLinked = equipementRepository.existsBySalle(salle);
+            if (isLinked) {
+                skipped.add("Salle ID " + salle.getId() + " liée à des équipements");
+                continue;
+            }
+            salle.setActif(false);
+            archived.add("Salle ID " + salle.getId());
+        }
+
+        // Save only those that were not linked
+        salleRepository.saveAll(
+                salles.stream().filter(salle -> !equipementRepository.existsBySalle(salle)).toList()
+        );
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("archivées", archived);
+        response.put("ignorées", skipped);
+        response.put("message", "Archivage terminé avec succès.");
+
         return ResponseEntity.ok(response);
     }
+
 
 
     @PutMapping("/{id}/restaurer")
@@ -147,7 +184,7 @@ public class SalleController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/salles/restaurer-multiple")
+    @PutMapping("/restaurer-multiple")
     public ResponseEntity<?> restaurerSalles(@RequestBody List<Long> ids) {
         List<Salle> salles = salleRepository.findAllById(ids);
         List<String> conflicts = new ArrayList<>();

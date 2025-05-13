@@ -44,8 +44,13 @@ public class EquipementService {
 
 
     public List<Equipement> getEquipementsBySalle(Long salleId) {
-        return equipementRepository.findBySalleId(salleId);
+        return equipementRepository.findBySalleIdAndActifTrue(salleId);
     }
+
+    public List<Equipement> getEquipementsByService(Long serviceId) {
+        return equipementRepository.findByServiceIdAndActifTrue(serviceId);
+    }
+
 
     public Map<String, String> getAttributsByEquipement(Long equipementId) {
         Map<String, String> attributsValeurs = new HashMap<>();
@@ -173,11 +178,8 @@ public class EquipementService {
             equipement.setMarque(equipementDTO.getMarque());
             equipement.setStatut(equipementDTO.getStatut());
             equipement.setDateAchat(equipementDTO.getDateAchat());
-            equipement.setDateMiseEnService(equipementDTO.getDateMiseEnService());
             equipement.setGarantie(equipementDTO.getGarantie());
             equipement.setDateDerniereMaintenance(equipementDTO.getDateDerniereMaintenance());
-            equipement.setFrequenceMaintenance(equipementDTO.getFrequenceMaintenance());
-            equipement.setHistoriquePannes(equipementDTO.getHistoriquePannes());
             equipement.setCoutAchat(equipementDTO.getCoutAchat());
             equipement.setImage(equipementDTO.getImage());
             
@@ -220,14 +222,7 @@ public class EquipementService {
         }
     }
 
-    public List<PieceDetachee> getPiecesDetacheesByEquipementId(long equipementId) {
-        Equipement equipement = equipementRepository.findById(equipementId);
-        if (equipement != null) {
-            return equipement.getPiecesDetachees(); // Returns the list of piecesDetachees
-        }
-        return Collections.emptyList(); // If equipement is not found, return an empty list
-    }
-    
+
     public List<AttributEquipements> getAttributsByEquipementId(Long equipementId) {
         Optional<Equipement> equipementOpt = equipementRepository.findById(equipementId);
         if (equipementOpt.isPresent()) {

@@ -40,6 +40,7 @@ export class ListeUtilisateursComponent implements OnInit {
     image: '',
     Intervention: {} as Intervention
   };
+  viewMode: 'table' | 'card' = 'card'; // default to table
   passwordVisible = false;
   showAddPanel = false; // Controls the panel visibility
   usernameTaken = false;
@@ -71,9 +72,29 @@ export class ListeUtilisateursComponent implements OnInit {
     this.isEditing = true;
   }
 
+  formatDateWithIntl(date: string | undefined): string {
+    if (!date) {
+      return 'Date non disponible'; // Or provide a default string if date is undefined
+    }
 
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      return 'Invalid Date'; // Return fallback if date parsing fails
+    }
 
+    const formatter = new Intl.DateTimeFormat('fr-FR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    return formatter.format(parsedDate);
+  }
 
+  toggleView(mode: 'table' | 'card') {
+    this.viewMode = mode;
+  }
 
 
 // Method to close the panel

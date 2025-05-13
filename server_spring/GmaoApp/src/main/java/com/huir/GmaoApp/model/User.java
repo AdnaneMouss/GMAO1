@@ -81,25 +81,12 @@ public class User {
     @JsonManagedReference("user-affecteA")
     @OneToMany(mappedBy = "affecteA", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MaintenanceCorrective> maintenancesAssignees;
-
-    // Relation avec les équipements sous la responsabilité de l'utilisateur (maintenance)
-    @JsonIgnore // Empêche la sérialisation pour éviter les boucles infinies
-    @JsonManagedReference
-    @OneToMany(mappedBy = "responsableMaintenance", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Equipement> equipementsSousResponsabilite;
     
     @JsonIgnore // Empêche la sérialisation pour éviter les boucles infinies
     @JsonManagedReference("user-intervention1")
     @OneToMany(mappedBy = "technicien", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Intervention> interventions;
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
 
     
 }

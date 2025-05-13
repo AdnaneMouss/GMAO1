@@ -26,6 +26,7 @@ import {environment} from "../../../../environments/environment";
 import {Etage} from "../../../models/etage";
 import {Salle} from "../../../models/salle";
 import {Batiment} from "../../../models/batiment";
+import {User} from "../../../models/user";
 
 @Component({
   selector: 'app-liste-equipements',
@@ -58,6 +59,10 @@ export class ListeEquipementsComponent implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 5;  // You can change this number
   showForm: boolean = false;
+  startDate: string = '';
+  endDate: string = '';
+  viewMode: 'table' | 'card' = 'table'; // default to table
+  selectionModeOn: boolean = false;
   equipement: Equipement = this.initEquipement();
   equipements: Equipement[] = [];
   filteredEquipements = [...this.equipements];
@@ -80,7 +85,9 @@ export class ListeEquipementsComponent implements OnInit {
     { label: 'Hors service', value: 'Hors service' },
     { label: 'En maintenance', value: 'En maintenance' }
   ];
-
+  selectedEquipement: Equipement | null = null; // Store selected user details
+  showEditPanel: boolean = false;
+  isEditing: boolean = false;
   equipementsAttributs: { [key: number]: Map<string, string> } = {};
 
   constructor(
@@ -94,6 +101,45 @@ export class ListeEquipementsComponent implements OnInit {
     this.getTypesEquipements(); // Fetch Types Equipements on component initialization
     this.filteredEquipements = this.getEquipementsForPage();
   }
+
+
+  toggleView(mode: 'table' | 'card') {
+    this.viewMode = mode;
+    this.selectionModeOn = this.viewMode != "table";
+  }
+
+  viewDetails(eqId: number): void {
+    this.equipementService.getEquipementById(eqId).subscribe({
+      next: (eq) => {
+        this.selectedEquipement = { ...eq }; // Clone the object to prevent unwanted changes
+        this.showEditPanel = true;
+        this.isEditing = false; // Ensure it's in view mode by default
+      },
+      error: (err) => {
+        console.error('Error fetching user details:', err);
+      }
+    });
+  }
+
+  filterByPurchaseDate() {
+    this.filteredEquipements = this.equipements.filter(e => {
+      const purchaseDate = new Date(e.dateAchat);
+      const from = this.startDate ? new Date(this.startDate) : null;
+      const to = this.endDate ? new Date(this.endDate) : null;
+
+      return (!from || purchaseDate >= from) && (!to || purchaseDate <= to);
+    });
+  }
+
+  enableEditingEquipment(): void {
+    this.isEditing = true;
+  }
+  closeEquipmentPanel(): void {
+    this.isEditing = false;
+    this.showEditPanel=false;
+    this.resetForm();
+  }
+
 
   getEquipements(): void {
     this.equipementService.getAllEquipements().subscribe((data: Equipement[]) => {
@@ -128,20 +174,24 @@ export class ListeEquipementsComponent implements OnInit {
   }
 
   getAttributs(equipementId: number) {
-    const attributsMap = this.equipementsAttributs[equipementId];
+    const attributs = this.equipementsAttributs[equipementId];
 
-    // Check if it's a plain object
-    if (typeof attributsMap === 'object' && !Array.isArray(attributsMap)) {
-      return Object.entries(attributsMap).map(([key, value]) => ({ key, value }));
+    // If it's an array of objects with a `nom` and a value, return it as key-value
+    if (Array.isArray(attributs)) {
+      return attributs.map(attr => ({ key: attr.nom, value: attr.valeur || '-' }));
     }
 
-    // If it's a Map, you can use .entries()
-    if (attributsMap instanceof Map) {
-      return Array.from(attributsMap.entries()).map(([key, value]) => ({ key, value }));
+    if (typeof attributs === 'object' && !Array.isArray(attributs)) {
+      return Object.entries(attributs).map(([key, value]) => ({ key, value }));
+    }
+
+    if (attributs instanceof Map) {
+      return Array.from(attributs.entries()).map(([key, value]) => ({ key, value }));
     }
 
     return [];
   }
+
 
   getEquipementsForPage(): any[] {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
@@ -169,27 +219,31 @@ export class ListeEquipementsComponent implements OnInit {
     return Math.ceil(this.equipements.length / this.itemsPerPage);
   }
 
+  applyAllFilters() {
+    this.filteredEquipements = this.equipements.filter(e => {
+      const nomMatch = this.searchTermNom
+        ? e.nom.toLowerCase().includes(this.searchTermNom.toLowerCase())
+        : true;
 
+      const numSerieMatch = this.searchTermNum
+        ? e.numeroSerie && e.numeroSerie.toLowerCase().includes(this.searchTermNum.toLowerCase())
+        : true;
 
-  filterEquipementsByName() {
-    this.filteredEquipements = this.equipements.filter(equipement =>
-      equipement.nom.toLowerCase().includes(this.searchTermNom.toLowerCase())
-    );
+      const statusMatch = this.selectedStatus
+        ? e.statut === this.selectedStatus
+        : true;
+
+      const dateAchat = new Date(e.dateAchat);
+      const start = this.startDate ? new Date(this.startDate) : null;
+      const end = this.endDate ? new Date(this.endDate) : null;
+
+      const dateMatch = (!start || dateAchat >= start) && (!end || dateAchat <= end);
+
+      return nomMatch && numSerieMatch && statusMatch && dateMatch;
+    });
   }
 
-  filterEquipementsByNumSerie() {
-    this.filteredEquipements = this.equipements.filter(equipement =>
-      equipement.numeroSerie && equipement.numeroSerie.toLowerCase().includes(this.searchTermNum.toLowerCase())
-    );
-  }
 
-  filterEquipementsByStatus() {
-    if (this.selectedStatus) {
-      this.filteredEquipements = this.equipements.filter(e => e.statut === this.selectedStatus);
-    } else {
-      this.filteredEquipements = [...this.equipements]; // Réinitialiser si aucun statut sélectionné
-    }
-  }
 
 
   saveEquipement(): void {
@@ -222,6 +276,8 @@ export class ListeEquipementsComponent implements OnInit {
   // Initialize an empty equipment object
   private initEquipement(): Equipement {
     return {
+      attributsEquipement: [],
+      batimentNom: "", etageNum: 0, salleNum: 0,
       serviceNom: "",
       id: 0,
       image: '',
@@ -234,25 +290,12 @@ export class ListeEquipementsComponent implements OnInit {
       actif: false,  // Default value for 'actif'
       dateAchat: '',
       dateMiseEnService: '',
-      garantie: '',
       dateDerniereMaintenance: '',
-      frequenceMaintenance: '',
-      historiquePannes: '',
-      coutAchat: '',
+      coutAchat: 0,
       valeurSuivi:0,
       labelSuivi:'',
-      typeEquipement: {} as TypesEquipements,
-      attributsValeurs: [],  // Assuming this is an empty array initially
-      service: {
-        id: 0,
-        nom: '',
-        image: '',
-        description:''
-      },
-      piecesDetachees: [],  // Empty array for spare parts initially
-      salle: {} as Salle,
-      etage: {} as Etage,
-      batiment: {} as Batiment
+      typeEquipement: '',
+      attributsValeurs: []  // Assuming this is an empty array initially
 
       }
     };
@@ -332,10 +375,7 @@ exportToExcel(): void {
       'Statut': equipement.statut,
       'Date Achat': equipement.dateAchat,
       'Date Mise en Service': equipement.dateMiseEnService,
-      'Garantie': equipement.garantie,
       'Date Dernière Maintenance': equipement.dateDerniereMaintenance,
-      'Fréquence Maintenance': equipement.frequenceMaintenance,
-      'Historique Pannes': equipement.historiquePannes,
       'Coût Achat (€)': equipement.coutAchat,
     };
 

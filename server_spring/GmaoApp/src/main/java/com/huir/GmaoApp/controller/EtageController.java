@@ -7,6 +7,7 @@ import com.huir.GmaoApp.dto.EtageDTO;
 import com.huir.GmaoApp.dto.SalleDTO;
 import com.huir.GmaoApp.model.*;
 import com.huir.GmaoApp.repository.BatimentRepository;
+import com.huir.GmaoApp.repository.EquipementRepository;
 import com.huir.GmaoApp.repository.EtageRepository;
 import com.huir.GmaoApp.service.BatimentService;
 import com.huir.GmaoApp.service.EtageService;
@@ -33,6 +34,8 @@ public class EtageController {
     private EtageRepository etageRepository;
     @Autowired
     private BatimentRepository batimentRepository;
+    @Autowired
+    private EquipementRepository equipementRepository;
 
     @GetMapping("/{etageId}/salles")
     public List<SalleDTO> getSallesActivesByEtageId(@PathVariable("etageId") Long etageId) {
@@ -132,6 +135,11 @@ public class EtageController {
         Etage etage = etageRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Étage non trouvé"));
 
+        boolean isLinked = equipementRepository.existsByEtage(etage);
+        if (isLinked) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d’archiver : l’étage est lié à des équipements.");
+        }
+
         etage.setActif(false);
         etageRepository.save(etage);
 
@@ -140,16 +148,30 @@ public class EtageController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/archiver-multiple")
-    public ResponseEntity<Map<String, String>> archiverEtages(@RequestBody List<Long> ids) {
-        List<Etage> etages = etageRepository.findAllById(ids);
-        for (Etage etage : etages) {
-            etage.setActif(false);
-        }
-        etageRepository.saveAll(etages);
 
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Étages archivés avec succès");
+    @PutMapping("/archiver-multiple")
+    public ResponseEntity<Map<String, Object>> archiverEtages(@RequestBody List<Long> ids) {
+        List<Etage> etages = etageRepository.findAllById(ids);
+        List<String> archived = new ArrayList<>();
+        List<String> skipped = new ArrayList<>();
+
+        for (Etage etage : etages) {
+            boolean isLinked = equipementRepository.existsByEtage(etage);
+            if (isLinked) {
+                skipped.add("Étage " + etage.getNum() + " lié à des équipements");
+                continue;
+            }
+
+            etage.setActif(false);
+            etageRepository.save(etage);
+            archived.add("Étage ID " + etage.getId());
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("archivés", archived);
+        response.put("ignorés", skipped);
+        response.put("message", "Archivage terminé avec succès.");
+
         return ResponseEntity.ok(response);
     }
 

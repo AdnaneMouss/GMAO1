@@ -29,12 +29,29 @@
   <span class="font-semibold">Types restaurés avec succès !</span>
 </div>
 
+<div *ngIf="isBulkArchived" class="fixed top-5 right-5 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Types supprimés avec succès !</span>
+</div>
+
 <div *ngIf="isArchived" class="fixed top-5 right-5 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
   <i class="fas fa-check-circle text-2xl"></i>
   <span class="font-semibold">Type supprimé avec succès et placé à la corbeille !</span>
 </div>
 
-
+<!-- Error Modal -->
+<div *ngIf="impossibleToArchive" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-center">
+    <h2 class="text-2xl font-semibold text-red-600 mb-4">⚠️ Erreur</h2>
+    <p class="text-gray-700 mb-6">{{ errorMessage }}</p>
+    <button
+      (click)="impossibleToArchive = false"
+      class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+    >
+      Fermer
+    </button>
+  </div>
+</div>
 
 <!-- Formulaire de modification -->
 <div *ngIf="showEditTypeForm && selectedType.id !== 0" class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
@@ -140,7 +157,7 @@
 
   <!-- Header -->
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-xl font-semibold text-gray-800">🗑️ Types d'équipements supprimés</h3>
+      <h3 class="text-xl font-semibold text-gray-800">🗑️ Types d'équipements archivés</h3>
       <button (click)="toggleTrash()" class="text-gray-400 hover:text-red-500 text-lg">
         ✖
       </button>
@@ -351,14 +368,39 @@
     </span>
           </div>
         </div>
-
+        <br><br>
+        <!-- View Toggle placed below -->
+        <div class="inline-flex border border-gray-300 rounded-md overflow-hidden bg-white shadow-sm">
+          <button
+            (click)="toggleView('table')"
+            [ngClass]="{
+        'bg-green-700 text-white': viewMode === 'table',
+        'text-gray-600 hover:bg-gray-100': viewMode !== 'table'
+      }"
+            class="px-2 py-1 text-lg transition"
+            title="Vue Table"
+          >
+            <i class="fas fa-table"></i>
+          </button>
+          <button
+            (click)="toggleView('card')"
+            [ngClass]="{
+        'bg-green-700 text-white': viewMode === 'card',
+        'text-gray-600 hover:bg-gray-100': viewMode !== 'card'
+      }"
+            class="px-2 py-1 text-lg transition border-l border-gray-300"
+            title="Vue Carte"
+          >
+            <i class="fas fa-th-large"></i>
+          </button>
+        </div>
       </div>
     </div>
 
     <br>
 
     <!-- Equipment Type Cards -->
-    <div class="mb-4 flex justify-between items-center">
+    <div *ngIf="selectionModeOn" class="mb-4 flex justify-between items-center">
       <div class="text-2xl font-semibold text-gray-800"></div>
       <button
         class="bg-green-600 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition duration-300"
@@ -369,7 +411,7 @@
     </div>
 
     <!-- Cards Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+    <div *ngIf="viewMode === 'card'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
       <div
         *ngFor="let type of filteredTypes"
         class="relative bg-white rounded-xl shadow-lg p-6 border border-gray-300 hover:shadow-xl transition-transform transform hover:-translate-y-2 duration-300">
@@ -442,7 +484,15 @@
         </div>
 
         <!-- Equipment Name -->
-        <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2 text-center">{{ type.type }}</h3>
+        <div class="w-full overflow-hidden text-ellipsis whitespace-nowrap">
+          <h3
+            class="text-lg font-semibold text-gray-800 mt-4 mb-2 text-center truncate"
+            [title]="type.type"
+          >
+            {{ type.type }}
+          </h3>
+        </div>
+
 
         <!-- Voir Attributs Button -->
         <button
@@ -454,6 +504,86 @@
 
       </div>
     </div>
+    <div *ngIf="viewMode === 'table'" class="w-full overflow-x-auto">
+      <div class="w-full overflow-x-auto scrollbar-thin scrollbar-track-gray-100">
+        <table class="w-full table-auto border-collapse rounded-lg overflow-hidden shadow-lg">
+          <thead class="bg-green-700 text-white uppercase text-sm font-semibold">
+          <tr>
+            <th class="px-8 py-4 text-left w-1/6">Image</th>
+            <th class="px-8 py-4 text-left w-1/4">Type d'équipement</th>
+            <th class="px-8 py-4 text-left w-1/4">Attributs</th>
+            <th class="px-8 py-4 text-left w-1/4">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let typeEquipement of filteredTypes" class="border-b hover:bg-gray-100 transition duration-200">
+            <td class="px-8 py-4">
+              <img [src]="getImageUrl(typeEquipement.image)"
+                   alt="type image"
+                   class="w-20 h-20 rounded object-cover shadow-sm">
+            </td>
+            <td class="px-8 py-4 font-medium text-lg">{{ typeEquipement.type }}</td>
+            <td class="px-8 py-4 font-medium">
+              <button
+                class="w-full bg-green-700 text-white px-4 py-2 rounded-lg mt-4 font-medium shadow-md hover:bg-green-900 transition-all duration-300 transform hover:-translate-y-1"
+                (click)="typeEquipement.id ? getAttributes(typeEquipement.id) : null">
+                Voir attributs
+              </button>
+            </td>
+            <td class="px-8 py-4 flex gap-4">
+              <button class="edit-button" (click)="editType(typeEquipement)">
+                <!-- Edit Icon -->
+                <svg class="edit-svgIcon" viewBox="0 0 512 512">
+                  <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
+                </svg>
+              </button>
+              <button class="bin-button"
+                      (click)="selectedTypeToArchive = typeEquipement; showConfirmationModal = true">
+                <!-- Trash Icon -->
+                <svg
+                  class="bin-top"
+                  viewBox="0 0 39 7"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+                  <line
+                    x1="12"
+                    y1="1.5"
+                    x2="26.0357"
+                    y2="1.5"
+                    stroke="white"
+                    stroke-width="3"
+                  ></line>
+                </svg>
+                <svg
+                  class="bin-bottom"
+                  viewBox="0 0 33 39"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <mask id="path-1-inside-1_8_19" fill="white">
+                    <path
+                      d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"
+                    ></path>
+                  </mask>
+                  <path
+                    d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+                    fill="white"
+                    mask="url(#path-1-inside-1_8_19)"
+                  ></path>
+                  <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+                  <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+                </svg>
+              </button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
     <!-- Bulk Archive Floating Button -->
     <div
       *ngIf="bulkMode && selectedTypeIds.length > 0"
@@ -463,7 +593,7 @@
         class="bg-green-700 text-white px-6 py-3 rounded-full shadow-xl hover:bg-green-900 transition duration-300"
         (click)="archiverSelection()"
       >
-        🗂 Supprimer tout ({{ selectedTypeIds.length }})
+        🗂 Archiver tout ({{ selectedTypeIds.length }})
       </button>
     </div>
 
@@ -471,8 +601,8 @@
     <!-- Archive Confirmation Modal -->
     <div *ngIf="showConfirmationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md text-center">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Confirmer la suppression</h2>
-        <p class="text-gray-600 mb-6">Voulez-vous vraiment supprimer ce type d’équipement ?</p>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Confirmer l'archive</h2>
+        <p class="text-gray-600 mb-6">Voulez-vous vraiment archiver ce type d’équipement ?</p>
         <small class="text-gray-600 mb-6">Vous pourrez toujours le restaurer depuis la corbeille.</small>
 
         <div class="flex justify-center gap-4">
@@ -494,164 +624,141 @@
   </div>
 </div>
 
+
 <!-- Attributes Panel -->
+<!-- Attributes Modal -->
 <div
   *ngIf="showAttributesPanel && !showEditTypeForm"
-  class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
 
-  <div class="bg-white rounded-2xl w-full max-w-xl p-6 shadow-2xl transition-transform duration-300 transform scale-95 hover:scale-100">
+  <div class="bg-white rounded-2xl w-[90%] max-w-5xl p-8 shadow-2xl transition-transform duration-300 transform scale-95 hover:scale-100">
 
     <!-- Header -->
-    <div class="flex justify-between items-center border-b pb-3 mb-4">
-      <h2 class="text-2xl font-bold text-gray-800">
+    <div class="flex justify-between items-center border-b pb-4 mb-6">
+      <h2 class="text-3xl font-bold text-gray-800">
         {{ selectedType.type }} – Attributs
       </h2>
       <button
         (click)="closeAttributesPanel()"
         aria-label="Fermer"
-        class="text-gray-400 hover:text-red-500 text-xl transition-all duration-200">
+        class="text-gray-400 hover:text-red-500 text-2xl transition-all duration-200">
         ✖
       </button>
     </div>
 
+    <!-- Add Attribute Button -->
+    <div class="flex justify-end mb-4" *ngIf="!showAddForm">
+      <button
+        (click)="showAddForm = true"
+        class="flex items-center gap-2 text-blue-700 hover:text-blue-900 px-4 py-2 rounded-full transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        <i class="fa fa-plus"></i> Ajouter un attribut
+      </button>
+    </div>
+
     <!-- Attributes List -->
-    <div
-      *ngIf="showAttributesPanel && !showEditTypeForm"
-      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-
-      <div class="bg-white rounded-2xl w-full max-w-xl p-6 shadow-2xl transition-transform duration-300 transform scale-95 hover:scale-100">
-
-        <!-- Header -->
-        <div class="flex justify-between items-center border-b pb-3 mb-4">
-          <h2 class="text-2xl font-bold text-gray-800">
-            {{ selectedType.type }} – Attributs
-          </h2>
-          <button
-            (click)="closeAttributesPanel()"
-            aria-label="Fermer"
-            class="text-gray-400 hover:text-red-500 text-xl transition-all duration-200">
-            ✖
-          </button>
-        </div>
-        <!-- Add Attribute Section -->
-        <div class="mt-6" *ngIf="!showAddForm">
-          <button
-            (click)="showAddForm = true"
-            style="margin-left:470px; font-size: 14px;"
-            class="flex items-center gap-2 text-blue-700 px-4 py-2 rounded-full transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <i class="fa fa-plus"></i>
-          </button>
-        </div>
-        <!-- Attributes List -->
-        <div *ngIf="!showAddForm" class="max-h-64 overflow-y-auto pr-1">
-          <ul class="space-y-3">
-            <li *ngFor="let attribute of attributes" class="bg-gray-50 p-3 rounded-lg border shadow-sm">
-              <div class="flex justify-between items-start">
-                <div>
-                  <p class="font-medium text-gray-800">
-                    {{ attribute.nom }} <span class="text-sm text-gray-500">({{ getAttributeTypeLabel(attribute.attributEquipementType) }})</span>
-                  </p>
-                  <div class="text-sm mt-1 space-x-2">
-                    <span *ngIf="attribute.obligatoire" class="text-red-600 font-semibold">(Obligatoire)</span>
-                    <span *ngIf="attribute.actif" class="text-green-600 font-semibold">(Actif)</span>
-                    <span *ngIf="!attribute.actif" class="text-gray-500 font-semibold">(Inactif)</span>
-                  </div>
-                </div>
-                <button
-                  (click)="editAttribute(attribute)"
-                  class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1"
-                  aria-label="Modifier l'attribut">
-                  <i class="fa fa-pen"></i>
-                </button>
+    <div *ngIf="!showAddForm" class="max-h-[28rem] overflow-y-auto pr-1">
+      <ul class="space-y-3">
+        <li *ngFor="let attribute of attributes" class="bg-gray-50 p-4 rounded-lg border shadow-sm">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-medium text-gray-800">
+                {{ attribute.nom }}
+                <span class="text-sm text-gray-500">({{ getAttributeTypeLabel(attribute.attributEquipementType) }})</span>
+              </p>
+              <div class="text-sm mt-1 space-x-2">
+                <span *ngIf="attribute.obligatoire" class="text-red-600 font-semibold">(Obligatoire)</span>
+                <span *ngIf="attribute.actif" class="text-green-600 font-semibold">(Actif)</span>
+                <span *ngIf="!attribute.actif" class="text-gray-500 font-semibold">(Inactif)</span>
               </div>
-            </li>
-          </ul>
+            </div>
+            <button
+              (click)="editAttribute(attribute)"
+              class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1"
+              aria-label="Modifier l'attribut">
+              <i class="fa fa-pen"></i>
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Add Attribute Form -->
+    <div *ngIf="showAddForm" class="mt-6 pt-4 border-t">
+      <form (ngSubmit)="addNewAttribute()" class="space-y-5 mt-4">
+        <!-- Nom -->
+        <div>
+          <label for="attributeName" class="block text-sm font-medium text-gray-700">Nom de l'attribut</label>
+          <input
+            id="attributeName"
+            type="text"
+            [(ngModel)]="newAttribute.nom"
+            name="nom"
+            required
+            placeholder="Entrez le nom de l'attribut"
+            class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+          <div *ngIf="attributTaken" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
         </div>
 
-        <!-- Add Attribute Form -->
-        <div *ngIf="showAddForm" class="mt-6 pt-4">
-
-          <form (ngSubmit)="addNewAttribute()" class="space-y-4">
-            <!-- Nom -->
-            <div>
-              <label for="attributeName" class="block text-sm font-medium text-gray-700">Nom de l'attribut</label>
-              <input
-                id="attributeName"
-                type="text"
-                [(ngModel)]="newAttribute.nom"
-                name="nom"
-                required
-                placeholder="Entrez le nom de l'attribut"
-                class="mt-1 w-full px-3 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
-              <div *ngIf="attributTaken" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
-            </div>
-
-            <!-- Type -->
-            <div>
-              <label for="attributeType" class="block text-sm font-medium text-gray-700">Type de l'attribut</label>
-              <select
-                id="attributeType"
-                [(ngModel)]="newAttribute.attributEquipementType"
-                name="attributEquipementType"
-                required
-                class="mt-1 w-full px-3 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                <option value="STRING">Chaîne de caractères</option>
-                <option value="NUMBER">Nombre</option>
-                <option value="DATE">Date</option>
-                <option value="BOOLEAN">Booléen (Vrai/Faux)</option>
-                <option value="FLOAT">Nombre à virgule flottante</option>
-                <option value="ENUM">Liste de valeurs</option>
-                <option value="LONGTEXT">Texte long</option>
-              </select>
-            </div>
-
-            <!-- Options -->
-            <div class="flex items-center gap-4">
-              <label class="inline-flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  [(ngModel)]="newAttribute.obligatoire"
-                  name="obligatoire"
-                  class="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                <span class="text-sm text-gray-700">Obligatoire</span>
-              </label>
-              <label class="inline-flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  [(ngModel)]="newAttribute.actif"
-                  name="actif"
-                  class="h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500">
-                <span class="text-sm text-gray-700">Actif</span>
-              </label>
-            </div>
-
-            <!-- Submit -->
-            <!-- Submit & Cancel Buttons -->
-            <div class="flex justify-end gap-4 mt-6">
-              <button
-                type="submit"
-                [disabled]="!newAttribute.nom || !newAttribute.attributEquipementType"
-                class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-blue-800 transition duration-300 disabled:opacity-50">
-                Enregistrer
-              </button>
-
-              <button
-                type="button"
-                (click)="showAddForm = false"
-                class="bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-lg shadow hover:bg-gray-300 transition duration-300">
-                Annuler
-              </button>
-            </div>
-
-          </form>
-
+        <!-- Type -->
+        <div>
+          <label for="attributeType" class="block text-sm font-medium text-gray-700">Type de l'attribut</label>
+          <select
+            id="attributeType"
+            [(ngModel)]="newAttribute.attributEquipementType"
+            name="attributEquipementType"
+            required
+            class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            <option value="STRING">Chaîne de caractères</option>
+            <option value="NUMBER">Nombre</option>
+            <option value="DATE">Date</option>
+            <option value="BOOLEAN">Booléen (Vrai/Faux)</option>
+            <option value="FLOAT">Nombre à virgule flottante</option>
+            <option value="ENUM">Liste de valeurs</option>
+            <option value="LONGTEXT">Texte long</option>
+          </select>
         </div>
 
-      </div>
+        <!-- Options -->
+        <div class="flex flex-wrap items-center gap-6">
+          <label class="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              [(ngModel)]="newAttribute.obligatoire"
+              name="obligatoire"
+              class="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+            <span class="text-sm text-gray-700">Obligatoire</span>
+          </label>
+          <label class="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              [(ngModel)]="newAttribute.actif"
+              name="actif"
+              class="h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500">
+            <span class="text-sm text-gray-700">Actif</span>
+          </label>
+        </div>
+
+        <!-- Submit & Cancel -->
+        <div class="flex justify-end gap-4">
+          <button
+            type="submit"
+            [disabled]="!newAttribute.nom || !newAttribute.attributEquipementType"
+            class="bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg shadow-md hover:bg-blue-800 transition disabled:opacity-50">
+            Enregistrer
+          </button>
+          <button
+            type="button"
+            (click)="showAddForm = false"
+            class="bg-gray-200 text-gray-700 font-semibold px-5 py-2 rounded-lg shadow hover:bg-gray-300 transition">
+            Annuler
+          </button>
+        </div>
+      </form>
     </div>
 
   </div>
 </div>
+
 
 <!-- Modify Attribute Form -->
 <div *ngIf="editingAttribute.id" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">

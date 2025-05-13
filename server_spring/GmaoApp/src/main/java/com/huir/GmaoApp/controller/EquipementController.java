@@ -40,16 +40,10 @@ public class EquipementController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}/pieces")
-    public List<PieceDetacheeDTO> getPiecesDetachees(@PathVariable("id") long equipementId) {
-        return equipementService.getPiecesDetacheesByEquipementId(equipementId).stream()
-                .map(PieceDetacheeDTO::new)  // Assuming you have a PieceDetacheeDTO constructor that accepts a PieceDetachee
-                .collect(Collectors.toList());
-    }
 
     @GetMapping("/service/{serviceId}")
     public List<Equipement> getEquipementsByService(@PathVariable Long serviceId) {
-        return equipementRepository.findByServiceId(serviceId);
+        return equipementService.getEquipementsByService(serviceId);
     }
 
 

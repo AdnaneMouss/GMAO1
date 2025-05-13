@@ -17,7 +17,7 @@ public class SalleDTO {
     private Long id;
     private String prefixe;
     private int num; // e.g. "Room 101"
-    private Etage etage;
+    private Long etageId;
     private Boolean actif;
     private List<EquipementDTO> equipement;
     public SalleDTO(Salle salle) {
@@ -26,7 +26,7 @@ public class SalleDTO {
         this.prefixe = salle.getPrefixe();
         this.num = salle.getNum();
         this.actif=salle.isActif();
-        this.etage = salle.getEtage();
+        this.etageId = salle.getEtage() != null ? salle.getEtage().getId() : null;
         this.equipement = salle.getEquipement() != null
                 ? salle.getEquipement().stream()
                 .map(EquipementDTO::new)

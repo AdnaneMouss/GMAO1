@@ -26,6 +26,9 @@ public class Services {
     private String image;
 
     @Column
+    private boolean actif = true;
+
+    @Column
     private String description;
 
     // Relation bidirectionnelle avec Equipement

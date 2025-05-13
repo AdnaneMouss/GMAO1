@@ -45,7 +45,6 @@ import { EquipementsParCategorieComponent } from './components/Equipements/equip
 import { DetailsMaintenanceComponent } from './components/Maintenances/details-maintenance/details-maintenance.component';
 import {TypesEquipementsComponent} from "./components/Equipements/types-equipements/types-equipements.component";
 import { BatimentsListeComponent } from './components/batiments/batiments-liste/batiments-liste.component';
-import { EquipementFormComponent } from './equipement-form/equipement-form.component';
 
 
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -71,7 +70,8 @@ import { MatInputModule } from '@angular/material/input';
 import { DetailsHistoComponent } from './details-histo/details-histo.component';
 import { LotAchatPieceComponent } from './components/Stocks/lot-achat-piece/lot-achat-piece.component';
 import { EtagesListeComponent } from './components/batiments/etages-liste/etages-liste.component';
-import { SallesListeComponent } from './components/batiments/salles-liste/salles-liste.component'; // <- pour input matInput
+import { SallesListeComponent } from './components/batiments/salles-liste/salles-liste.component';
+import { EquipementsParSalleComponent } from './components/Equipements/equipements-par-salle/equipements-par-salle.component'; // <- pour input matInput
 
 
 @NgModule({
@@ -96,7 +96,6 @@ import { SallesListeComponent } from './components/batiments/salles-liste/salles
     DetailsMaintenanceComponent,
     TypesEquipementsComponent,
     BatimentsListeComponent,
-    EquipementFormComponent,
     MaintenanceCalendarComponent,
     UserRapportComponent,
     InterventionsPreventivesPrecedentesComponent,
@@ -109,6 +108,7 @@ import { SallesListeComponent } from './components/batiments/salles-liste/salles
     LotAchatPieceComponent,
     EtagesListeComponent,
     SallesListeComponent,
+    EquipementsParSalleComponent,
   ],
   imports: [
     AppRoutingModule,
