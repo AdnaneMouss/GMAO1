@@ -78,7 +78,7 @@ unreadMessagesCount: number = 0;
   selectedStatus: string = '';
   selectedPriorite: string = '';
   notificationMessage: string = ''; // Variable pour stocker le message de notification
- 
+
   notification: {id: number, message: string}[] = [];
   currentPage: number = 0;
   pageSize: number = 15 // 20 éléments par page
@@ -289,34 +289,7 @@ addRepetitionDate(): void {
     this.selectedForm= null; // Ferme le formulaire
   }
   newMaintenance: maintenance = {
-    equipement: {
-      id: 0,
-      image: '',
-      nom: '',
-      description: '',
-      numeroSerie: '',
-      modele: '',
-      marque: '',
-      statut: '',
-      actif: true,
-      dateAchat: '',
-      dateMiseEnService: '',
-      garantie: '',
-      dateDerniereMaintenance: '',
-      frequenceMaintenance: '',
-      historiquePannes: '',
-      coutAchat: '',
-      serviceNom: '',
-      typeEquipement: {} as TypesEquipements,
-      service: {} as Service,
-      piecesDetachees: [],
-      salle: {} as Salle,
-      etage: {} as Etage,
-      batiment: {} as Batiment,
-      valeurSuivi: 0,
-      labelSuivi: '',
-      attributsValeurs: []
-    },
+    equipement: {} as Equipement,
     batiment: {
       id: 0,
       numBatiment: 0,
@@ -641,6 +614,7 @@ handleFrequenceChange() {
      private http: HttpClient,private notificationService: NotificationService,
      private batimentService: BatimentService ,
 
+
       
       private webSocketService: WebSocketService,
       private chatService: ChatService,
@@ -650,6 +624,8 @@ handleFrequenceChange() {
       private etageService: EtageService) { }
 
 
+
+     
 
 
   validateDates() {
@@ -1042,6 +1018,7 @@ toggleMoisSelectionn(mois: string, event: any) {
     this.setupChatNotifications();
     window.addEventListener('scroll', this.handleScroll.bind(this));
 
+
      for (let mois of this.getMois()) {
     this.selectedMoiss[mois] = false;
 
@@ -1053,6 +1030,7 @@ toggleMoisSelectionn(mois: string, event: any) {
   }
   
   
+
 
   }
   private setupChatNotifications(): void {
@@ -1236,7 +1214,7 @@ toggleMoisSelectionn(mois: string, event: any) {
     }
   }
 
-  
+
 
   clearNotifications(): void {
     this.notifications = [];
@@ -1702,34 +1680,7 @@ resetForm() {
       equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
       equipementNom:'',
 
-      equipement: {
-        id: 0,
-        image: '',
-        nom: '',
-        description: '',
-        numeroSerie: '',
-        modele: '',
-        marque: '',
-        statut: '',
-        actif: true,
-        dateAchat: '',
-        dateMiseEnService: '',
-        garantie: '',
-        dateDerniereMaintenance: '',
-        frequenceMaintenance: '',
-        historiquePannes: '',
-        coutAchat: '',
-        serviceNom: '',
-        typeEquipement: {} as TypesEquipements, // Initial empty type
-        service: {} as Service,
-        piecesDetachees: [],
-        salle: {} as Salle,
-        etage: {} as Etage,
-        batiment: {} as Batiment,
-        attributsValeurs: [],
-        valeurSuivi: 0,
-        labelSuivi: ''
-      },
+      equipement: {} as Equipement,
       user: {
         id: 0,
         nom: '',
