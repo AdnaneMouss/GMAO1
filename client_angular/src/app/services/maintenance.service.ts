@@ -32,9 +32,14 @@ export class MaintenanceService {
 
   
    
-  updateMaintenance(id: number, maintenance: maintenance): Observable<maintenance> {
+  updateMaintenance(id: number, maintenance: Partial<maintenance>): Observable<maintenance> {
     return this.http.put<maintenance>(`${this.apiUrl}/${id}`, maintenance);
   }
+
+  updateMaintenanceP(id: number, maintenance: Partial<maintenance>): Observable<maintenance> {
+  return this.http.put<maintenance>(`${this.apiUrl}/${id}`, maintenance);
+}
+
   
   
   

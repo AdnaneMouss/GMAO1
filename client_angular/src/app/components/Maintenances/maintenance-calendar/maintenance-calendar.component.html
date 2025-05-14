@@ -50,13 +50,21 @@
     </div>
   </div>
 
+<!-- Modal -->
+
+
+
+
   <!-- Calendrier principal -->
   <div class="ios-calendar-wrapper">
     <div *ngIf="isLoading" class="ios-loading-overlay">
       <div class="ios-spinner"></div>
       <p>Chargement des données...</p>
     </div>
-    
+ <!-- Modal personnalisé équivalent à alert() -->
+
+
     <full-calendar [options]="calendarOptions"></full-calendar>
+   
   </div>
 </div>

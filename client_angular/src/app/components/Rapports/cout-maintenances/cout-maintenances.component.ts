@@ -36,6 +36,10 @@ dateFinFiltreM!: Date | null;
   }
 
 
+
+
+
+
 resetFiltreH() {
     this.dateDebutFiltreH = null;
     this.dateFinFiltreH = null;
@@ -159,7 +163,7 @@ currentWeekEnd: Date = new Date();
         data: {
           labels: ['Actif', 'En panne', 'Hors service', 'En maintenance'],
           datasets: [{
-            label: 'Statut des Ã©quipements',
+            label: 'Statut des equipements',
             data: this.prepareChartData(),
             backgroundColor: [
               'rgba(75, 192, 192, 0.2)',
@@ -189,170 +193,181 @@ currentWeekEnd: Date = new Date();
     }
   }
 
-  async generateWeeklyReport(): Promise<void> {
-    const currentDate = new Date();
-    const dayOfWeek = currentDate.getDay();
-    const diffToMonday = (dayOfWeek + 6) % 7;
-
-    const dateDebut = new Date(currentDate);
-    dateDebut.setDate(currentDate.getDate() - diffToMonday);
-    dateDebut.setHours(0, 0, 0, 0);
-
-    const dateFin = new Date(dateDebut);
-    dateFin.setDate(dateDebut.getDate() + 6);
-    dateFin.setHours(23, 59, 59, 999);
-
-    const pannesCetteSemaine = this.getPannesForPeriod(dateDebut, dateFin);
-    const maintenancesCetteSemaine = this.getMaintenancesForPeriod(dateDebut, dateFin);
-
-    const equipementsDansPeriode = this.equipements.filter(eq => {
-      const achat = eq.dateAchat ? new Date(eq.dateAchat) : null;
-      const miseService = eq.dateMiseEnService ? new Date(eq.dateMiseEnService) : null;
-      const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
-
-      return (
-
-        (dateDerniereMaintenance && dateDerniereMaintenance >= dateDebut && dateDerniereMaintenance <= dateFin)
-      );
-    });
-
-    const rapport = {
-      dateGeneration: currentDate,
-      periode: { debut: dateDebut, fin: dateFin },
-      stats: {
-        totalEquipements: this.stats.totalEquipements,
-        pannes: pannesCetteSemaine.length,
-        maintenances: maintenancesCetteSemaine.length,
-        tauxDisponibilite: (
-          ((this.stats.totalEquipements - pannesCetteSemaine.length) / this.stats.totalEquipements) * 100
-        ).toFixed(2),
-      },
-      pannes: pannesCetteSemaine,
-      maintenances: maintenancesCetteSemaine,
-      equipementsCritiques: equipementsDansPeriode
-    };
-
-    const doc = new jsPDF();
-    const primaryColor = [22, 160, 133];
-
-    const marginLeft = 20;
-    let yPosition = 30;
-
-    // Load and add logo
-    try {
-      const logoImg = new Image();
-      logoImg.src = 'assets/logo.png';
-
-      // Wait for image to load
-      await new Promise((resolve, reject) => {
-          logoImg.onload = resolve;
-          logoImg.onerror = reject;
-      });
-
-      doc.addImage(logoImg, 'PNG', marginLeft, yPosition, 30, 30);
-      doc.setFontSize(8);
-
-      doc.text('HÃ´pital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
-      doc.text('SystÃ¨me de Gestion des Ã‰quipements', marginLeft + 35, yPosition + 15);
-
-      yPosition += 40;
-  } catch (e) {
-      console.warn('Logo not found or failed to load, proceeding without it');
-      yPosition += 20;
-  }
-
-
-    // Report title
-    doc.setFontSize(16);
-
-    doc.setFont('helvetica', 'bold');
-    const titleText = "Rapport Hebdomadaire des Ã‰quipements";
-    const titleWidth = doc.getTextWidth(titleText);
-    doc.text(titleText, 105, yPosition, { align: 'center' });
-    // Underline the title
-    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.setLineWidth(0.5);
-    doc.line(105 - titleWidth/2, yPosition + 2, 105 + titleWidth/2, yPosition + 2);
-    yPosition += 15;
-
-    // Report period and generation date
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0); // Black
-    doc.setFont('helvetica', 'normal');
-    doc.text(`PÃ©riode : du ${rapport.periode.debut.toLocaleDateString()} au ${rapport.periode.fin.toLocaleDateString()}`, marginLeft, yPosition);
-    yPosition += 10;
-    doc.text(`Date de gÃ©nÃ©ration : ${rapport.dateGeneration.toLocaleString()}`, marginLeft, yPosition);
-    yPosition += 15;
-
-
-
-    // Critical equipment section
-    doc.setFontSize(14);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('Ã‰quipements en activitÃ© cette semaine', marginLeft, yPosition);
-    yPosition += 10;
-
-    // Generate table for filtered equipment
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'DerniÃ¨re Maintenance']],
-      body: rapport.equipementsCritiques.map((eq: any, index: number) => [
-        index + 1,
-        eq.nom || 'N/A',
-        eq.dateAchat ? new Date(eq.dateAchat).toLocaleDateString() : 'N/A',
-        eq.dateMiseEnService ? new Date(eq.dateMiseEnService).toLocaleDateString() : 'N/A',
-        eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance).toLocaleDateString() : 'N/A'
-      ]),
-      styles: {
-        fontSize: 9,
-      },
-      headStyles: {
-
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      alternateRowStyles: {
-        fillColor: [240, 240, 240]
-      }
-    });
-
-    doc.save(`rapport-maintenance-${new Date().toISOString().split('T')[0]}.pdf`);
-}
-
-async generateMonthlyReport(): Promise<void> {
-  // DÃ©terminer le mois prÃ©cÃ©dent
+async generateWeeklyReport(): Promise<void> {
   const currentDate = new Date();
-  const firstDayOfPreviousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-  const lastDayOfPreviousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
 
-  // Ajuster les heures pour couvrir toute la journÃ©e
-  firstDayOfPreviousMonth.setHours(0, 0, 0, 0);
-  lastDayOfPreviousMonth.setHours(23, 59, 59, 999);
+  // ➤ Si les dates sont définies, on les utilise. Sinon, on prend la semaine précédente (du lundi au dimanche)
+  const dateDebut = this.dateDebutFiltreH
+    ? new Date(this.dateDebutFiltreH)
+    : (() => {
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0 (dimanche) à 6 (samedi)
+        const diffToLastMonday = (dayOfWeek + 6) % 7 + 7; // Lundi de la semaine précédente
+        today.setDate(today.getDate() - diffToLastMonday);
+        today.setHours(0, 0, 0, 0);
+        return today;
+      })();
 
-  // RÃ©cupÃ©rer les donnÃ©es pour la pÃ©riode
-  const pannesCeMois = this.getPannesForPeriod(firstDayOfPreviousMonth, lastDayOfPreviousMonth);
-  const maintenancesCeMois = this.getMaintenancesForPeriod(firstDayOfPreviousMonth, lastDayOfPreviousMonth);
+  const dateFin = this.dateFinFiltreH
+    ? new Date(this.dateFinFiltreH)
+    : (() => {
+        const fin = new Date(dateDebut);
+        fin.setDate(dateDebut.getDate() + 6);
+        fin.setHours(23, 59, 59, 999);
+        return fin;
+      })();
 
-  // Filtrer les Ã©quipements actifs ce mois-ci
+  // ➤ Récupération des données pour la période
+  const pannesCetteSemaine = this.getPannesForPeriod(dateDebut, dateFin);
+  const maintenancesCetteSemaine = this.getMaintenancesForPeriod(dateDebut, dateFin);
+
   const equipementsDansPeriode = this.equipements.filter(eq => {
-    const achat = eq.dateAchat ? new Date(eq.dateAchat) : null;
-    const miseService = eq.dateMiseEnService ? new Date(eq.dateMiseEnService) : null;
     const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
-
     return (
-
-      (dateDerniereMaintenance && dateDerniereMaintenance >= firstDayOfPreviousMonth && dateDerniereMaintenance <= lastDayOfPreviousMonth)
+      dateDerniereMaintenance &&
+      dateDerniereMaintenance >= dateDebut &&
+      dateDerniereMaintenance <= dateFin
     );
   });
 
-  // PrÃ©parer les donnÃ©es du rapport
+  // ➤ Création du rapport
   const rapport = {
     dateGeneration: currentDate,
     periode: {
-      debut: firstDayOfPreviousMonth,
-      fin: lastDayOfPreviousMonth,
-      nomMois: firstDayOfPreviousMonth.toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
+      debut: dateDebut,
+      fin: dateFin,
+      semaine: `Semaine du ${dateDebut.toLocaleDateString()} au ${dateFin.toLocaleDateString()}`
+    },
+    pannes: pannesCetteSemaine,
+    maintenances: maintenancesCetteSemaine,
+    equipementsCritiques: equipementsDansPeriode,
+  };
+
+  // ➤ Génération PDF avec jsPDF
+  const doc = new jsPDF();
+  const primaryColor = [22, 160, 133];
+  const marginLeft = 20;
+  let yPosition = 30;
+
+  // ➤ Logo et en-tête
+  try {
+    const logoImg = new Image();
+    logoImg.src = 'assets/logo.png';
+
+    await new Promise((resolve, reject) => {
+      logoImg.onload = resolve;
+      logoImg.onerror = reject;
+    });
+
+    doc.addImage(logoImg, 'PNG', marginLeft, yPosition, 30, 30);
+    doc.setFontSize(8);
+    doc.text('Hopital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
+    doc.text('Systeme de Gestion des Equipements', marginLeft + 35, yPosition + 15);
+    yPosition += 40;
+  } catch (e) {
+    console.warn('Logo non trouvé, continuation sans logo');
+    yPosition += 20;
+  }
+
+  // ➤ Titre du rapport centré
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  const titleText = 'Rapport Hebdomadaire de Maintenance';
+  const titleWidth = doc.getTextWidth(titleText);
+  doc.text(titleText, 105, yPosition, { align: 'center' });
+  doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.setLineWidth(0.5);
+  doc.line(105 - titleWidth / 2, yPosition + 2, 105 + titleWidth / 2, yPosition + 2);
+  yPosition += 10;
+
+  // ➤ Sous-titre avec la période
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text(rapport.periode.semaine, 105, yPosition, { align: 'center' });
+  yPosition += 15;
+
+  // ➤ Date de génération
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Date de génération : ${rapport.dateGeneration.toLocaleString()}`, marginLeft, yPosition);
+  yPosition += 15;
+
+  // ➤ Statistiques générales (à compléter si nécessaire)
+  
+
+  // ➤ Équipements critiques
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Équipements maintenus cette semaine', marginLeft, yPosition);
+  yPosition += 10;
+
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['ID', 'Nom', 'Dernière Maintenance']],
+    body: rapport.equipementsCritiques.map(e => [
+      e.id.toString(),
+      e.nom,
+      new Date(e.dateDerniereMaintenance).toLocaleDateString(),
+    ]),
+    styles: {
+      fontSize: 9,
+    },
+    headStyles: {
+      textColor: [255, 255, 255],
+      fontStyle: 'bold'
+    },
+    alternateRowStyles: {
+      fillColor: [240, 240, 240]
+    }
+  });
+
+  // ➤ Sauvegarde du fichier
+  doc.save(`rapport-maintenance-${currentDate.toISOString().split('T')[0]}.pdf`);
+}
+
+
+
+async generateMonthlyReport(): Promise<void> {
+  const currentDate = new Date();
+
+  // ➤ Si les dates sont définies, on les utilise. Sinon, on prend le mois précédent
+  const dateDebut = this.dateDebutFiltreM
+    ? new Date(this.dateDebutFiltreM)
+    : (() => {
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+        firstDay.setHours(0, 0, 0, 0);
+        return firstDay;
+      })();
+
+  const dateFin = this.dateFinFiltreM
+    ? new Date(this.dateFinFiltreM)
+    : (() => {
+        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+        lastDay.setHours(23, 59, 59, 999);
+        return lastDay;
+      })();
+
+  // Récupérer les données pour la période
+  const pannesCeMois = this.getPannesForPeriod(dateDebut, dateFin);
+  const maintenancesCeMois = this.getMaintenancesForPeriod(dateDebut, dateFin);
+
+  // Filtrer les équipements actifs cette période
+  const equipementsDansPeriode = this.equipements.filter(eq => {
+    const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
+    return (
+      dateDerniereMaintenance && 
+      dateDerniereMaintenance >= dateDebut && 
+      dateDerniereMaintenance <= dateFin
+    );
+  });
+
+  // Préparer les données du rapport
+  const rapport = {
+    dateGeneration: currentDate,
+    periode: {
+      debut: dateDebut,
+      fin: dateFin,
+      nomMois: dateDebut.toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
     },
     stats: {
       totalEquipements: this.stats.totalEquipements,
@@ -367,13 +382,13 @@ async generateMonthlyReport(): Promise<void> {
     equipementsCritiques: equipementsDansPeriode
   };
 
-  // GÃ©nÃ©ration du PDF
+  // Génération du PDF
   const doc = new jsPDF();
   const primaryColor = [22, 160, 133];
   const marginLeft = 20;
   let yPosition = 30;
 
-  // Logo et en-tÃªte
+  // Logo et en-tête
   try {
     const logoImg = new Image();
     logoImg.src = 'assets/logo.png';
@@ -385,18 +400,18 @@ async generateMonthlyReport(): Promise<void> {
 
     doc.addImage(logoImg, 'PNG', marginLeft, yPosition, 30, 30);
     doc.setFontSize(8);
-    doc.text('HÃ´pital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
-    doc.text('SystÃ¨me de Gestion des Ã‰quipements', marginLeft + 35, yPosition + 15);
+    doc.text('Hopital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
+    doc.text('Systeme de Gestion des Equipements', marginLeft + 35, yPosition + 15);
     yPosition += 40;
   } catch (e) {
-    console.warn('Logo non trouvÃ©, continuation sans logo');
+    console.warn('Logo non trouvé, continuation sans logo');
     yPosition += 20;
   }
 
   // Titre du rapport
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  const titleText = `Rapport Mensuel des Ã‰quipements - ${rapport.periode.nomMois}`;
+  const titleText = `Rapport Mensuel des Equipements - ${rapport.periode.nomMois}`;
   const titleWidth = doc.getTextWidth(titleText);
   doc.text(titleText, 105, yPosition, { align: 'center' });
   doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -404,30 +419,18 @@ async generateMonthlyReport(): Promise<void> {
   doc.line(105 - titleWidth/2, yPosition + 2, 105 + titleWidth/2, yPosition + 2);
   yPosition += 15;
 
-  // PÃ©riode et date de gÃ©nÃ©ration
+  // Periode et date de génération
   doc.setFontSize(12);
   doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'normal');
-  doc.text(`PÃ©riode : du ${rapport.periode.debut.toLocaleDateString()} au ${rapport.periode.fin.toLocaleDateString()}`, marginLeft, yPosition);
+  doc.text(`Periode : du ${rapport.periode.debut.toLocaleDateString()} au ${rapport.periode.fin.toLocaleDateString()}`, marginLeft, yPosition);
   yPosition += 10;
-  doc.text(`Date de gÃ©nÃ©ration : ${rapport.dateGeneration.toLocaleString()}`, marginLeft, yPosition);
+  doc.text(`Date de generation : ${rapport.dateGeneration.toLocaleString()}`, marginLeft, yPosition);
   yPosition += 15;
-
-  // Statistiques
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Statistiques du mois', marginLeft, yPosition);
-  yPosition += 10;
 
   // Tableau des statistiques
   autoTable(doc, {
     startY: yPosition,
-    body: [
-      ['Total des Ã©quipements', rapport.stats.totalEquipements],
-      ['Pannes ce mois', rapport.stats.pannes],
-      ['Maintenances ce mois', rapport.stats.maintenances],
-      ['Taux de disponibilitÃ©', rapport.stats.tauxDisponibilite + '%']
-    ],
     styles: {
       fontSize: 10,
       cellPadding: 5,
@@ -440,28 +443,21 @@ async generateMonthlyReport(): Promise<void> {
   });
   yPosition = (doc as any).lastAutoTable.finalY + 10;
 
-  // Ã‰quipements en activitÃ©
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Ã‰quipements en activitÃ© ce mois', marginLeft, yPosition);
-  yPosition += 10;
-
-  // Tableau des Ã©quipements
+  // Tableau des équipements
   autoTable(doc, {
     startY: yPosition,
-    head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'DerniÃ¨re Maintenance']],
+    head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'Dernière Maintenance']],
     body: rapport.equipementsCritiques.map((eq: any, index: number) => [
       index + 1,
       eq.nom || 'N/A',
       eq.dateAchat ? new Date(eq.dateAchat).toLocaleDateString() : 'N/A',
-      eq.dateMiseEnService ? new Date(eq.dateMiseEnService).toLocaleDateString() : 'N/A',
+      eq.dateAchat ? new Date(eq.dateAchat).toLocaleDateString() : 'N/A',
       eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance).toLocaleDateString() : 'N/A'
     ]),
     styles: {
       fontSize: 9,
     },
     headStyles: {
-
       textColor: [255, 255, 255],
       fontStyle: 'bold'
     },
@@ -471,7 +467,7 @@ async generateMonthlyReport(): Promise<void> {
   });
 
   // Sauvegarder le PDF
-  doc.save(`rapport-mensuel-${firstDayOfPreviousMonth.getFullYear()}-${firstDayOfPreviousMonth.getMonth() + 1}.pdf`);
+  doc.save(`rapport-mensuel-${dateDebut.getFullYear()}-${dateDebut.getMonth() + 1}.pdf`);
 }
 
 
@@ -504,96 +500,152 @@ async generateMonthlyReport(): Promise<void> {
     );
   }
 
-  viewWeeklyReport(): void {
-    const currentDate = new Date();
-    const dayOfWeek = currentDate.getDay();
-    const diffToMonday = (dayOfWeek + 6) % 7;
+async viewWeeklyReport(): Promise<void> {
+  const currentDate = new Date();
 
-    const dateDebut = new Date(currentDate);
-    dateDebut.setDate(currentDate.getDate() - diffToMonday);
-    dateDebut.setHours(0, 0, 0, 0);
+  // ➤ 1. Gestion des dates de période (identique à generateWeeklyReport)
+  const dateDebut = this.dateDebutFiltreH
+    ? new Date(this.dateDebutFiltreH)
+    : (() => {
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0 (dimanche) à 6 (samedi)
+        const diffToLastMonday = (dayOfWeek + 6) % 7 + 7; // Lundi semaine précédente
+        today.setDate(today.getDate() - diffToLastMonday);
+        today.setHours(0, 0, 0, 0);
+        return today;
+      })();
 
-    const dateFin = new Date(dateDebut);
-    dateFin.setDate(dateDebut.getDate() + 6);
-    dateFin.setHours(23, 59, 59, 999);
+  const dateFin = this.dateFinFiltreH
+    ? new Date(this.dateFinFiltreH)
+    : (() => {
+        const fin = new Date(dateDebut);
+        fin.setDate(dateDebut.getDate() + 6); // Dimanche suivant
+        fin.setHours(23, 59, 59, 999);
+        return fin;
+      })();
 
-    const pannesCetteSemaine = this.getPannesForPeriod(dateDebut, dateFin);
-    const maintenancesCetteSemaine = this.getMaintenancesForPeriod(dateDebut, dateFin);
-
-    const equipementsDansPeriode = this.equipements.filter(eq => {
-      const achat = eq.dateAchat ? new Date(eq.dateAchat) : null;
-      const miseService = eq.dateMiseEnService ? new Date(eq.dateMiseEnService) : null;
-      const derniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
-
-      return (
-
-        (derniereMaintenance && derniereMaintenance >= dateDebut && derniereMaintenance <= dateFin)
-      );
-    });
-
-    this.rapportHebdo = {
-      dateGeneration: currentDate,
-      periode: { debut: dateDebut, fin: dateFin },
-      stats: {
-        totalEquipements: this.stats.totalEquipements,
-        pannes: pannesCetteSemaine.length,
-        maintenances: maintenancesCetteSemaine.length,
-        tauxDisponibilite: (
-          ((this.stats.totalEquipements - pannesCetteSemaine.length) / this.stats.totalEquipements) * 100
-        ).toFixed(2),
-      },
-      pannes: pannesCetteSemaine,
-      maintenances: maintenancesCetteSemaine,
-      equipementsCritiques: equipementsDansPeriode
-    };
-    console.log('Affichage du modal');
-this.showRapportModal = true;
-
-
+  // ➤ 2. Validation de la période (optionnelle)
+  if (dateDebut > dateFin) {
+    console.error('Erreur : La date de début doit être avant la date de fin');
+    return;
   }
-  viewMonthlyReport(): void {
-    const currentDate = new Date();
 
-    // Mois prÃ©cÃ©dent
-    const dateDebut = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-    const dateFin = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0); // le 0 renvoie le dernier jour du mois prÃ©cÃ©dent
+  // ➤ 3. Récupération des données (identique à votre version originale)
+  const pannesCetteSemaine = this.getPannesForPeriod(dateDebut, dateFin);
+  const maintenancesCetteSemaine = this.getMaintenancesForPeriod(dateDebut, dateFin);
 
-    dateDebut.setHours(0, 0, 0, 0);
-    dateFin.setHours(23, 59, 59, 999);
+  const equipementsDansPeriode = this.equipements.filter(eq => {
+    const derniereMaintenance = eq.dateDerniereMaintenance 
+      ? new Date(eq.dateDerniereMaintenance) 
+      : null;
+    return (
+      derniereMaintenance && 
+      derniereMaintenance >= dateDebut && 
+      derniereMaintenance <= dateFin
+    );
+  });
 
-    const pannesMoisPrecedent = this.getPannesForPeriod(dateDebut, dateFin);
-    const maintenancesMoisPrecedent = this.getMaintenancesForPeriod(dateDebut, dateFin);
+  // ➤ 4. Calcul des stats
+  const tauxDisponibilite = (
+    ((this.stats.totalEquipements - pannesCetteSemaine.length) / this.stats.totalEquipements) * 100
+  ).toFixed(2);
 
-    const equipementsDansPeriode = this.equipements.filter(eq => {
-      const achat = eq.dateAchat ? new Date(eq.dateAchat) : null;
-      const miseService = eq.dateMiseEnService ? new Date(eq.dateMiseEnService) : null;
-      const derniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
+  // ➤ 5. Création du rapport avec formatage amélioré
+  this.rapportHebdo = {
+    dateGeneration: currentDate,
+    periode: { 
+      debut: dateDebut, 
+      fin: dateFin,
+      // Formatage lisible ex: "Semaine du 15/04/2024 au 21/04/2024"
+      semaine: `Semaine du ${dateDebut.toLocaleDateString('fr-FR')} au ${dateFin.toLocaleDateString('fr-FR')}`,
+      // Pour un affichage complémentaire
+      anneeSemaine: `S${this.getWeekNumber(dateDebut)}-${dateDebut.getFullYear()}`
+    },
+    stats: {
+      totalEquipements: this.stats.totalEquipements,
+      pannes: pannesCetteSemaine.length,
+      maintenances: maintenancesCetteSemaine.length,
+      tauxDisponibilite: tauxDisponibilite,
+      // Ajouts optionnels
+     
+    },
+    pannes: pannesCetteSemaine,
+    maintenances: maintenancesCetteSemaine,
+    equipementsCritiques: equipementsDansPeriode
+  };
 
-      return (
+  // ➤ 6. Affichage (avec log de débogage)
+  console.log(`Rapport généré pour : ${this.rapportHebdo.periode.semaine}`);
+  this.showRapportModal = true;
+}
 
-        (derniereMaintenance && derniereMaintenance >= dateDebut && derniereMaintenance <= dateFin)
-      );
-    });
+// ➤ Fonction helper pour le numéro de semaine (optionnelle)
+private getWeekNumber(date: Date): string {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+  const week1 = new Date(d.getFullYear(), 0, 4);
+  return Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7 + 1)
+    .toString()
+    .padStart(2, '0');
+}
+ viewMonthlyReport(): void {
+  const currentDate = new Date();
 
-    this.rapportMens = {
-      dateGeneration: currentDate,
-      periode: { debut: dateDebut, fin: dateFin },
-      stats: {
-        totalEquipements: this.stats.totalEquipements,
-        pannes: pannesMoisPrecedent.length,
-        maintenances: maintenancesMoisPrecedent.length,
-        tauxDisponibilite: (
-          ((this.stats.totalEquipements - pannesMoisPrecedent.length) / this.stats.totalEquipements) * 100
-        ).toFixed(2),
-      },
-      pannes: pannesMoisPrecedent,
-      maintenances: maintenancesMoisPrecedent,
-      equipementsCritiques: equipementsDansPeriode
-    };
+  // ➤ Si les dates sont définies, on les utilise. Sinon, on prend le mois précédent
+  const dateDebut = this.dateDebutFiltreM
+    ? new Date(this.dateDebutFiltreM)
+    : (() => {
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+        firstDay.setHours(0, 0, 0, 0);
+        return firstDay;
+      })();
 
-    console.log('Affichage du rapport mensuel');
-    this.showRapportModalM = true;
-  }
+  const dateFin = this.dateFinFiltreM
+    ? new Date(this.dateFinFiltreM)
+    : (() => {
+        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+        lastDay.setHours(23, 59, 59, 999);
+        return lastDay;
+      })();
+
+  // Récupérer les données pour la période
+  const pannesMoisPrecedent = this.getPannesForPeriod(dateDebut, dateFin);
+  const maintenancesMoisPrecedent = this.getMaintenancesForPeriod(dateDebut, dateFin);
+
+  // Filtrer les équipements actifs cette période
+  const equipementsDansPeriode = this.equipements.filter(eq => {
+    const derniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
+    return (
+      derniereMaintenance && 
+      derniereMaintenance >= dateDebut && 
+      derniereMaintenance <= dateFin
+    );
+  });
+
+  this.rapportMens = {
+    dateGeneration: currentDate,
+    periode: { 
+      debut: dateDebut, 
+      fin: dateFin,
+      nomMois: dateDebut.toLocaleString('fr-FR', { month: 'long', year: 'numeric' }) // Ajout du nom du mois
+    },
+    stats: {
+      totalEquipements: this.stats.totalEquipements,
+      pannes: pannesMoisPrecedent.length,
+      maintenances: maintenancesMoisPrecedent.length,
+      tauxDisponibilite: (
+        ((this.stats.totalEquipements - pannesMoisPrecedent.length) / this.stats.totalEquipements) * 100
+      ).toFixed(2),
+    },
+    pannes: pannesMoisPrecedent,
+    maintenances: maintenancesMoisPrecedent,
+    equipementsCritiques: equipementsDansPeriode
+  };
+
+  console.log('Affichage du rapport mensuel', this.rapportMens);
+  this.showRapportModalM = true;
+}
 
 
 
@@ -609,12 +661,12 @@ this.showRapportModal = true;
 
     // Titre
     doc.setFontSize(18);
-    doc.text('Rapport Hebdomadaire des Ã‰quipements', 14, 20);
+    doc.text('Rapport Hebdomadaire des Equipements', 14, 20);
 
     // PÃ©riode
     doc.setFontSize(12);
-    doc.text(`PÃ©riode: ${new Date(rapportObj.periode.debut).toLocaleDateString()} - ${new Date(rapportObj.periode.fin).toLocaleDateString()}`, 14, 30);
-    doc.text(`GÃ©nÃ©rÃ© le: ${new Date(rapportObj.dateGeneration).toLocaleDateString()}`, 14, 36);
+    doc.text(`Periode: ${new Date(rapportObj.periode.debut).toLocaleDateString()} - ${new Date(rapportObj.periode.fin).toLocaleDateString()}`, 14, 30);
+    doc.text(`Genere le: ${new Date(rapportObj.dateGeneration).toLocaleDateString()}`, 14, 36);
 
 
 
@@ -657,7 +709,7 @@ this.showRapportModal = true;
       ).length,
       coutTotal: this.equipements.reduce((total, e) => total + (e.coutAchat || 0), 0),
       MiseEnServiceEquipement: this.equipements.filter(e =>
-        e.dateMiseEnService && new Date(e.dateMiseEnService) > oneMonthAgo
+        e.dateAchat && new Date(e.dateAchat) > oneMonthAgo
       ).length
     };
   }
@@ -724,8 +776,8 @@ this.showRapportModal = true;
           doc.addImage(logoData, 'PNG', marginLeft, yPosition, 30, 30);
           doc.setFontSize(8);
           doc.setTextColor(secondaryColor);
-          doc.text('HÃ´pital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
-          doc.text('SystÃ¨me de Gestion des Ã‰quipements', marginLeft + 35, yPosition + 15);
+          doc.text(' Hopital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
+          doc.text('Systeme de Gestion des Equipements', marginLeft + 35, yPosition + 15);
         }
 
         yPosition += logoData ? 40 : 20;
@@ -746,11 +798,11 @@ this.showRapportModal = true;
         // C. Sections d'information
         const sections = [
           {
-            title: 'INFORMATIONS GÃ‰NÃ‰RALES',
+            title: 'INFORMATIONS GeNeRALES',
             fields: [
               { label: 'Nom', value: equipment.nom || 'N/A' },
-              { label: 'NumÃ©ro de sÃ©rie', value: equipment.numeroSerie || 'N/A' },
-              { label: 'ModÃ¨le', value: equipment.modele || 'N/A' },
+              { label: 'Numero de serie', value: equipment.numeroSerie || 'N/A' },
+              { label: 'Modele', value: equipment.modele || 'N/A' },
               { label: 'Marque', value: equipment.marque || 'N/A' },
               { label: 'Description', value: equipment.description || 'N/A' },
               { label: 'Statut', value: equipment.statut || 'N/A', special: 'status' },
@@ -762,7 +814,7 @@ this.showRapportModal = true;
             title: 'DATES IMPORTANTES',
             fields: [
               { label: 'Date achat', value: equipment.dateAchat ? new Date(equipment.dateAchat).toLocaleDateString() : 'N/A' },
-              { label: 'Date mise en service', value: equipment.dateMiseEnService ? new Date(equipment.dateMiseEnService).toLocaleDateString() : 'N/A' },
+              { label: 'Date mise en service', value: equipment.dateAchat ? new Date(equipment.dateAchat).toLocaleDateString() : 'N/A' },
               { label: 'Date derniÃ¨re maintenance', value: equipment.dateDerniereMaintenance ? new Date(equipment.dateDerniereMaintenance).toLocaleDateString() : 'N/A' },
             ]
           },
@@ -832,13 +884,13 @@ this.showRapportModal = true;
         // E. Pied de page
         doc.setFontSize(8);
         doc.setTextColor(secondaryColor);
-        doc.text(`Document gÃ©nÃ©rÃ© le ${new Date().toLocaleDateString()} - SystÃ¨me de Gestion des Ã‰quipements H.U.I.R`, 105, 285, { align: 'center' });
+        doc.text(`Document gÃ©nÃ©rÃ© le ${new Date().toLocaleDateString()} - Systeme de Gestion des Equipements H.U.I.R`, 105, 285, { align: 'center' });
 
         // F. Sauvegarde du PDF
         doc.save(`fiche_technique_${equipment.nom?.replace(/\s+/g, '_') || 'equipement'}.pdf`);
 
       } catch (error) {
-        console.error('Erreur lors de la gÃ©nÃ©ration du PDF:', error);
+        console.error('Erreur lors de la generation du PDF:', error);
         // Fallback sans image si Ã©chec
         this.generateSimplePDF(doc, equipment);
       }
@@ -918,7 +970,7 @@ this.showRapportModal = true;
     // Version simplifiÃ©e sans logo
     doc.setFontSize(16);
     doc.setTextColor('#4169E1');
-    doc.text('Rapport des CoÃ»ts de Maintenance', 40, 40);
+    doc.text('Rapport des Couts de Maintenance', 40, 40);
 
     doc.setFontSize(10);
     doc.setTextColor('#A9A9A9');

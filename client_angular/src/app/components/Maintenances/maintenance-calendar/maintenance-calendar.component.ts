@@ -155,22 +155,285 @@ export class MaintenanceCalendarComponent implements OnInit {
   }
 
   // Correction de la méthode handleEventClick
-  handleEventClick(clickInfo: any): void {
+handleEventClick(clickInfo: any): void {
     const event = clickInfo.event;
     const maint = event.extendedProps.maintenance;
+
+    // Création du contenu du message
+    const message = `
+      <div style="font-size: 16px; font-family: Arial, sans-serif; line-height: 1.6;">
+        <strong>Maintenance:</strong> ${maint.id}<br/>
+        <strong>Statut:</strong> ${this.translateStatus(maint.statut)}<br/>
+        <strong>Équipement:</strong> ${maint.equipementId || 'N/A'}<br/>
+        <strong>Date début:</strong> ${this.formatDate(new Date(maint.dateDebutPrevue))}<br/>
+        <strong>Date fin:</strong> ${this.formatDate(new Date(maint.dateFinPrevue))}<br/>
+        <strong>Priorité:</strong> ${maint.priorite}<br/>
+        <strong>Action:</strong> ${maint.action || 'N/A'}<br/>
+        <strong>Type de répétition:</strong> ${maint.repetitiontype || 'N/A'}<br/>
+        <strong>Commentaires:</strong> ${maint.commentaires || 'Aucun'}
+      </div>
+    `;
+
+    // Création de la boîte de dialogue
+    const alertDiv = document.createElement('div');
+    alertDiv.id = 'custom-alert';
+    Object.assign(alertDiv.style, {
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      backgroundColor: '#f9f9f9',
+      padding: '25px',
+      border: '1px solid #ddd',
+      borderRadius: '8px',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+      zIndex: '1000',
+      width: '400px',
+      maxWidth: '90%'
+    });
+
+    alertDiv.innerHTML = message;
+
+    // Boutons
+    const createButton = (text: string, icon: string, color: string, onClick: () => void) => {
+      const btn = document.createElement('button');
+      btn.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
+      Object.assign(btn.style, {
+        padding: '8px 16px',
+        backgroundColor: color,
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer'
+      });
+      btn.onclick = onClick;
+      return btn;
+    };
+
+    const buttonContainer = document.createElement('div');
+    Object.assign(buttonContainer.style, {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      gap: '10px',
+      marginTop: '20px'
+    });
+
+    // Bouton Modifier (ouvre l'édition)
+    const editButton = createButton('Modifier', 'fa-edit', '#2196F3', () => {
+      alertDiv.remove();
+      this.openEditForm(maint); // ← Appel de votre méthode d'édition
+    });
+
+    // Bouton OK (ferme le popup)
+    const okButton = createButton('OK', 'fa-check', '#4CAF50', () => {
+      alertDiv.remove();
+    });
+
+    buttonContainer.append(editButton, okButton);
+    alertDiv.appendChild(buttonContainer);
+    document.body.appendChild(alertDiv);
+
+    // Charge Font Awesome si nécessaire
+    this.loadFontAwesome();
+}
+
+/**
+ * Ouvre un formulaire de modification
+ */
+// Modifiez votre handleEventClick pour utiliser le formulaire
+openEditForm(maintenance: any): void {
+  // Création du conteneur du formulaire
+  const formContainer = document.createElement('div');
+  formContainer.id = 'maintenance-form-container';
+  formContainer.style.position = 'fixed';
+  formContainer.style.top = '0';
+  formContainer.style.left = '0';
+  formContainer.style.width = '100%';
+  formContainer.style.height = '100%';
+  formContainer.style.backgroundColor = 'rgba(0,0,0,0.5)';
+  formContainer.style.display = 'flex';
+  formContainer.style.justifyContent = 'center';
+  formContainer.style.alignItems = 'center';
+  formContainer.style.zIndex = '1000';
+
+  // Création du formulaire
+  const form = document.createElement('form');
+  form.style.backgroundColor = 'white';
+  form.style.padding = '20px';
+  form.style.borderRadius = '8px';
+  form.style.width = '80%';
+  form.style.maxWidth = '600px';
+  form.style.maxHeight = '90vh';
+  form.style.overflowY = 'auto';
+
+  // Titre
+  const title = document.createElement('h2');
+  title.textContent = 'Modifier la Maintenance';
+  title.style.marginBottom = '20px';
+  title.style.color = '#333';
+  form.appendChild(title);
+
+  // Fonction pour créer des champs de formulaire
+  const createFormField = (labelText: string, fieldName: string, value: any, type = 'text') => {
+    const div = document.createElement('div');
+    div.style.marginBottom = '15px';
+
+    const label = document.createElement('label');
+    label.textContent = labelText;
+    label.style.display = 'block';
+    label.style.marginBottom = '5px';
+    label.style.fontWeight = 'bold';
+
+    let input: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
     
-    const message = [
-      `Maintenance: ${maint.id}`,
-      `Statut: ${this.translateStatus(maint.statut)}`,
-      `Équipement: ${maint.equipementId || 'N/A'}`,
-      `Date début: ${this.formatDate(new Date(maint.dateDebutPrevue))}`,
-      `Date fin: ${this.formatDate(new Date(maint.dateFinPrevue))}`,
-      `Priorité: ${maint.priorite}`,
-      `Commentaires: ${maint.commentaires || 'Aucun'}`
-    ].join('\n');
+    if (type === 'textarea') {
+      input = document.createElement('textarea');
+      input.rows = 3;
+    } else if (type === 'select') {
+      input = document.createElement('select');
+    } else {
+      input = document.createElement('input');
+      input.type = type;
+    }
+
+    input.name = fieldName;
+    input.value = value || '';
+    input.style.width = '100%';
+    input.style.padding = '8px';
+    input.style.border = '1px solid #ddd';
+    input.style.borderRadius = '4px';
+
+    div.appendChild(label);
+    div.appendChild(input);
+
+    return { container: div, input };
+  };
+
+  // Champs du formulaire
+  const fields = [
+    { label: 'Statut', name: 'statut', value: maintenance.statut, type: 'select' },
+    { label: 'Date Début Prévue', name: 'dateDebutPrevue', value: this.formatDateForInput(maintenance.dateDebutPrevue), type: 'datetime-local' },
+    { label: 'Date Fin Prévue', name: 'dateFinPrevue', value: this.formatDateForInput(maintenance.dateFinPrevue), type: 'datetime-local' },
+    { label: 'Priorité', name: 'priorite', value: maintenance.priorite, type: 'select' },
+    { label: 'Action', name: 'action', value: maintenance.action, type: 'textarea' },
+    { label: 'Commentaires', name: 'commentaires', value: maintenance.commentaires, type: 'textarea' }
+  ];
+
+  const formInputs: {[key: string]: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement} = {};
+
+  fields.forEach(field => {
+    const { container, input } = createFormField(field.label, field.name, field.value, field.type);
     
-    alert(message);
+    // Gestion spéciale pour les selects
+    if (field.type === 'select') {
+      const select = input as HTMLSelectElement;
+      
+      if (field.name === 'statut') {
+        ['EN_COURS', 'EN_ATTENTE','TERMINEE', 'ANNULEE'].forEach(option => {
+          const optElement = document.createElement('option');
+          optElement.value = option;
+          optElement.textContent = option;
+          select.appendChild(optElement);
+        });
+      } else if (field.name === 'priorite') {
+        ['URGENTE', 'FAIBLE', 'NORMALE'].forEach(option => {
+          const optElement = document.createElement('option');
+          optElement.value = option;
+          optElement.textContent = option;
+          select.appendChild(optElement);
+        });
+      }
+    }
+    
+    formInputs[field.name] = input;
+    form.appendChild(container);
+  });
+
+  // Boutons
+  const buttonContainer = document.createElement('div');
+  buttonContainer.style.display = 'flex';
+  buttonContainer.style.justifyContent = 'flex-end';
+  buttonContainer.style.gap = '10px';
+  buttonContainer.style.marginTop = '20px';
+
+  // Bouton Enregistrer
+  const saveButton = document.createElement('button');
+  saveButton.textContent = 'Enregistrer';
+  saveButton.style.padding = '10px 20px';
+  saveButton.style.backgroundColor = '#4CAF50';
+  saveButton.style.color = 'white';
+  saveButton.style.border = 'none';
+  saveButton.style.borderRadius = '4px';
+  saveButton.style.cursor = 'pointer';
+  saveButton.onclick = (e) => {
+    e.preventDefault();
+    this.saveMaintenance(maintenance.id, formInputs);
+    formContainer.remove();
+  };
+
+  // Bouton Annuler
+  const cancelButton = document.createElement('button');
+  cancelButton.textContent = 'Annuler';
+  cancelButton.style.padding = '10px 20px';
+  cancelButton.style.backgroundColor = '#f44336';
+  cancelButton.style.color = 'white';
+  cancelButton.style.border = 'none';
+  cancelButton.style.borderRadius = '4px';
+  cancelButton.style.cursor = 'pointer';
+  cancelButton.onclick = (e) => {
+    e.preventDefault();
+    formContainer.remove();
+  };
+
+  buttonContainer.appendChild(cancelButton);
+  buttonContainer.appendChild(saveButton);
+  form.appendChild(buttonContainer);
+
+  formContainer.appendChild(form);
+  document.body.appendChild(formContainer);
+}
+
+private formatDateForInput(dateString: string): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toISOString().slice(0, 16);
+}
+
+private saveMaintenance(id: number, inputs: any): void {
+ const updatedMaintenance: Partial<maintenance> = {
+  statut: inputs.statut.value,
+  dateDebutPrevue: inputs.dateDebutPrevue.value,
+  dateFinPrevue: inputs.dateFinPrevue.value,
+  priorite: inputs.priorite.value,
+  action: inputs.action.value,
+  commentaires: inputs.commentaires.value
+};
+
+
+  this.maintenanceService.updateMaintenance(id, updatedMaintenance).subscribe({
+    next: (res) => {
+      alert('Maintenance mise à jour avec succès ✅');
+      // Optionnel : recharger les maintenances ou rafraîchir le calendrier ici
+    },
+    error: (err) => {
+      console.error('Erreur lors de la mise à jour :', err);
+      alert('❌ Échec de la mise à jour.');
+    }
+  });
+}
+
+
+/**
+ * Charge dynamiquement Font Awesome
+ */
+loadFontAwesome(): void {
+  if (!document.querySelector('link[href*="font-awesome"]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+    document.head.appendChild(link);
   }
+}
 
   private customEventContent(arg: { event: CalendarEvent }): { domNodes: HTMLElement[] } {
     const event = arg.event;

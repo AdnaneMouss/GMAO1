@@ -57,5 +57,9 @@ public class InterventionPreventiceService {
     public void deleteIntervention(Long id) {
     	InterventionPreventiveRepository.deleteById(id);
     }
+    
+    
+    
+    
 }
 

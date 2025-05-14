@@ -8,17 +8,12 @@
     </div>
 
     <!-- Conteneur des icônes -->
-<div style="display: flex; align-items: center; gap: 15px;">
-  <!-- Icône de chat -->
+<div style="display: flex; justify-content: flex-end; margin-top: 20px; margin-right: 20px;">
   <div class="chat-icon" (click)="navigateToChat()" style="cursor: pointer;">
-    <div style="position: fixed; top: 20px; right: 20px; z-index: 1000; transform: translateX(-3cm);">
-      <i class="fas fa-comments" style="font-size: 2rem; color: #4285f4;"></i>
-    </div>
+    <i class="fas fa-comments" style="font-size: 2rem; color: #4285f4;"></i>
   </div>
-
-  <!-- Icône de notification avec badge -->
- 
 </div>
+
 
 <!-- Panneau de notifications -->
 
@@ -351,47 +346,66 @@
       </div>
 
       <div class="mb-4">
-        <label for="piecesDetachees" class="block text-sm font-medium text-gray-600">
-          Pièce détachée utilisée <span class="text-red-500">*</span>
-        </label>
-        <select
-          id="piecesDetachees"
-          name="piecesDetachees"
-          [ngModel]="selectedPieces"
-          (ngModelChange)="onPiecesChange($event)"
-          required
-          multiple
-          #piecesRef="ngModel"
-          class="w-full p-2 border rounded mt-1"
-          aria-describedby="pieceDetacheeHelp"
-        >
-          <option *ngFor="let piece of piecesList" [ngValue]="piece.id">{{ piece.nom }}</option>
-        </select>
-        <small id="pieceDetacheeHelp" class="text-gray-500 text-xs">
-          Entrez la pièce détachée utilisée lors de l'intervention.
-        </small>
-        <div *ngIf="piecesRef.invalid && piecesRef.touched" class="text-red-500 text-sm mt-1">
-          Veuillez sélectionner au moins une pièce détachée.
-        </div>
-      </div>
+            <label for="piecesDetachees" class="block text-sm font-medium text-gray-600">
+              Pièces détachées utilisées <span class="text-red-500">*</span>
+            </label>
 
-      <!-- Photos -->
-      <div class="mb-4">
-        <label for="photos" class="block text-sm font-medium text-gray-600">
-          Ajouter des photos <span class="text-red-500">*</span>
-        </label>
-        <input
-          type="file"
-          id="photos"
-          name="photos"
-          required
-          (change)="onFileChange($event)"
-          class="w-full p-2 border rounded mt-1"
-          multiple
-          accept="image/*"
-          aria-describedby="photosHelp" />
-        <small id="photosHelp" class="text-gray-500 text-xs">Sélectionnez plusieurs photos si nécessaire.</small>
-      </div>
+            <!-- Selection dropdown -->
+            <select
+              id="piecesDetachees"
+              #pieceSelect
+              class="w-full p-2 border rounded mt-1"
+              (change)="onAddPiece(pieceSelect.value)"
+            >
+              <option value="" disabled selected>Choisir une pièce détachée</option>
+              <option *ngFor="let piece of piecesList" [value]="piece.id" [disabled]="isPieceSelected(piece.id)">
+                {{ piece.nom }}
+              </option>
+            </select>
+
+
+            <!-- Selected pieces list -->
+            <div *ngIf="selectedPieces.length > 0" class="mt-3 space-y-2">
+              <div
+                *ngFor="let piece of selectedPieces; let i = index"
+                class="flex items-center justify-between bg-gray-100 p-2 rounded-lg"
+              >
+                <div class="flex flex-col">
+                  <!-- Displaying the piece name -->
+                  <span class="font-medium text-gray-800">{{ piece.nom }}</span>
+
+                  <!-- Quantity input with label -->
+                  <label class="text-sm text-gray-600 mt-1">
+                    Quantité :
+                 <input
+                  type="number"
+                  min="1"
+                  [(ngModel)]="piece.quantite"
+                  [name]="'quantite_' + i"
+                  class="ml-2 w-24 p-1 text-sm border rounded"
+                  placeholder="Quantité"
+/>
+
+                  </label>
+                </div>
+
+                <!-- Remove button -->
+                <button
+                  type="button"
+                  (click)="removePiece(i)"
+                  class="text-red-600 hover:underline text-sm"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+
+            <small class="text-gray-500 text-xs block mt-2">
+              Ajoutez chaque pièce avec sa quantité utilisée.
+            </small>
+          </div>
+
+   
 
       <!-- Action Buttons -->
       <div class="flex justify-end space-x-4">

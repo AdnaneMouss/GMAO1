@@ -4,12 +4,14 @@ import { Observable } from 'rxjs';
 import { Intervention } from '../models/intervention';
 import {PieceDetachee} from "../models/piece-detachee";
 import { maintenance } from '../models/maintenance';
+import { InterventionPieceDetachee } from '../models/intervention-pieces';
 
 @Injectable({
   providedIn: 'root'
 })
 export class InterventionPreventiceService {
   private apiUrl = 'http://localhost:8080/api/interventionsPRE';
+
 
   constructor(private http: HttpClient) {}
 
@@ -42,9 +44,16 @@ export class InterventionPreventiceService {
   }
 
 
-  getPiecesByInterventionId(interventionId: number): Observable<PieceDetachee[]> {
-    return this.http.get<PieceDetachee[]>(`${this.apiUrl}/${interventionId}/pieces`);
-  }
+ 
+
+   getPiecesByInterventionId(interventionId: number): Observable<PieceDetachee[]> {
+      return this.http.get<PieceDetachee[]>(`${this.apiUrl}/${interventionId}/pieces`);
+    }
+  
+    getPiecesDetachees(interventionId: number): Observable<InterventionPieceDetachee[]> {
+      return this.http.get<InterventionPieceDetachee[]>(`${this.apiUrl}/${interventionId}/pieces-detachees`);
+    }
+  
 
  
   

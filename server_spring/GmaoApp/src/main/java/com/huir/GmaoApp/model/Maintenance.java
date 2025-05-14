@@ -131,8 +131,8 @@ public class Maintenance {
     @JoinColumn(name = "technicien_id")
     private User affecteA;
     
-    @JsonManagedReference("maintenance-interventions2")
     @OneToMany(mappedBy = "maintenance", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonManagedReference("maintenance-interventions2")
     private List<Intervention> interventions;
 
     @ManyToOne(fetch = FetchType.EAGER)

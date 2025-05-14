@@ -3,23 +3,17 @@
     <h2 class="text-3xl font-semibold text-gray-800 mb-4">Historique des interventions</h2>
     <p class="text-gray-600 mb-6">Consultez l'historique de vos précédentes interventions.</p>
 
-    <div class="flex flex-wrap gap-4 mb-6">
-      <!-- Filtre équipement -->
+    <div class="flex space-x-4 mb-4">
+      <!-- Recherche par équipement maintenu -->
       <input
         type="text"
         [(ngModel)]="filters.equipementMaintenu"
         placeholder="Rechercher par équipement..."
-        class="border px-4 py-2 rounded w-full md:w-64"
+        class="border px-4 py-2 rounded w-64"
       />
 
-      <!-- Filtre type -->
-      <select [(ngModel)]="filters.typeIntervention" class="border px-4 py-2 rounded">
-        <option value="">Tous les types</option>
-        <option value="CORRECTIVE">Corrective</option>
-        <option value="PREVENTIVE">Préventive</option>
-      </select>
 
-      <!-- Filtre priorité -->
+      <!-- Filtre par priorité -->
       <select [(ngModel)]="filters.priorite" class="border px-4 py-2 rounded">
         <option value="">Toutes les priorités</option>
         <option value="URGENTE">Urgente</option>
@@ -31,101 +25,139 @@
     <div class="overflow-x-auto">
       <table class="min-w-full table-auto text-left bg-white border-collapse shadow-md rounded-lg">
         <thead class="bg-green-700 text-white">
-          <tr>
-            <th class="px-6 py-3 text-sm font-semibold">#</th>
-            <th class="px-6 py-3 text-sm font-semibold">Type</th>
-            <th class="px-6 py-3 text-sm font-semibold">Commencée le</th>
-            <th class="px-6 py-3 text-sm font-semibold">Terminée le</th>
-            <th class="px-6 py-3 text-sm font-semibold">Equipement</th>
-            <th class="px-6 py-3 text-sm font-semibold">Description</th>
-            <th class="px-6 py-3 text-sm font-semibold">Durée</th>
-            <th class="px-6 py-3 text-sm font-semibold">Priorité</th>
-            <th class="px-6 py-3 text-sm font-semibold">Remarques</th>
-            <th class="px-6 py-3 text-sm font-semibold">Pièces</th>
-            <th class="px-6 py-3 text-sm font-semibold">Photos</th>
-          </tr>
+        <tr>
+          <th class="px-6 py-3 text-sm font-semibold">#</th>
+          <th class="px-6 py-3 text-sm font-semibold">Commencée le</th>
+          <th class="px-6 py-3 text-sm font-semibold">Terminée le</th>
+          <th class="px-6 py-3 text-sm font-semibold">Equipement</th>
+          <th class="px-6 py-3 text-sm font-semibold">Description</th>
+          <th class="px-6 py-3 text-sm font-semibold">Durée</th>
+          <th class="px-6 py-3 text-sm font-semibold">Priorité</th>
+          <th class="px-6 py-3 text-sm font-semibold">Remarques</th>
+          <th class="px-6 py-3 text-sm font-semibold">Pieces</th>
+          <th class="px-6 py-3 text-sm font-semibold">Photos</th>
+        </tr>
         </thead>
         <tbody>
-          <tr *ngIf="filteredInterventions().length === 0" class="border-b">
-            <td colspan="11" class="px-6 py-4 text-center text-gray-500 italic">
-              Aucune intervention trouvée
-            </td>
-          </tr>
+        <tr *ngFor="let intervention of filteredInterventions(); let i = index" class="border-b hover:bg-gray-50">
+          <td class="px-6 py-4 text-gray-800 font-medium">{{ i + 1 }}</td>
+          <td class="px-6 py-4 text-gray-600">{{ formatDateWithIntl(intervention.dateCommencement) }}</td>
+          <td class="px-6 py-4 text-gray-600">{{ formatDateWithIntl(intervention.dateCloture) }}</td>
+          <td class="px-6 py-4 text-gray-600">{{ intervention.equipementMaintenu }}</td>
+          <td class="px-6 py-4 text-gray-600">{{ intervention.description || 'Non renseignée' }}</td>
+          <td class="px-6 py-4 text-gray-600">{{ intervention.duree }} minutes</td>
+          <td class="px-6 py-4 text-gray-600">
+      <span
+        class="inline-block px-3 py-1 rounded-full text-xs font-semibold"
+        [ngClass]="{
+          'bg-red-500 text-white': intervention.maintenancePriorite  === 'URGENTE',
+          'bg-yellow-500 text-white': intervention.maintenancePriorite  === 'NORMALE',
+          'bg-green-500 text-white': intervention.maintenancePriorite  === 'FAIBLE'
+        }">{{ intervention.maintenancePriorite }}</span>
+          </td>
+          <td class="px-6 py-4 text-gray-600">{{ intervention.remarques || 'Non renseignées' }}</td>
 
-          <tr *ngFor="let intervention of filteredInterventions(); let i = index" 
-              class="border-b hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 text-gray-800 font-medium">{{ i + 1 }}</td>
-            <td class="px-6 py-4 text-gray-600">{{ intervention.typeIntervention }}</td>
-            <td class="px-6 py-4 text-gray-600">{{ formatDateWithIntl(intervention.dateCommencement) }}</td>
-            <td class="px-6 py-4 text-gray-600">{{ formatDateWithIntl(intervention.dateCloture) }}</td>
-            <td class="px-6 py-4 text-gray-600">{{ intervention.equipementMaintenu }}</td>
-            <td class="px-6 py-4 text-gray-600">{{ intervention.description || 'Non renseignée' }}</td>
-            <td class="px-6 py-4 text-gray-600">{{ intervention.duree }} min</td>
-            <td class="px-6 py-4 text-gray-600">
-              <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold"
-                [ngClass]="{
-                  'bg-red-500 text-white': intervention.maintenancePriorite === 'URGENTE',
-                  'bg-yellow-500 text-white': intervention.maintenancePriorite === 'NORMALE',
-                  'bg-green-500 text-white': intervention.maintenancePriorite === 'FAIBLE'
-                }">
-                {{ intervention.maintenancePriorite }}
-              </span>
-            </td>
-            <td class="px-6 py-4 text-gray-600">{{ intervention.remarques || 'Non renseignées' }}</td>
-            
-            <td class="px-6 py-4 text-gray-600">
-              <ng-container *ngIf="getPieces(intervention.id).length > 0; else noPieces">
-                <ul class="list-disc pl-4 text-sm text-gray-700">
-                  <li *ngFor="let piece of getPieces(intervention.id)">
-                    {{ piece.nom }}
-                  </li>
-                </ul>
-              </ng-container>
-              <ng-template #noPieces>
-                <span class="text-gray-400 italic text-sm">Aucune pièce</span>
-              </ng-template>
-            </td>
-            
-            <td class="px-6 py-4">
-              <!-- Solution 1: Utilisation de l'opérateur de coalescence nulle -->
-              <button *ngIf="(intervention.photos ?? []).length > 0"
-                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                (click)="viewPhotos(intervention)">
-                Voir photos
-              </button>
-              
-              <!-- Solution alternative: Vérification explicite -->
-              <span *ngIf="!intervention.photos || intervention.photos.length === 0" 
-                    class="text-gray-500">
-                Aucune photo
-              </span>
-            </td>
-          </tr>
+          <td class="px-6 py-4 text-center">
+            <button
+              (click)="viewPieces(intervention)"
+              class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200 shadow-sm"
+            >
+              Voir les pièces
+            </button>
+
+          </td>
+
+
+          <td class="px-6 py-4 text-center">
+            <button
+              *ngIf="intervention.photos.length > 0"
+              (click)="viewPhotos(intervention)"
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm"
+            >
+              Voir les photos
+            </button>
+
+            <span *ngIf="intervention.photos.length === 0" class="text-gray-400 italic">Aucune photo</span>
+          </td>
+
+        </tr>
         </tbody>
-      </table>
-    </div>
 
-    <!-- Modal Photos -->
-    <div *ngIf="showPhotoModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-semibold">Photos de l'intervention</h3>
-          <button (click)="showPhotoModal = false" class="text-gray-500 hover:text-gray-700">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div *ngFor="let photo of selectedPhotos" class="border rounded overflow-hidden">
-            <img [src]="photo.url" alt="Photo intervention" class="w-full h-auto">
-            <div class="p-2 bg-gray-50 text-sm text-gray-600">
-              {{ photo.url| date:'dd/MM/yyyy HH:mm' }}
-            </div>
+      </table>
+
+      <!-- Modal d'affichage des photos -->
+
+      <div
+        *ngIf="showPhotoModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm transition-opacity duration-300"
+      >
+        <!-- Modal Content -->
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 p-6 animate-fadeIn">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">📸 Photos de l'intervention</h2>
+
+          <!-- Horizontal Scrollable Image Gallery -->
+          <div class="overflow-x-auto whitespace-nowrap space-x-4 flex max-w-full pb-2">
+            <img
+              *ngFor="let photo of selectedPhotos"
+              [src]="getImageUrl(photo.url)"
+              alt="Photo intervention"
+              class="inline-block w-64 h-48 object-cover rounded-lg shadow transition-transform duration-300 hover:scale-105"
+            />
+          </div>
+
+          <div class="mt-6 flex justify-center">
+            <button
+              (click)="showPhotoModal = false"
+              class="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200"
+            >
+              ✖ Fermer
+            </button>
           </div>
         </div>
       </div>
+
+      <!-- Modal pour les pièces détachées -->
+      <div
+        *ngIf="showPiecesModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm transition-opacity duration-300"
+      >
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 p-6 animate-fadeIn">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+            🛠️ Pièces détachées utilisées
+          </h2>
+
+          <ng-container *ngIf="selectedPieces.length > 0; else noPiecesModal">
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <li
+                *ngFor="let piece of selectedPieces"
+                class="bg-gray-100 px-4 py-3 rounded-lg shadow text-gray-700"
+              >
+                <p class="font-semibold">🔹 {{ piece.pieceNom }}</p>
+                <p class="text-sm text-gray-600 italic">Référence : {{ piece.pieceReference }}</p>
+                <p class="text-sm text-gray-800 mt-1">
+                  Quantité utilisée : <span class="font-medium">{{ piece.quantiteUtilisee }}</span>
+                </p>
+              </li>
+            </ul>
+          </ng-container>
+
+
+          <ng-template #noPiecesModal>
+            <p class="text-gray-500 italic text-center">Aucune pièce détachée enregistrée pour cette intervention.</p>
+          </ng-template>
+
+          <div class="mt-6 flex justify-center">
+            <button
+              (click)="showPiecesModal = false"
+              class="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200"
+            >
+              ✖ Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
+
   </div>
 </div>
