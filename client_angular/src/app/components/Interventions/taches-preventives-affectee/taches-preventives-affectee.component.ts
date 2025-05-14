@@ -135,6 +135,8 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
 
 generatedDates: Date[] = [];
 showEmptyPage = false; // Contrôle l'affichage de la page vide
+  selectedPieces: { id: number; nom: string; quantite: number }[] = [];
+  pieceSearch: string = '';
 
 
 
@@ -145,6 +147,20 @@ showEmptyPage = false; // Contrôle l'affichage de la page vide
 
 
 
+ onAddPiece(pieceId: string): void {
+    const id = +pieceId;
+    const selected = this.piecesList.find(p => p.id === id);
+    if (selected && !this.isPieceSelected(id)) {
+      this.selectedPieces.push({ ...selected, quantite: 1 });
+    }
+  }
+   isPieceSelected(pieceId: number): boolean {
+    return this.selectedPieces.some(p => p.id === +pieceId);
+  }
+
+  removePiece(index: number): void {
+    this.selectedPieces.splice(index, 1);
+  }
 
 
 
@@ -886,7 +902,7 @@ togglePanel(): void {
 
 
 
-selectedPieces: number[] = [];  // Array to hold selected pieces
+
 piecesList: PieceDetachee[] = [];  // Array that will contain all available pieces for the dropdown
 
 
@@ -1217,34 +1233,10 @@ submitIntervention(): void {
     };
 
     // Call the service method to send the data along with the file
-    this.InterventionPreventiceService.createIntervention(interventionData, this.selectedFile).subscribe(
-      (newIntervention) => {
-        console.log('Intervention added successfully:', newIntervention);
-        this.showInterventionForm = false;  // Hide the form after submission
-        this.router.navigate(['/interventionsP/liste']);
-      },
-      (error) => {
-        console.error('Error creating intervention:', error);
-      }
-    );
-  }
-}
-
-
-onPiecesChange(event: Event): void {
-  const selectedOptions = (event.target as HTMLSelectElement).selectedOptions;
-  this.selectedPieces = Array.from(selectedOptions).map(opt => Number(opt.value));
-}
+    
 }
 
 
 
-
-
-
-
-
-
-
-
-
+}
+}
