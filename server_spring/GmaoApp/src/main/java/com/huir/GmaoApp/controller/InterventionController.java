@@ -67,6 +67,7 @@ public class InterventionController {
     }
 
 
+
     @PostMapping("/create")
     public ResponseEntity<?> createIntervention(
             @RequestParam(value = "files", required = false) MultipartFile[] files,
@@ -77,24 +78,24 @@ public class InterventionController {
             @RequestParam("piecesDetachees") List<Long> pieceDetacheesIds,
             @RequestParam("quantites") List<Integer> quantites) {
 
-        // 🔍 Check if maintenance exists
-        MaintenanceCorrective maintenance = maintenanceCorrectiveRepository.findById(maintenanceId)
-                .orElseThrow(() -> new RuntimeException("Maintenance not found"));
-
-        // 👷 Build the base intervention
-        Intervention intervention = new Intervention();
-        intervention.setDescription(description);
-        intervention.setRemarques(remarques);
-        intervention.setType(TypeIntervention.CORRECTIVE);
-
-        // 🔗 Link technician and maintenance
-        User technicien = new User();
-        technicien.setId(technicienId);
-        intervention.setTechnicien(technicien);
-        intervention.setMaintenanceCorrective(maintenance);
-
         try {
-            // 🖼️ Handle image uploads
+            // Vérifie la maintenance
+            MaintenanceCorrective maintenance = maintenanceCorrectiveRepository.findById(maintenanceId)
+                    .orElseThrow(() -> new RuntimeException("Maintenance not found"));
+
+            // Crée l'intervention
+            Intervention intervention = new Intervention();
+            intervention.setDescription(description);
+            intervention.setRemarques(remarques);
+            intervention.setType(TypeIntervention.CORRECTIVE);
+
+            // Lien avec technicien
+            User technicien = new User();
+            technicien.setId(technicienId);
+            intervention.setTechnicien(technicien);
+            intervention.setMaintenanceCorrective(maintenance);
+
+            // Gestion des fichiers (photos)
             List<PhotosIntervention> photos = new ArrayList<>();
             if (files != null && files.length > 0) {
                 for (MultipartFile file : files) {
@@ -106,19 +107,18 @@ public class InterventionController {
 
                         PhotosIntervention photo = new PhotosIntervention();
                         photo.setUrl(fileName);
-                        photo.setIntervention(intervention);
+                        photo.setIntervention(intervention); // Lien photo -> intervention
                         photos.add(photo);
                     }
                 }
             }
 
-            // ✨ Attach photos
             intervention.setPhotos(photos);
 
-            // ✅ Save the intervention FIRST
+            // 💾 ENREGISTREMENT de l'intervention AVANT d'ajouter les pièces
             Intervention savedIntervention = interventionService.save(intervention);
 
-            // 🔄 Now fetch spare parts
+            // 🔄 Ajout des pièces détachées
             List<PieceDetachee> pieceDetachees = pieceDetacheeRepository.findAllById(pieceDetacheesIds);
             List<InterventionPieceDetachee> interventionPieces = new ArrayList<>();
 
@@ -126,25 +126,25 @@ public class InterventionController {
                 PieceDetachee piece = pieceDetachees.get(i);
                 Integer quantityUsed = quantites.get(i);
 
-
-                // 🔗 Build relation with SAVED intervention
                 InterventionPieceDetachee interventionPiece = new InterventionPieceDetachee();
-                interventionPiece.setIntervention(savedIntervention);
+                interventionPiece.setIntervention(savedIntervention); // Maintenant elle est bien persistée
                 interventionPiece.setPieceDetachee(piece);
                 interventionPiece.setQuantiteUtilisee(quantityUsed);
 
                 interventionPieces.add(interventionPiece);
             }
 
-            // 💾 Save after all links are valid
+            // 💾 Sauvegarde des relations avec pièces détachées
             interventionPieceDetacheeRepository.saveAll(interventionPieces);
 
-            // 🎁 Return DTO
+            // 🎁 Retour DTO
             InterventionDTO savedInterventionDTO = new InterventionDTO(savedIntervention);
             return ResponseEntity.ok(savedInterventionDTO);
 
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Image upload failed");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur: " + e.getMessage());
         }
     }
 

@@ -56,10 +56,11 @@ public class Intervention {
     
     
     // Lien avec la maintenance corrective si applicable
-    @JsonBackReference("maintenance-interventions2")
     @ManyToOne
     @JoinColumn(name = "maintenanceP_id", nullable = true)
+    @JsonBackReference("maintenance-interventions2")
     private Maintenance maintenance;
+
 
     // Commentaires du technicien après l'intervention
     @Column(columnDefinition = "TEXT")

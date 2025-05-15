@@ -22,13 +22,27 @@ public class InterventionPieceDetachee {
     @JoinColumn(name = "intervention_id", nullable = false)
     private Intervention intervention;
     
+
     
-  ;
+   
+    
+    
+    
+    
+
+    
+    
+  
 
     
   
 
-    @ManyToOne
+   
+
+	
+	
+
+	@ManyToOne
     @JoinColumn(name = "piece_detachee_id", nullable = false)
     private PieceDetachee pieceDetachee;
 

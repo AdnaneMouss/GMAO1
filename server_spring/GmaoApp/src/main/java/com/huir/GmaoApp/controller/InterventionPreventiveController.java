@@ -25,6 +25,7 @@ import com.huir.GmaoApp.dto.InterventionPieceDetacheeDTO;
 import com.huir.GmaoApp.dto.InterventionPreventiveDTO;
 import com.huir.GmaoApp.model.*;
 import com.huir.GmaoApp.repository.InterventionPieceDetacheeRepository;
+import com.huir.GmaoApp.repository.InterventionPreventiveRepository;
 import com.huir.GmaoApp.repository.MaintenanceRepository;
 import com.huir.GmaoApp.repository.PieceDetacheeRepository;
 import com.huir.GmaoApp.service.*;
@@ -40,9 +41,14 @@ public class InterventionPreventiveController {
     @Autowired
     private PieceDetacheeRepository pieceDetacheeRepository;
     @Autowired
+    
 
     private InterventionPieceDetacheeRepository interventionPieceDetacheeRepository;
-
+	@Autowired
+    private  InterventionPreventiveRepository InterventionPreventiveRepository;
+	
+	@Autowired
+	private  InterventionService  interventionService;
     // Get all interventions    
     @GetMapping
     public List<InterventionPreventive> getAllInterventions() {
@@ -67,28 +73,24 @@ public class InterventionPreventiveController {
             @RequestParam("piecesDetachees") List<Long> pieceDetacheesIds,
             @RequestParam("quantites") List<Integer> quantites) {
 
-        // 🔍 Check if maintenance exists
         Maintenance maintenance = maintenanceRepository.findById(maintenanceId)
                 .orElseThrow(() -> new RuntimeException("Maintenance not found"));
 
-        // 👷 Build the base intervention
-        InterventionPreventive InterventionPreventive = new InterventionPreventive();
-        InterventionPreventive.setDescription(description);
-        InterventionPreventive.setRemarques(remarques);
-        InterventionPreventive.setType(TypeIntervention.PREVENTIVE);
-
-        // 🔗 Link technician and maintenance
         User technicien = new User();
         technicien.setId(technicienId);
-        InterventionPreventive.setTechnicien(technicien);
-        InterventionPreventive.setMaintenance(maintenance);
 
-        try {
-            // 🖼️ Handle image uploads
-            List<PhotosIntervention> photos = new ArrayList<>();
-            if (files != null && files.length > 0) {
-                for (MultipartFile file : files) {
-                    if (!file.isEmpty()) {
+        Intervention intervention = new Intervention();
+        intervention.setDescription(description);
+        intervention.setRemarques(remarques);
+        intervention.setType(TypeIntervention.PREVENTIVE);
+        intervention.setTechnicien(technicien);
+        intervention.setMaintenance(maintenance);
+
+        List<PhotosIntervention> photos = new ArrayList<>();
+        if (files != null && files.length > 0) {
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    try {
                         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
                         Path filePath = Paths.get("uploads", fileName);
                         Files.createDirectories(filePath.getParent());
@@ -96,56 +98,42 @@ public class InterventionPreventiveController {
 
                         PhotosIntervention photo = new PhotosIntervention();
                         photo.setUrl(fileName);
-                        photo.setInterventionPreventive(InterventionPreventive);
+                        photo.setIntervention(intervention);
                         photos.add(photo);
+                    } catch (IOException e) {
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Image upload failed");
                     }
                 }
             }
-
-            // ✨ Attach photos
-            InterventionPreventive.setPhotos(photos);
-
-            // ✅ Save the intervention FIRST
-            InterventionPreventive savedIntervention = InterventionPreventiceService.save(InterventionPreventive);
-
-            // 🔄 Now fetch spare parts
-            List<PieceDetachee> pieceDetachees = pieceDetacheeRepository.findAllById(pieceDetacheesIds);
-            List<InterventionPieceDetachee> interventionPieces = new ArrayList<>();
-
-            for (int i = 0; i < pieceDetachees.size(); i++) {
-                PieceDetachee piece = pieceDetachees.get(i);
-                Integer quantityUsed = quantites.get(i);
-
-                // 💥 Update stock safely
-                int newQuantity = piece.getQuantiteStock() - quantityUsed;
-                piece.setQuantiteStock(Math.max(0, newQuantity));
-
-                // 🔗 Build relation with SAVED intervention
-                InterventionPieceDetachee interventionPiece = new InterventionPieceDetachee();
-              //   interventionPiece.setInterventionPreventive(savedIntervention);
-                interventionPiece.setPieceDetachee(piece);
-                interventionPiece.setQuantiteUtilisee(quantityUsed);
-
-                interventionPieces.add(interventionPiece);
-            }
-
-            // 💾 Save after all links are valid
-            interventionPieceDetacheeRepository.saveAll(interventionPieces);
-
-            // 🎁 Return DTO
-            InterventionPreventiveDTO savedInterventionDTO = new InterventionPreventiveDTO(savedIntervention);
-            return ResponseEntity.ok(savedInterventionDTO);
-
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Image upload failed");
         }
+        intervention.setPhotos(photos);
+
+        // ⚠️ 1. Enregistrer l’intervention d'abord pour avoir un ID
+        Intervention savedIntervention = interventionService.save(intervention);
+
+        // ✅ 2. Créer les pièces liées à l’intervention enregistrée
+        List<PieceDetachee> pieceDetachees = pieceDetacheeRepository.findAllById(pieceDetacheesIds);
+        List<InterventionPieceDetachee> interventionPieces = new ArrayList<>();
+
+        for (int i = 0; i < pieceDetachees.size(); i++) {
+            PieceDetachee piece = pieceDetachees.get(i);
+            Integer quantityUsed = quantites.get(i);
+
+            InterventionPieceDetachee interventionPiece = new InterventionPieceDetachee();
+            interventionPiece.setIntervention(savedIntervention); // ✅ important ici
+            interventionPiece.setPieceDetachee(piece);
+            interventionPiece.setQuantiteUtilisee(quantityUsed);
+
+            interventionPieces.add(interventionPiece);
+        }
+
+        // 💾 Enregistrer les pièces détachées
+        interventionPieceDetacheeRepository.saveAll(interventionPieces);
+
+        // ✅ Retourner un DTO ou confirmation
+        InterventionDTO savedInterventionDTO = new InterventionDTO(savedIntervention);
+        return ResponseEntity.ok(savedInterventionDTO);
     }
-    
-  
-
-
-
-       
 
           
 
