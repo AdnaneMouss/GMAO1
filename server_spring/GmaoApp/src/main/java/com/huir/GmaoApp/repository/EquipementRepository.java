@@ -26,5 +26,7 @@ public interface EquipementRepository extends JpaRepository<Equipement, Long> {
     boolean existsByEtage(Etage etage);
 
     boolean existsBySalle(Salle salle);
+
+    boolean existsByService(Services service);
 }
 

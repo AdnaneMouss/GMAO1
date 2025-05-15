@@ -21,4 +21,5 @@ public interface ServicesRepository extends JpaRepository<Services, Long> {
     List<Services> findByActifTrue();
 
     List<Services> findByActifFalse();
+
 }

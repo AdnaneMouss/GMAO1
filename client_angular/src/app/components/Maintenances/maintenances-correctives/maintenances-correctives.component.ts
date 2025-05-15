@@ -59,6 +59,7 @@ export class MaintenancesCorrectivesComponent implements OnInit {
 
   // Form for adding new maintenance
   newMaintenance: MaintenanceCorrective = {
+    demandeeParId: 0, demandeeParNom: "",
     equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
     affecteANom: "", creeParNom: "",
     affecteAId: 0,creeParId:0, dateCreation: "", id: 0, interventions: [],
@@ -85,7 +86,7 @@ export class MaintenancesCorrectivesComponent implements OnInit {
     this.setCurrentUser();
     this.loadBatiments();
   }
-  
+
 
 
 
@@ -93,6 +94,7 @@ export class MaintenancesCorrectivesComponent implements OnInit {
 
   resetNewMaintenance(): void {
     this.newMaintenance = {
+      demandeeParId: 0, demandeeParNom: "",
       equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
       affecteANom: "", creeParNom: "",
       affecteAId: 0, creeParId: 0, dateCreation: "", id: 0, interventions: [],

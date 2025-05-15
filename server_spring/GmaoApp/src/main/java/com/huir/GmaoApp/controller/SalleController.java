@@ -127,7 +127,7 @@ public class SalleController {
         // Check if there are any Equipements linked to this Salle
         boolean isLinked = equipementRepository.existsBySalle(salle);
         if (isLinked) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d’archiver : la salle est liée à des équipements.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d’archiver : La salle est liée à des équipements.");
         }
 
         salle.setActif(false);
@@ -140,31 +140,36 @@ public class SalleController {
 
 
     @PutMapping("/archiver-multiple")
-    public ResponseEntity<Map<String, Object>> archiverSalles(@RequestBody List<Long> ids) {
+    public ResponseEntity<?> archiverSalles(@RequestBody List<Long> ids) {
         List<Salle> salles = salleRepository.findAllById(ids);
 
-        List<String> archived = new ArrayList<>();
-        List<String> skipped = new ArrayList<>();
-
-        for (Salle salle : salles) {
-            boolean isLinked = equipementRepository.existsBySalle(salle);
-            if (isLinked) {
-                skipped.add("Salle ID " + salle.getId() + " liée à des équipements");
-                continue;
-            }
-            salle.setActif(false);
-            archived.add("Salle ID " + salle.getId());
+        if (salles.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucune salle trouvée pour les IDs donnés.");
         }
 
-        // Save only those that were not linked
-        salleRepository.saveAll(
-                salles.stream().filter(salle -> !equipementRepository.existsBySalle(salle)).toList()
-        );
+        List<String> linkedSalles = new ArrayList<>();
+
+        for (Salle salle : salles) {
+            if (equipementRepository.existsBySalle(salle)) {
+                linkedSalles.add("Salle '" + salle.getPrefixe() + salle.getNum() + "' est liée à des équipements");
+            }
+        }
+
+        if (!linkedSalles.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Archivage impossible :\n" + String.join("\n", linkedSalles)
+            );
+        }
+
+        for (Salle salle : salles) {
+            salle.setActif(false);
+            salleRepository.save(salle);
+        }
 
         Map<String, Object> response = new HashMap<>();
-        response.put("archivées", archived);
-        response.put("ignorées", skipped);
-        response.put("message", "Archivage terminé avec succès.");
+        response.put("message", "Toutes les salles ont été archivées avec succès.");
+        response.put("archivées", salles.stream().map(salle -> "Salle ID " + salle.getId()).toList());
 
         return ResponseEntity.ok(response);
     }

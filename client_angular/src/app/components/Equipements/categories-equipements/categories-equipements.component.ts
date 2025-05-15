@@ -80,8 +80,13 @@ export class CategoriesEquipementsComponent implements OnInit {
   resetForm(): void {
     this.newService = {actif: false, id: 0, nom: '', description: '', image: '' };
     this.errorMessage = ''; // Reset error message
+    this.selectedFile= null;
     this.selectedService = null;
     this.serviceTaken=false;
+    this.serviceTakenBulk = false;
+    this.impossibleToArchive = false;
+    this.showEditForm= false;
+    this.showAddForm = false;
   }
 
   private initService(): Service {

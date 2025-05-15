@@ -57,6 +57,10 @@ import {SallesListeComponent} from "./components/batiments/salles-liste/salles-l
 import {
   EquipementsParSalleComponent
 } from "./components/Equipements/equipements-par-salle/equipements-par-salle.component";
+import {
+  DemandeMaintenancesComponent
+} from "./components/Maintenances/demande-maintenances/demande-maintenances.component";
+import {HistoriqueDemandesComponent} from "./components/Maintenances/historique-demandes/historique-demandes.component";
 
 
 
@@ -83,6 +87,8 @@ const routes: Routes = [
   { path: 'maintenances/preventives', component: MaintenancesPreventivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/historique', component: HistoriqueMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/historique-maintenances-correctives', component: HistoriqueMaintenancesCorrectivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
+  { path: 'maintenances/demandes', component: DemandeMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['LAMBDA'] } },
+  { path: 'maintenances/demandes/historique', component: HistoriqueDemandesComponent, canActivate: [AuthGuard], data: { roles: ['LAMBDA'] } },
   { path: 'interventions/taches', component: TachesAffecteesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
   { path: 'interventions/liste', component: InterventionsPrecedentesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
   { path: 'rapports/coutMaintenance', component: CoutMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },

@@ -21,12 +21,15 @@ public class MaintenanceCorrectiveDTO {
     private String statut;
     private String priorite;
     private LocalDateTime dateCreation;
+    private LocalDateTime dateDemande;
     private LocalDateTime dateCloture;
     private LocalDateTime dateCommencement;
     private String creeParNom;
     private String affecteANom;
+    private String demandeeParNom;
     private Long affecteAId;
     private Long creeParId;
+    private Long demandeeParId;
     private String equipementNom;
     private String equipementNumSerie;
     private String equipementBatiment;
@@ -41,12 +44,15 @@ public class MaintenanceCorrectiveDTO {
         this.statut = maintenance.getStatut().name();
         this.priorite = maintenance.getPriorite().name();
         this.dateCreation = maintenance.getDateCreation();
+        this.dateDemande=maintenance.getDateDemande();
         this.dateCloture = maintenance.getDateCloture();
         this.dateCommencement = maintenance.getDateCommencement();
         this.creeParNom = maintenance.getCreePar() != null ? maintenance.getCreePar().getNom() : null;
         this.affecteANom = maintenance.getAffecteA() != null ? maintenance.getAffecteA().getNom() : null;
+        this.demandeeParNom = maintenance.getDemandeePar() != null ? maintenance.getDemandeePar().getNom() : null;
         this.affecteAId = maintenance.getAffecteA() != null ? maintenance.getAffecteA().getId() : null;
         this.creeParId = maintenance.getCreePar() != null ? maintenance.getCreePar().getId() : null;
+        this.demandeeParId = maintenance.getDemandeePar() != null ? maintenance.getDemandeePar().getId() : null;
         this.equipementNom = maintenance.getEquipement() != null ? maintenance.getEquipement().getNom() : null;
         this.equipementNumSerie = maintenance.getEquipement() != null ? maintenance.getEquipement().getNumeroSerie() : null;
         this.interventions = maintenance.getInterventions() != null

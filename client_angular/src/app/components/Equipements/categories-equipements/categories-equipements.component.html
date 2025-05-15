@@ -1,8 +1,39 @@
 
-<div *ngIf="isLoading" class="loading-spinner">
-  <!-- Add a spinner here, for example: -->
-  <div class="spinner">Loading...</div>
+<div *ngIf="isRestored" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Service restauré avec succès !</span>
 </div>
+
+<div *ngIf="isBulkRestored" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Services restaurés avec succès !</span>
+</div>
+
+<div *ngIf="isBulkArchived" class="fixed top-5 right-5 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Services archivés avec succès !</span>
+</div>
+
+<div *ngIf="isArchived" class="fixed top-5 right-5 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Service archivé avec succès et placé à la corbeille !</span>
+</div>
+
+<!-- Error Modal -->
+<div *ngIf="impossibleToArchive" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-center">
+    <h2 class="text-2xl font-semibold text-red-600 mb-4">⚠️ Erreur</h2>
+    <p class="text-gray-700 mb-6">{{ errorMessage }}</p>
+    <button
+      (click)="impossibleToArchive = false"
+      class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+    >
+      Fermer
+    </button>
+  </div>
+</div>
+
+
 <div *ngIf="showAddForm" class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
   <div class="bg-white rounded-lg w-full max-w-3xl p-6 relative overflow-y-auto max-h-[90vh]">
     <!-- Close Button -->
@@ -136,7 +167,7 @@
 
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-xl font-semibold text-gray-800">🗑️ Types d'équipements archivés</h3>
+      <h3 class="text-xl font-semibold text-gray-800">🗑️ Services archivés</h3>
       <button (click)="toggleTrash()" class="text-gray-400 hover:text-red-500 text-lg">
         ✖
       </button>
@@ -234,9 +265,9 @@
       </div>
     </div>
 
-    <!-- No archived types -->
+    <!-- No archived Services -->
     <ng-template #noArchived>
-      <p class="text-gray-400 italic text-sm">Aucun type d’équipement archivé pour le moment.</p>
+      <p class="text-gray-400 italic text-sm">Aucun service archivé pour le moment.</p>
     </ng-template>
   </div>
 </div>
@@ -246,7 +277,7 @@
 <div *ngIf="showConfirmationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
   <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md text-center">
     <h2 class="text-xl font-semibold text-gray-800 mb-4">Confirmer l'archive</h2>
-    <p class="text-gray-600 mb-6">Voulez-vous vraiment archiver ce service d’équipement ?</p>
+    <p class="text-gray-600 mb-6">Voulez-vous vraiment archiver ce service?</p>
     <small class="text-gray-600 mb-6">Vous pourrez toujours le restaurer depuis la corbeille.</small>
 
     <div class="flex justify-center gap-4">
@@ -407,7 +438,7 @@
     </div>
 
     <br><br>
-    <div *ngIf="selectionModeOn" class="mb-4 flex justify-between items-center">
+    <div class="mb-4 flex justify-between items-center">
       <div class="text-2xl font-semibold text-gray-800"></div>
       <button
         class="bg-green-600 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition duration-300"
@@ -486,7 +517,14 @@
         <div class="relative w-full h-40 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100">
           <img [src]="getImageUrl(service.image)" alt="Service Image" class="w-auto h-28 object-cover transition-transform duration-300 hover:scale-110">
         </div>
-        <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2 text-center">{{ service.nom }}</h3>
+        <h3
+          class="text-lg font-semibold text-gray-800 mt-4 mb-2 text-center truncate whitespace-nowrap overflow-hidden"
+          [title]="service.nom"
+        >
+          {{ service.nom }}
+        </h3>
+
+
 
         <p class="text-gray-600 text-sm text-center break-words whitespace-normal">
           {{ service.description }}
@@ -511,6 +549,7 @@
         <table class="w-full table-auto border-collapse rounded-lg overflow-hidden shadow-lg">
           <thead class="bg-green-700 text-white uppercase text-sm font-semibold">
           <tr>
+            <th *ngIf="bulkMode" class="px-8 py-4 text-left w-1/6"></th>
             <th class="px-8 py-4 text-left w-1/6">#</th>
             <th class="px-8 py-4 text-left w-1/6">Image</th>
             <th class="px-8 py-4 text-left w-1/4">Nom</th>
@@ -521,21 +560,34 @@
           </thead>
           <tbody>
           <tr *ngFor="let service of filteredServices; let i = index" class="border-b hover:bg-gray-100 transition duration-200">
+            <!-- Checkbox column -->
+            <td *ngIf="bulkMode" class="px-4 py-4 text-center">
+              <input
+                type="checkbox"
+                [checked]="isSelected(service)"
+                (change)="toggleSelection(service.id)"
+                class="form-checkbox w-5 h-5 text-green-600"
+              />
+            </td>
+
             <td class="px-6 py-4 font-medium text-gray-900">{{ i + 1 }}</td>
+
             <td class="px-8 py-4">
               <img [src]="getImageUrl(service.image)"
-                   alt="Image équipement"
+                   alt="Image service"
                    class="w-20 h-20 rounded object-cover shadow-sm">
             </td>
+
             <td class="px-8 py-4 font-medium text-lg">{{ service.nom }}</td>
+
             <td class="px-8 py-4 text-gray-700">
-              <p class="px-8 py-4 text-gray-700">
+              <p *ngIf="service.description; else noDesc">
                 {{ service.description }}
               </p>
-              <p *ngIf="service.description=='' || service.description==null" class="px-8 py-4 text-gray-700">Pas de description.</p>
-
+              <ng-template #noDesc>
+                <p class="text-gray-500 italic">Pas de description.</p>
+              </ng-template>
             </td>
-
 
             <td class="px-8 py-4 text-gray-700">
               <button
@@ -544,7 +596,54 @@
                 Voir les équipements
               </button>
             </td>
-            <td class="px-8 py-4 text-gray-700"></td>
+
+            <td class="px-8 py-4 flex gap-4">
+              <button class="edit-button" (click)="editService(service)">
+                <!-- Edit Icon -->
+                <svg class="edit-svgIcon" viewBox="0 0 512 512">
+                  <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"></path>
+                </svg>
+              </button>
+              <button class="bin-button"
+                      (click)="selectedServiceToArchive = service; showConfirmationModal = true">
+                <!-- Trash Icon -->
+                <svg
+                  class="bin-top"
+                  viewBox="0 0 39 7"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+                  <line
+                    x1="12"
+                    y1="1.5"
+                    x2="26.0357"
+                    y2="1.5"
+                    stroke="white"
+                    stroke-width="3"
+                  ></line>
+                </svg>
+                <svg
+                  class="bin-bottom"
+                  viewBox="0 0 33 39"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <mask id="path-1-inside-1_8_19" fill="white">
+                    <path
+                      d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"
+                    ></path>
+                  </mask>
+                  <path
+                    d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+                    fill="white"
+                    mask="url(#path-1-inside-1_8_19)"
+                  ></path>
+                  <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+                  <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+                </svg>
+              </button>
+            </td>
           </tr>
           </tbody>
         </table>

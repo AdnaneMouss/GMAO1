@@ -71,7 +71,9 @@ import { DetailsHistoComponent } from './details-histo/details-histo.component';
 import { LotAchatPieceComponent } from './components/Stocks/lot-achat-piece/lot-achat-piece.component';
 import { EtagesListeComponent } from './components/batiments/etages-liste/etages-liste.component';
 import { SallesListeComponent } from './components/batiments/salles-liste/salles-liste.component';
-import { EquipementsParSalleComponent } from './components/Equipements/equipements-par-salle/equipements-par-salle.component'; // <- pour input matInput
+import { EquipementsParSalleComponent } from './components/Equipements/equipements-par-salle/equipements-par-salle.component';
+import { DemandeMaintenancesComponent } from './components/Maintenances/demande-maintenances/demande-maintenances.component';
+import { HistoriqueDemandesComponent } from './components/Maintenances/historique-demandes/historique-demandes.component';
 
 
 @NgModule({
@@ -109,6 +111,8 @@ import { EquipementsParSalleComponent } from './components/Equipements/equipemen
     EtagesListeComponent,
     SallesListeComponent,
     EquipementsParSalleComponent,
+    DemandeMaintenancesComponent,
+    HistoriqueDemandesComponent,
   ],
   imports: [
     AppRoutingModule,

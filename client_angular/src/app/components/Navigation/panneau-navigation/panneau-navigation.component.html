@@ -287,7 +287,60 @@
       <div *ngIf="user?.role === 'TECHNICIEN'" class="h-[20px]"></div>
 
 
-        <!-- Settings -->
+      <!-- Dashboard lambda-->
+      <div *ngIf="user?.role === 'LAMBDA'" class="w-full">
+
+        <a routerLink="/dashboard" class="flex items-center space-x-4 py-3 px-4 rounded-md hover:bg-green-700 hover:text-white transition-all ease-in-out duration-300"
+           [ngClass]="{'bg-green-800 text-white': isActive('/dashboard')}"
+           *ngIf="user?.role === 'LAMBDA'">
+          <i class="fas fa-tachometer-alt text-xl"></i>
+          <span *ngIf="!isSidebarCollapsed">Dashboard</span>
+        </a>
+
+      </div>
+      <div *ngIf="user?.role === 'LAMBDA'" class="h-[20px]"></div>
+
+      <!-- Separator -->
+      <div *ngIf="user?.role === 'LAMBDA'" class="border-t border-gray-200 my-2"></div>
+      <div *ngIf="user?.role === 'LAMBDA'" class="h-[20px]"></div>
+
+      <!-- Demandes with Submenu -->
+      <div *ngIf="user?.role === 'LAMBDA'" class="w-full">
+        <button class="flex items-center justify-between w-full py-3 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300"
+                (click)="toggleSubmenu('demandes')">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-tools text-xl"></i>
+            <span *ngIf="!isSidebarCollapsed" class="font-medium">Demandes de maintenances</span>
+          </div>
+          <i class="fas" [ngClass]="{'fa-chevron-down': !isSubmenuOpen('demandes'), 'fa-chevron-up': isSubmenuOpen('demandes')}"></i>
+        </button>
+        <div *ngIf="isSubmenuOpen('demandes')" class="ml-6 mt-2 space-y-2 border-l-2 border-gray-300 pl-3">
+          <ng-container *ngIf="user?.role === 'LAMBDA' || user?.role === 'ADMIN'">
+            <a [ngClass]="{'bg-green-800 text-white': isActive('maintenances/demandes')}"
+               routerLink="maintenances/demandes"
+               class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
+              <i class="fas fa-calendar-check text-sm"></i>
+              <span *ngIf="!isSidebarCollapsed">Liste des demandes</span>
+            </a>
+            <a [ngClass]="{'bg-green-800 text-white': isActive('maintenances/demandes/historique')}"
+               routerLink="maintenances/demandes/historique"
+               class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
+              <i class="fas fa-wrench text-sm"></i>
+              <span *ngIf="!isSidebarCollapsed">Historique des demandes</span>
+            </a>
+          </ng-container>
+        </div>
+
+
+      </div>
+      <div *ngIf="user?.role === 'LAMBDA'" class="h-[20px]"></div>
+
+      <!-- Separator -->
+      <div *ngIf="user?.role === 'LAMBDA'" class="border-t border-gray-200 my-2"></div>
+      <div *ngIf="user?.role === 'LAMBDA'" class="h-[20px]"></div>
+
+
+      <!-- Settings -->
         <a routerLink="/parametres" class="flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-green-700 hover:text-white transition-all ease-in-out duration-300"
            [ngClass]="{'bg-green-800 text-white': isActive('/parametres')}">
           <i class="fas fa-cogs text-xl"></i>
@@ -319,8 +372,21 @@
 
         </div>
         <div class="mt-4 text-center" *ngIf="!isSidebarCollapsed">
-          <span class="text-sm font-medium text-gray-600">🔹 Connecté en tant que <strong>{{ user?.role }}</strong></span>
-        </div>
+<span class="text-sm font-medium text-gray-600">
+  🔹 Connecté en tant que
+  <strong>
+    {{
+      user?.role === 'LAMBDA'
+        ? (user?.civilite === 'Dr' || user?.civilite === 'Pr'
+          ? 'Médecin'
+          : (user?.civilite === 'M' || user?.civilite === 'Mme'
+            ? 'Infirmier'
+            : user?.role))
+        : user?.role
+    }}
+  </strong>
+</span>
+     </div>
       </div>
     </div>
   </div>
