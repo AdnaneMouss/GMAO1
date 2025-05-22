@@ -446,12 +446,12 @@ async generateMonthlyReport(): Promise<void> {
   // Tableau des équipements
   autoTable(doc, {
     startY: yPosition,
-    head: [['#', 'Nom', 'Date Achat', 'Date Mise en Service', 'Dernière Maintenance']],
+    head: [['#', 'Nom',   'Dernière Maintenance']],
     body: rapport.equipementsCritiques.map((eq: any, index: number) => [
       index + 1,
       eq.nom || 'N/A',
-      eq.dateAchat ? new Date(eq.dateAchat).toLocaleDateString() : 'N/A',
-      eq.dateAchat ? new Date(eq.dateAchat).toLocaleDateString() : 'N/A',
+    
+     
       eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance).toLocaleDateString() : 'N/A'
     ]),
     styles: {
@@ -720,6 +720,8 @@ private getWeekNumber(date: Date): string {
       .slice(0, 10);
   }
 
+  
+
 
 
   prepareChartData(): number[] {
@@ -731,15 +733,19 @@ private getWeekNumber(date: Date): string {
     ];
   }
 
-  exportEquipmentPDF(equipment: Equipement): void {
+exportEquipmentPDF(equipment: Equipement): void {
     const doc = new jsPDF('p', 'mm', 'a4');
-    const primaryColor = '#4169E1';
-    const secondaryColor = '#6B7280';
+    const primaryColor = '#4169E1'; // Bleu royal
+    const secondaryColor = '#6B7280'; // Gris
+    const accentColor = '#10B981'; // Vert émeraude
+    const warningColor = '#F59E0B'; // Orange
+    const dangerColor = '#EF4444'; // Rouge
+    const textColor = '#000000'; // Noir
     const marginLeft = 15;
     const labelWidth = 60;
     let yPosition = 20;
 
-    // 1. Chargement asynchrone du logo
+    // Fonction pour charger l'image
     const loadImage = async (url: string): Promise<string> => {
       return new Promise((resolve) => {
         const img = new Image();
@@ -760,97 +766,115 @@ private getWeekNumber(date: Date): string {
         };
 
         img.onerror = () => {
-          console.warn('Logo non chargÃ©, continuation sans logo');
+          console.warn('Logo non chargé, continuation sans logo');
           resolve('');
         };
       });
     };
 
-    // 2. Fonction principale async
+    
+
+    // Fonction principale async
     (async () => {
       try {
-        // A. Ajout du logo
+        // 1. Ajout du logo
         const logoData = await loadImage('assets/logo.png');
 
         if (logoData) {
           doc.addImage(logoData, 'PNG', marginLeft, yPosition, 30, 30);
-          doc.setFontSize(8);
-          doc.setTextColor(secondaryColor);
-          doc.text(' Hopital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
-          doc.text('Systeme de Gestion des Equipements', marginLeft + 35, yPosition + 15);
+          doc.setFontSize(10);
+          doc.setTextColor(textColor);
+          doc.setFont('helvetica', 'bold');
+          doc.text('Hôpital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
+          doc.setFont('helvetica', 'normal');
+          doc.text('Système de Gestion des Equipements', marginLeft + 35, yPosition + 16);
+          
+          // Cadre autour du logo et texte
+          doc.setDrawColor(primaryColor);
+          doc.setLineWidth(0.3);
+          doc.roundedRect(marginLeft, yPosition, 180, 25, 2, 2, 'S');
         }
 
         yPosition += logoData ? 40 : 20;
 
-        // B. En-tÃªte du document
+        // 2. En-tête du document
         doc.setFontSize(16);
         doc.setTextColor(primaryColor);
         doc.setFont('helvetica', 'bold');
-        doc.text('FICHE TECHNIQUE Ã‰QUIPEMENT', 105, yPosition, { align: 'center' });
-        yPosition += 10;
-
-        // Ligne de sÃ©paration
+        doc.text('FICHE TECHNIQUE EQUIPEMENT', 105, yPosition, { align: 'center' });
+        
+        // Ligne de séparation stylisée
+        yPosition += 7;
         doc.setDrawColor(primaryColor);
         doc.setLineWidth(0.5);
-        doc.line(marginLeft, yPosition, 195, yPosition);
+        doc.line(50, yPosition, 160, yPosition);
+        doc.setFillColor(primaryColor);
+        doc.circle(50, yPosition, 1, 'F');
+        doc.circle(160, yPosition, 1, 'F');
         yPosition += 15;
 
-        // C. Sections d'information
+        // 3. Sections d'information avec style amélioré
         const sections = [
           {
-            title: 'INFORMATIONS GeNeRALES',
+            title: 'INFORMATIONS GÉNÉRALES',
+            
             fields: [
-              { label: 'Nom', value: equipment.nom || 'N/A' },
-              { label: 'Numero de serie', value: equipment.numeroSerie || 'N/A' },
-              { label: 'Modele', value: equipment.modele || 'N/A' },
-              { label: 'Marque', value: equipment.marque || 'N/A' },
-              { label: 'Description', value: equipment.description || 'N/A' },
+              { label: 'Nom', value: equipment.nom || 'N/A', color: textColor },
+              { label: 'Numéro de série', value: equipment.numeroSerie || 'N/A', color: textColor },
+              { label: 'Modèle', value: equipment.modele || 'N/A', color: textColor },
+              { label: 'Marque', value: equipment.marque || 'N/A', color: textColor },
+              { label: 'Description', value: equipment.description || 'N/A', color: textColor },
               { label: 'Statut', value: equipment.statut || 'N/A', special: 'status' },
-              { label: 'Actif', value: equipment.actif ? 'Oui' : 'Non' },
-              { label: 'Type', value: equipment.typeEquipement || 'N/A' }
+              { label: 'Actif', value: equipment.actif ? 'Oui' : 'Non', color: equipment.actif ? accentColor : dangerColor },
+              { label: 'Type', value: equipment.typeEquipement || 'N/A', color: textColor }
             ]
           },
           {
             title: 'DATES IMPORTANTES',
+           
             fields: [
-              { label: 'Date achat', value: equipment.dateAchat ? new Date(equipment.dateAchat).toLocaleDateString() : 'N/A' },
-              { label: 'Date mise en service', value: equipment.dateAchat ? new Date(equipment.dateAchat).toLocaleDateString() : 'N/A' },
-              { label: 'Date derniÃ¨re maintenance', value: equipment.dateDerniereMaintenance ? new Date(equipment.dateDerniereMaintenance).toLocaleDateString() : 'N/A' },
+              
+              { label: 'Date dernière maintenance', value: equipment.dateDerniereMaintenance ? new Date(equipment.dateDerniereMaintenance).toLocaleDateString() : 'N/A', color: textColor },
+              { label: 'Date Mise en  service', value: equipment.dateMiseEnService ? new Date(equipment.dateMiseEnService).toLocaleDateString() : 'N/A', color: warningColor }
             ]
           },
           {
             title: 'LOCALISATION',
+         
             fields: [
-              { label: 'BÃ¢timent', value: equipment.batimentNom.toString() || 'N/A' },
-              { label: 'Ã‰tage', value: equipment.etageNum?.toString() || 'N/A' },
-              { label: 'Salle', value: equipment.salleNum?.toString() || 'N/A' },
-              { label: 'Service', value: equipment.serviceNom || 'N/A' }
+              { label: 'Bâtiment', value: equipment.batimentNom?.toString() || 'N/A', color: textColor },
+              { label: 'Étage', value: equipment.etageNum?.toString() || 'N/A', color: textColor },
+              { label: 'Salle', value: equipment.salleNum?.toString() || 'N/A', color: textColor },
+              { label: 'Service', value: equipment.serviceNom || 'N/A', color: textColor }
             ]
           },
           {
-            title: 'COÃ›TS ET SUIVI',
+            title: 'COÛTS ET SUIVI',
+          
             fields: [
-              { label: 'CoÃ»t d\'achat', value: equipment.coutAchat ? `${equipment.coutAchat} DH` : 'N/A' },
-              { label: 'Label suivi', value: equipment.labelSuivi || 'N/A' },
-              { label: 'Valeur suivi', value: equipment.valeurSuivi?.toString() || 'N/A' }
+              { label: 'Coût d\'achat', value: equipment.coutAchat ? `${equipment.coutAchat} DH` : 'N/A', color: textColor },
+              { label: 'Label suivi', value: equipment.labelSuivi || 'N/A', color: textColor },
+              { label: 'Valeur suivi', value: equipment.valeurSuivi?.toString() || 'N/A', color: textColor }
             ]
           }
         ];
 
-        // D. GÃ©nÃ©ration dynamique des sections
+        // 4. Génération des sections avec style amélioré
         for (const section of sections) {
-          // VÃ©rifier si besoin d'une nouvelle page
+          // Vérification de l'espace disponible
           if (yPosition > 250) {
             doc.addPage();
             yPosition = 20;
           }
 
-          // Titre de section
+          // Titre de section avec icône et fond coloré
+          doc.setFillColor(238, 242, 255); // Fond bleu très clair
+          doc.roundedRect(marginLeft, yPosition - 5, 180, 10, 3, 3, 'F');
           doc.setFontSize(12);
           doc.setTextColor(primaryColor);
           doc.setFont('helvetica', 'bold');
-          doc.text(section.title, marginLeft, yPosition);
-          yPosition += 10;
+          doc.text(` ${section.title}`, marginLeft + 5, yPosition);
+          yPosition += 12;
 
           // Contenu de section
           doc.setFontSize(10);
@@ -862,36 +886,56 @@ private getWeekNumber(date: Date): string {
               yPosition = 20;
             }
 
+            // Label en gras
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(textColor);
             doc.text(`${field.label}:`, marginLeft, yPosition);
 
+            // Valeur avec couleur spécifique
             if (field.special === 'status') {
               const statusColor = this.getStatusColor(field.value);
               doc.setTextColor(statusColor);
-              doc.text(field.value, marginLeft + labelWidth, yPosition);
-              doc.setTextColor('#000000');
             } else {
-              doc.setFont('helvetica', 'normal');
-              doc.text(field.value, marginLeft + labelWidth, yPosition);
+              doc.setTextColor(field.color || textColor);
             }
+            
+            doc.setFont('helvetica', 'normal');
+            
+            // Gestion des textes longs avec splitTextToSize
+            const valueLines = doc.splitTextToSize(field.value, 120);
+            doc.text(valueLines, marginLeft + labelWidth, yPosition);
+            
+            // Ajustement de la position Y en fonction du nombre de lignes
+            yPosition += Math.max(7, valueLines.length * 7);
 
-            yPosition += 7;
+            doc.setTextColor(textColor); // Réinitialisation à la couleur noire
           }
 
           yPosition += 10; // Espace entre sections
+          
+          // Ligne de séparation fine entre sections
+          doc.setDrawColor(secondaryColor);
+          doc.setLineWidth(0.2);
+          doc.line(marginLeft, yPosition - 5, 195, yPosition - 5);
         }
 
-        // E. Pied de page
+        // 5. Pied de page stylisé
         doc.setFontSize(8);
         doc.setTextColor(secondaryColor);
-        doc.text(`Document gÃ©nÃ©rÃ© le ${new Date().toLocaleDateString()} - Systeme de Gestion des Equipements H.U.I.R`, 105, 285, { align: 'center' });
+        doc.setFont('helvetica', 'italic');
+        doc.text(`Document généré le ${new Date().toLocaleDateString()} - Système de Gestion des Equipements H.U.I.R`, 105, 285, { align: 'center' });
+        
+        // Ligne de séparation du pied de page
+        doc.setDrawColor(primaryColor);
+        doc.setLineWidth(0.3);
+        doc.line(marginLeft, 280, 195, 280);
 
-        // F. Sauvegarde du PDF
+        // 6. Sauvegarde du PDF
         doc.save(`fiche_technique_${equipment.nom?.replace(/\s+/g, '_') || 'equipement'}.pdf`);
 
       } catch (error) {
-        console.error('Erreur lors de la generation du PDF:', error);
-        // Fallback sans image si Ã©chec
+        console.error('Erreur lors de la génération du PDF:', error);
+        // Fallback sans image si échec
         this.generateSimplePDF(doc, equipment);
       }
     })();
@@ -910,9 +954,9 @@ private getWeekNumber(date: Date): string {
 
   // Fallback si Ã©chec du PDF complet
   private generateSimplePDF(doc: jsPDF, equipment: Equipement): void {
-    doc.text('FICHE Ã‰QUIPEMENT SIMPLIFIÃ‰E', 20, 20);
+    doc.text('FICHE EQUIPEMENT SIMPLIFIE', 20, 20);
     doc.text(`Nom: ${equipment.nom || 'N/A'}`, 20, 30);
-    doc.text(`NumÃ©ro de sÃ©rie: ${equipment.numeroSerie || 'N/A'}`, 20, 40);
+    doc.text(`Numero de serie: ${equipment.numeroSerie || 'N/A'}`, 20, 40);
     doc.save(`fiche_simple_${equipment.nom?.replace(/\s+/g, '_') || 'equipement'}.pdf`);
   }
 

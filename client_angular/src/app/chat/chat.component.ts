@@ -28,6 +28,9 @@ import { WebSocketService } from '../services/WebSocketService';
 })
 export class ChatComponent implements OnInit {
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
+    @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+
+  selectedFile: File | null = null;
   
 
   chatForm: FormGroup;
@@ -69,7 +72,48 @@ private unreadMessages: {[key: string]: number} = {};
       message: ['', Validators.required]
     });
   }
+ // Ouvre le sélecteur de fichiers
+  triggerFileInput(): void {
+    this.fileInput.nativeElement.click();
+  }
+onFileSelected(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    this.selectedFile = input.files[0];
+    console.log('Fichier sélectionné :', this.selectedFile);
 
+    const formData = new FormData();
+    formData.append('file', this.selectedFile);
+
+    this.chatService.uploadFile(formData).subscribe({
+      next: (response) => {
+        console.log('Fichier envoyé avec succès :', response);
+
+        const message: ChatMessage = {
+          sender: this.username,
+          receiver: this.receiver,
+          content: `[Fichier envoyé] ${this.selectedFile!.name}`,
+          type: 'FILE',
+        // file: response.fileUrl // Assurez-vous que le backend retourne cette valeur
+        };
+
+        this.webSocketService.sendPrivateMessage(message);
+
+        this.chatService.sendChatMessage(message).subscribe((msg) => {
+          this.messages.push(msg);
+          this.filteredMessages.push(msg);
+          this.scrollToBottom();
+          this.cdr.detectChanges();
+        });
+      },
+      error: (error) => {
+        console.error('Erreur lors de l’envoi du fichier :', error);
+      }
+    });
+  }
+}
+
+ 
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
     if (user) {
@@ -79,26 +123,29 @@ private unreadMessages: {[key: string]: number} = {};
       this.webSocketService.connect();
 
       this.webSocketService.onMessage().subscribe((newMessage: ChatMessage) => {
-        // Ajoute TOUJOURS dans tous les messages
-        this.messages.push(newMessage);
-      
-        // Si le nouveau message concerne la conversation ouverte
-        if (newMessage.receiver === this.username) {
-          // Si ce n'est pas la conversation active ou si l'expéditeur est différent
-          if (this.receiver !== newMessage.sender) {
-            this.incrementUnreadCount(newMessage.sender);
-            this.showNewMessageNotification(newMessage);
-          }
-        }
-       // if (
-         // (newMessage.sender === this.username && newMessage.receiver === this.receiver) ||
-          //(newMessage.sender === this.receiver && newMessage.receiver === this.username)
-        //) {
-          //this.filteredMessages.push(newMessage);
-          //this.scrollToBottom();
-          //this.cdr.detectChanges();
-        //}
-      }); 
+  // On ajoute toujours le message dans la liste complète
+  this.messages.push(newMessage);
+
+  // Si le message appartient à la conversation ouverte (avec selectedUser)
+  if (
+    (newMessage.sender === this.username && newMessage.receiver === this.receiver) ||
+    (newMessage.sender === this.receiver && newMessage.receiver === this.username)
+  ) {
+    // Ajoute le message dans les messages filtrés visibles
+    this.filteredMessages.push(newMessage);
+
+    // Scroll direct en bas pour voir le nouveau message
+    this.scrollToBottom();
+
+    // Demande à Angular de détecter le changement et rafraichir l’affichage
+    this.cdr.detectChanges();
+  } else if (newMessage.receiver === this.username) {
+    // Sinon, message pour moi mais d’une autre conversation : incrémenter notifications
+    this.incrementUnreadCount(newMessage.sender);
+    this.showNewMessageNotification(newMessage);
+  }
+});
+
       
 
     } else {
@@ -116,9 +163,23 @@ document.addEventListener('visibilitychange', () => {
 
     this.loadUsers();
     this.loadMessages();
-    this.originalMessages = [...this.filteredMessages];
     
+    this.originalMessages = [...this.filteredMessages];
+this.messages = this.messages
+  .filter(msg => msg.timestamp !== undefined) // ignore les messages sans date
+  .sort((a, b) => new Date(a.timestamp!).getTime() - new Date(b.timestamp!).getTime());
+
+this.filteredMessages = [...this.messages];
+this.originalMessages = [...this.messages];
+ 
+      setInterval(() => {
+    this.loadMessages();
+  }, 1000); // rafraîchit toutes les secondes (1000 ms)
+
   }
+
+
+  
   public clearNotifications(): void {
     this.notificationCount = 0;
     this.showNotificationBadge = false;
@@ -164,18 +225,20 @@ document.addEventListener('visibilitychange', () => {
     }
   }
   
-  filterMessages() {
-    if (!this.searchQuery.trim()) {
-      this.filteredMessages = [...this.originalMessages];
-      return;
-    }
-  
-    const query = this.searchQuery.toLowerCase();
-    this.filteredMessages = this.originalMessages.filter(msg =>
-      msg.content.toLowerCase().includes(query)
-    );
+filterMessages() {
+  if (!this.searchQuery.trim()) {
+    this.filteredMessages = [...this.originalMessages];
+    return;
   }
-  
+
+  const query = this.searchQuery.toLowerCase();
+
+  this.filteredMessages = this.originalMessages
+    .filter(msg => msg.content.toLowerCase().includes(query) && msg.timestamp) // assure que timestamp existe
+    .sort((a, b) => new Date(a.timestamp!).getTime() - new Date(b.timestamp!).getTime()); // safe car filtré avant
+}
+
+
   resetMessages() {
     if (this.originalMessages.length > 0) {
       this.filteredMessages = [...this.originalMessages];
@@ -189,11 +252,12 @@ document.addEventListener('visibilitychange', () => {
   }
   
 
-  private scrollToBottom(): void {
-    try {
-      this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
-    } catch (err) {}
-  }
+private scrollToBottom(): void {
+  try {
+    this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
+  } catch (err) {}
+}
+
 
   get filteredUsers() {
     if (!this.userSearchText) return this.users;
@@ -238,15 +302,18 @@ document.addEventListener('visibilitychange', () => {
   }
 
   applyMessageFilter(): void {
-    if (this.username && this.receiver) {
-      this.filteredMessages = this.messages.filter(msg =>
+  if (this.username && this.receiver) {
+    this.filteredMessages = this.messages
+      .filter(msg =>
         (msg.sender === this.username && msg.receiver === this.receiver) ||
         (msg.sender === this.receiver && msg.receiver === this.username)
-      );
-    } else {
-      this.filteredMessages = [];
-    }
+      )
+      .sort((a, b) => new Date(a.timestamp!).getTime() - new Date(b.timestamp!).getTime()); // tri ici
+  } else {
+    this.filteredMessages = [];
   }
+}
+
   getAvatarColor(username: string): string {
     const colors = [
       '#FF5733', '#33FF57', '#3357FF', '#F333FF', 

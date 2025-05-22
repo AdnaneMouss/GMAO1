@@ -112,10 +112,19 @@
     <!-- Zone de saisie -->
     <form class="chat-input" *ngIf="selectedUser" [formGroup]="chatForm" (ngSubmit)="sendMessage()">
 
-        <button mat-icon-button type="button">
-          <mat-icon>attach_file</mat-icon>
-        </button>
-    
+        <!-- Bouton pour ouvrir le sélecteur de fichiers -->
+<button mat-icon-button type="button" (click)="triggerFileInput()">
+  <mat-icon>attach_file</mat-icon>
+</button>
+
+<!-- Input caché pour sélectionner un fichier -->
+<input
+  type="file"
+  #fileInput
+  style="display: none"
+  (change)="onFileSelected($event)"
+/>
+
         <mat-form-field style="flex: 1; margin: 0 8px;">
           <textarea matInput
                     formControlName="message"

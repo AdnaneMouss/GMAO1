@@ -1,9 +1,12 @@
 package com.huir.GmaoApp.repository;
 
 import com.huir.GmaoApp.model.*;
+
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,5 +29,8 @@ public interface EquipementRepository extends JpaRepository<Equipement, Long> {
     boolean existsByEtage(Etage etage);
 
     boolean existsBySalle(Salle salle);
+  
+   
+    
+    
 }
-

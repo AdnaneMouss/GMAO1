@@ -86,5 +86,10 @@ export class UserService {
     return this.http.put<void>(`${this.apiUrl}/deactivate/${id}`, {});
   }
 
+  exportUserPDF(userId: number): Observable<Blob> {
+  return this.http.get(`/api/pdf/user/${userId}`, { responseType: 'blob' });
+}
+
+
 
 }

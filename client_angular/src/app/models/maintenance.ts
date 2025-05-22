@@ -45,7 +45,7 @@ export interface maintenance{
   'ANNUEL';
   startDaterep: Date; 
   endDaterep: Date; 
-  daterepetition?:Date;
+  daterepetition?:Date[];
   nextRepetitionDates?: Date[];
   RepetitionType:RepetitionType;
   repetition:number;
@@ -58,7 +58,12 @@ export interface maintenance{
   equipementBatiment: string;
   equipementSalle: number;
   equipementEtage: number;
-  nextRepetitionDatesAsList?: string[];
+  nextRepetitionDatesString?: string[];
+
+
+  dateCreation: string; // ISO 8601 format date string
+  dateCloture?: string; // ISO 8601 format date string, optional
+  dateCommencement?: string; // ISO 8601 format date string, optional
 
   
    

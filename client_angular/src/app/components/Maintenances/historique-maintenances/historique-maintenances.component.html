@@ -6,6 +6,8 @@
       <h2 class="text-3xl font-bold text-white">Historique des Maintenances Terminées</h2>
     </div>
     <p class="text-green-100 text-center mt-2">Consultez l'ensemble des interventions clôturées</p>
+
+    
   </div>
 
   <!-- Message d'erreur -->
@@ -28,6 +30,12 @@
         <p class="text-2xl font-bold">{{ terminatedMaintenances.length }}</p>
       </div>
     </div>
+<div style="text-align: left; margin-bottom: 50px;">
+  <button mat-raised-button color="primary" (click)="goToPreventiveMaintenance()" style=" color: rgb(54, 168, 96);">
+    ← Back to Préventive
+  </button>
+</div>
+
     
     <div class="flex items-center space-x-4">
       <div class="flex items-center">
@@ -39,7 +47,7 @@
             [class.text-white]="sortField === 'date' && sortOrder === 'recent'"
             [class.bg-gray-100]="sortField !== 'date' || sortOrder !== 'recent'"
             class="px-4 py-2 text-sm font-medium rounded-l-lg border border-gray-300 hover:bg-gray-50 focus:z-10 focus:ring-2 focus:ring-blue-500 focus:bg-blue-100 transition-all">
-            <i class="fas fa-arrow-down mr-2"></i>Récentes
+            <i class="fas fa-arrow-up mr-2"></i> recentes
           </button>
           <button 
             (click)="sortByDate('oldest')"
@@ -47,7 +55,7 @@
             [class.text-white]="sortField === 'date' && sortOrder === 'oldest'"
             [class.bg-gray-100]="sortField !== 'date' || sortOrder !== 'oldest'"
             class="px-4 py-2 text-sm font-medium rounded-r-lg border border-gray-300 hover:bg-gray-50 focus:z-10 focus:ring-2 focus:ring-blue-500 focus:bg-blue-100 transition-all">
-            <i class="fas fa-arrow-up mr-2"></i>Anciennes
+            <i class="fas fa-arrow-down mr-2"></i>anciene 
           </button>
         </div>
       </div>

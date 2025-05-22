@@ -3,6 +3,7 @@ package com.huir.GmaoApp.service;
 
 import com.huir.GmaoApp.dto.AttributEquipementValeurDTO;
 import com.huir.GmaoApp.dto.EquipementDTO;
+import com.huir.GmaoApp.dto.StatsDTO;
 import com.huir.GmaoApp.dto.UserDTO;
 import com.huir.GmaoApp.model.*;
 import com.huir.GmaoApp.repository.*;
@@ -11,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -232,6 +235,8 @@ public class EquipementService {
             throw new EntityNotFoundException("Equipement not found");
         }
     }
+    
+    
 
 
 

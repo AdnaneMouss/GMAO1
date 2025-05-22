@@ -66,6 +66,7 @@ import { TachesPreventivesAffecteeComponent } from './components/Interventions/t
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common'; // <- pour les pipes slice, uppercase, date
 
+
 import { MatInputModule } from '@angular/material/input';
 import { DetailsHistoComponent } from './details-histo/details-histo.component';
 import { LotAchatPieceComponent } from './components/Stocks/lot-achat-piece/lot-achat-piece.component';
@@ -126,6 +127,7 @@ import { EquipementsParSalleComponent } from './components/Equipements/equipemen
     BrowserAnimationsModule,
     MatSidenavModule,
     MatToolbarModule,
+    FormsModule,
     ReactiveFormsModule, // Required for formGroup
     CommonModule,
     ReactiveFormsModule,

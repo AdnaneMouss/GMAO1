@@ -31,6 +31,7 @@ public class InterventionDTO {
     private List<PhotosInterventionDTO> photos;
     private List<InterventionPieceDetacheeDTO> piecesDetachees;
     private String remarques;
+    private String maintenanceType;
 
 
     public InterventionDTO(Intervention intervention) {
@@ -45,7 +46,20 @@ public class InterventionDTO {
                 intervention.getMaintenanceCorrective().getEquipement().getNom() != null)
                 ? intervention.getMaintenanceCorrective().getEquipement().getNom()
                 : null;
+                
+                this.id = intervention.getId();
+                this.technicienId = intervention.getTechnicien() != null ? intervention.getTechnicien().getId() : null;
+                this.typeIntervention = intervention.getType() != null ? intervention.getType().name() : null;
+                this.description = intervention.getDescription();
+                this.duree = intervention.getDuree();
+                this.remarques = intervention.getRemarques();
+                this.equipementMaintenu = (intervention.getMaintenance() != null &&
+                        intervention.getMaintenance().getEquipement() != null &&
+                        intervention.getMaintenance().getEquipement().getNom() != null)
+                        ? intervention.getMaintenance().getEquipement().getNom()
+                        : null;
 
+                
         // Map photos if available
         this.photos = intervention.getPhotos() != null
                 ? intervention.getPhotos().stream()
@@ -80,6 +94,26 @@ public class InterventionDTO {
         this.dateCreation = intervention.getMaintenanceCorrective() != null && intervention.getMaintenanceCorrective().getDateCreation() != null
                 ? intervention.getMaintenanceCorrective().getDateCreation().toString() // Convert LocalDateTime to String
                 : null;
+                
+                
+                
+                
+                this.maintenanceId = intervention.getMaintenance() != null
+                        ? intervention.getMaintenance().getId()
+                        : null;
+
+                // Maintenance status
+                this.maintenanceStatut = intervention.getMaintenance() != null
+                        ? intervention.getMaintenance().getStatut().name()
+                        : null;
+
+                // Maintenance priority (added the missing field)
+                this.maintenancePriorite = intervention.getMaintenance() != null
+                        ? intervention.getMaintenance().getPriorite().name() // Assuming Priorite is an enum
+                        : null;
+
+              
+          
 
         this.piecesDetachees = intervention.getInterventionPieces() != null
                 ? intervention.getInterventionPieces().stream()
@@ -94,4 +128,166 @@ public class InterventionDTO {
 
 
     }
+
+
+	public Long getId() {
+		return id;
+	}
+
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+
+	public Long getTechnicienId() {
+		return technicienId;
+	}
+
+
+	public void setTechnicienId(Long technicienId) {
+		this.technicienId = technicienId;
+	}
+
+
+	public String getTypeIntervention() {
+		return typeIntervention;
+	}
+
+
+	public void setTypeIntervention(String typeIntervention) {
+		this.typeIntervention = typeIntervention;
+	}
+
+
+	public String getDescription() {
+		return description;
+	}
+
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+
+	public Long getDuree() {
+		return duree;
+	}
+
+
+	public void setDuree(Long duree) {
+		this.duree = duree;
+	}
+
+
+	public Long getMaintenanceId() {
+		return maintenanceId;
+	}
+
+
+	public void setMaintenanceId(Long maintenanceId) {
+		this.maintenanceId = maintenanceId;
+	}
+
+
+	public String getMaintenanceStatut() {
+		return maintenanceStatut;
+	}
+
+
+	public void setMaintenanceStatut(String maintenanceStatut) {
+		this.maintenanceStatut = maintenanceStatut;
+	}
+
+
+	public String getMaintenancePriorite() {
+		return maintenancePriorite;
+	}
+
+
+	public void setMaintenancePriorite(String maintenancePriorite) {
+		this.maintenancePriorite = maintenancePriorite;
+	}
+
+
+	public String getEquipementMaintenu() {
+		return equipementMaintenu;
+	}
+
+
+	public void setEquipementMaintenu(String equipementMaintenu) {
+		this.equipementMaintenu = equipementMaintenu;
+	}
+
+
+	public String getDateCommencement() {
+		return dateCommencement;
+	}
+
+
+	public void setDateCommencement(String dateCommencement) {
+		this.dateCommencement = dateCommencement;
+	}
+
+
+	public String getDateCloture() {
+		return dateCloture;
+	}
+
+
+	public void setDateCloture(String dateCloture) {
+		this.dateCloture = dateCloture;
+	}
+
+
+	public String getDateCreation() {
+		return dateCreation;
+	}
+
+
+	public void setDateCreation(String dateCreation) {
+		this.dateCreation = dateCreation;
+	}
+
+
+	public List<PhotosInterventionDTO> getPhotos() {
+		return photos;
+	}
+
+
+	public void setPhotos(List<PhotosInterventionDTO> photos) {
+		this.photos = photos;
+	}
+
+
+	public List<InterventionPieceDetacheeDTO> getPiecesDetachees() {
+		return piecesDetachees;
+	}
+
+
+	public void setPiecesDetachees(List<InterventionPieceDetacheeDTO> piecesDetachees) {
+		this.piecesDetachees = piecesDetachees;
+	}
+
+
+	public String getRemarques() {
+		return remarques;
+	}
+
+
+	public void setRemarques(String remarques) {
+		this.remarques = remarques;
+	}
+
+
+	public String getMaintenanceType() {
+		return maintenanceType;
+	}
+
+
+	public void setMaintenanceType(String maintenanceType) {
+		this.maintenanceType = maintenanceType;
+	}
+    
+    
 }

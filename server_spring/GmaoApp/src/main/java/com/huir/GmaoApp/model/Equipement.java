@@ -81,6 +81,182 @@ public class Equipement {
     @OneToMany(mappedBy = "equipement", fetch = FetchType.EAGER)
     private List<Maintenance> maintenances;
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
+	}
+
+	public String getNom() {
+		return nom;
+	}
+
+	public void setNom(String nom) {
+		this.nom = nom;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getNumeroSerie() {
+		return numeroSerie;
+	}
+
+	public void setNumeroSerie(String numeroSerie) {
+		this.numeroSerie = numeroSerie;
+	}
+
+	public String getModele() {
+		return modele;
+	}
+
+	public void setModele(String modele) {
+		this.modele = modele;
+	}
+
+	public String getMarque() {
+		return marque;
+	}
+
+	public void setMarque(String marque) {
+		this.marque = marque;
+	}
+
+	public StatutEquipement getStatut() {
+		return statut;
+	}
+
+	public void setStatut(StatutEquipement statut) {
+		this.statut = statut;
+	}
+
+	public boolean isActif() {
+		return actif;
+	}
+
+	public void setActif(boolean actif) {
+		this.actif = actif;
+	}
+
+	public LocalDate getDateAchat() {
+		return dateAchat;
+	}
+
+	public void setDateAchat(LocalDate dateAchat) {
+		this.dateAchat = dateAchat;
+	}
+
+	public String getGarantie() {
+		return garantie;
+	}
+
+	public void setGarantie(String garantie) {
+		this.garantie = garantie;
+	}
+
+	public LocalDate getDateDerniereMaintenance() {
+		return dateDerniereMaintenance;
+	}
+
+	public void setDateDerniereMaintenance(LocalDate dateDerniereMaintenance) {
+		this.dateDerniereMaintenance = dateDerniereMaintenance;
+	}
+
+	public Double getCoutAchat() {
+		return coutAchat;
+	}
+
+	public void setCoutAchat(Double coutAchat) {
+		this.coutAchat = coutAchat;
+	}
+
+	public String getLabelSuivi() {
+		return labelSuivi;
+	}
+
+	public void setLabelSuivi(String labelSuivi) {
+		this.labelSuivi = labelSuivi;
+	}
+
+	public double getValeurSuivi() {
+		return valeurSuivi;
+	}
+
+	public void setValeurSuivi(double valeurSuivi) {
+		this.valeurSuivi = valeurSuivi;
+	}
+
+	public TypesEquipements getTypeEquipement() {
+		return typeEquipement;
+	}
+
+	public void setTypeEquipement(TypesEquipements typeEquipement) {
+		this.typeEquipement = typeEquipement;
+	}
+
+	public Services getService() {
+		return service;
+	}
+
+	public void setService(Services service) {
+		this.service = service;
+	}
+
+	public Salle getSalle() {
+		return salle;
+	}
+
+	public void setSalle(Salle salle) {
+		this.salle = salle;
+	}
+
+	public Etage getEtage() {
+		return etage;
+	}
+
+	public void setEtage(Etage etage) {
+		this.etage = etage;
+	}
+
+	public Batiment getBatiment() {
+		return batiment;
+	}
+
+	public void setBatiment(Batiment batiment) {
+		this.batiment = batiment;
+	}
+
+	public List<MaintenanceCorrective> getMaintenanceCorrectives() {
+		return maintenanceCorrectives;
+	}
+
+	public void setMaintenanceCorrectives(List<MaintenanceCorrective> maintenanceCorrectives) {
+		this.maintenanceCorrectives = maintenanceCorrectives;
+	}
+
+	public List<Maintenance> getMaintenances() {
+		return maintenances;
+	}
+
+	public void setMaintenances(List<Maintenance> maintenances) {
+		this.maintenances = maintenances;
+	}
+
 
     
     

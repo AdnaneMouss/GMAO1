@@ -7,6 +7,7 @@ import { Intervention } from "../../../models/intervention";
 import {PieceDetachee} from "../../../models/piece-detachee";
 import {PieceDetacheeService} from "../../../services/piece-detachee.service";
 
+
 @Component({
   selector: 'app-taches-affectees',
   templateUrl: './taches-affectees.component.html',

@@ -14,7 +14,7 @@ import {InterventionPieceDetachee} from "../../../models/intervention-pieces";
 })
 export class InterventionsPrecedentesComponent implements OnInit {
   filters = {
-    typeIntervention: '',
+    typeIntervention: 'CORRECTIVE',
     equipementMaintenu:'',
     priorite: '',
     startDate: null,
@@ -92,16 +92,17 @@ export class InterventionsPrecedentesComponent implements OnInit {
     return `${environment.apiUrl}${imagePath}`;
   }
 
+  
   filteredInterventions() {
-    return this.interventions.filter(intervention => {
+  return this.interventions.filter(intervention => {
+    return (
+      (this.filters.equipementMaintenu ? intervention.equipementMaintenu.toLowerCase().includes(this.filters.equipementMaintenu.toLowerCase()) : true) &&
+      (this.filters.priorite ? intervention.maintenancePriorite.toLowerCase().includes(this.filters.priorite.toLowerCase()) : true) &&
+      (this.filters.typeIntervention ? intervention.typeIntervention.toLowerCase().includes(this.filters.typeIntervention.toLowerCase()) : true)
+    );
+  });
+}
 
-      return (
-   (this.filters.equipementMaintenu ? intervention.equipementMaintenu.toLowerCase().includes(this.filters.equipementMaintenu.toLowerCase()) : true) &&
-    (this.filters.priorite ? intervention.maintenancePriorite.toLowerCase().includes(this.filters.priorite.toLowerCase()) : true) &&
-    (this.filters.typeIntervention ? intervention.typeIntervention.toLowerCase().includes(this.filters.priorite.toLowerCase()) : true)
-      );
-    });
-  }
 
 
   formatDateWithIntl(date: string | undefined): string {

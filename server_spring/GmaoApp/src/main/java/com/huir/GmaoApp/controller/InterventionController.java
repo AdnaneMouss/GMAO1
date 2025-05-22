@@ -5,6 +5,7 @@ import com.huir.GmaoApp.dto.InterventionPieceDetacheeDTO;
 import com.huir.GmaoApp.model.*;
 import com.huir.GmaoApp.repository.InterventionPieceDetacheeRepository;
 import com.huir.GmaoApp.repository.MaintenanceCorrectiveRepository;
+import com.huir.GmaoApp.repository.MaintenanceRepository;
 import com.huir.GmaoApp.repository.PieceDetacheeRepository;
 import com.huir.GmaoApp.service.InterventionService;
 import com.huir.GmaoApp.service.MaintenanceCorrectiveService;
@@ -34,6 +35,9 @@ public class InterventionController {
     @Autowired
     private MaintenanceCorrectiveRepository maintenanceCorrectiveRepository;
     @Autowired
+    private MaintenanceRepository maintenanceRepository;
+
+    @Autowired
     private PieceDetacheeRepository pieceDetacheeRepository;
     @Autowired
     private InterventionPieceDetacheeRepository interventionPieceDetacheeRepository;
@@ -50,7 +54,8 @@ public class InterventionController {
         return interventionService.getInterventionsByTechnicien(technicienId);
     }
 
-    @GetMapping("/{interventionId}/pieces-detachees")
+   @GetMapping("/{interventionId}/pieces-detachees")
+    //@GetMapping("/{interventionId}/pieces")
     public ResponseEntity<List<InterventionPieceDetacheeDTO>> getPiecesByInterventionId(@PathVariable Long interventionId) {
         List<InterventionPieceDetachee> interventionPieces = interventionPieceDetacheeRepository.findByInterventionId(interventionId);
 
@@ -65,6 +70,9 @@ public class InterventionController {
 
         return ResponseEntity.ok(dtos);
     }
+   
+
+
 
 
 
@@ -162,4 +170,86 @@ public class InterventionController {
         interventionService.deleteIntervention(id);
         return ResponseEntity.noContent().build();
     }
+    /////
+    
+    @PostMapping("/createP")
+    public ResponseEntity<?> createInterventionP(
+            @RequestParam(value = "files", required = false) MultipartFile[] files,
+            @RequestParam(value = "description") String description,
+            @RequestParam(value = "remarques", required = false) String remarques,
+            @RequestParam("maintenanceId") Long maintenanceId,
+            @RequestParam("technicienId") Long technicienId,
+            @RequestParam("piecesDetachees") List<Long> pieceDetacheesIds,
+            @RequestParam("quantites") List<Integer> quantites) {
+
+        try {
+            // Vérifie la maintenance
+            Maintenance maintenance = maintenanceRepository.findById(maintenanceId)
+                    .orElseThrow(() -> new RuntimeException("Maintenance not found"));
+
+            // Crée l'intervention
+            Intervention intervention = new Intervention();
+            intervention.setDescription(description);
+            intervention.setRemarques(remarques);
+            intervention.setType(TypeIntervention.PREVENTIVE);
+
+            // Lien avec technicien
+            User technicien = new User();
+            technicien.setId(technicienId);
+            intervention.setTechnicien(technicien);
+            intervention.setMaintenance(maintenance);
+
+            // Gestion des fichiers (photos)
+            List<PhotosIntervention> photos = new ArrayList<>();
+            if (files != null && files.length > 0) {
+                for (MultipartFile file : files) {
+                    if (!file.isEmpty()) {
+                        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                        Path filePath = Paths.get("uploads", fileName);
+                        Files.createDirectories(filePath.getParent());
+                        Files.write(filePath, file.getBytes());
+
+                        PhotosIntervention photo = new PhotosIntervention();
+                        photo.setUrl(fileName);
+                        photo.setIntervention(intervention); // Lien photo -> intervention
+                        photos.add(photo);
+                    }
+                }
+            }
+
+            intervention.setPhotos(photos);
+
+            // 💾 ENREGISTREMENT de l'intervention AVANT d'ajouter les pièces
+            Intervention savedIntervention = interventionService.save(intervention);
+
+            // 🔄 Ajout des pièces détachées
+            List<PieceDetachee> pieceDetachees = pieceDetacheeRepository.findAllById(pieceDetacheesIds);
+            List<InterventionPieceDetachee> interventionPieces = new ArrayList<>();
+
+            for (int i = 0; i < pieceDetachees.size(); i++) {
+                PieceDetachee piece = pieceDetachees.get(i);
+                Integer quantityUsed = quantites.get(i);
+
+                InterventionPieceDetachee interventionPiece = new InterventionPieceDetachee();
+                interventionPiece.setIntervention(savedIntervention); // Maintenant elle est bien persistée
+                interventionPiece.setPieceDetachee(piece);
+                interventionPiece.setQuantiteUtilisee(quantityUsed);
+
+                interventionPieces.add(interventionPiece);
+            }
+
+            // 💾 Sauvegarde des relations avec pièces détachées
+            interventionPieceDetacheeRepository.saveAll(interventionPieces);
+
+            // 🎁 Retour DTO
+            InterventionDTO savedInterventionDTO = new InterventionDTO(savedIntervention);
+            return ResponseEntity.ok(savedInterventionDTO);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Image upload failed");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur: " + e.getMessage());
+        }
+    }
+
 }

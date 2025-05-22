@@ -31,7 +31,7 @@ import com.huir.GmaoApp.dto.MaintenanceCorrectiveDTO;
 import com.huir.GmaoApp.dto.MaintenanceDTO;
 import com.huir.GmaoApp.dto.UserDTO;
 import com.huir.GmaoApp.model.Equipement;
-import com.huir.GmaoApp.model.Maintenance;
+import com.huir.GmaoApp.model.*;
 import com.huir.GmaoApp.model.MaintenanceCorrective;
 import com.huir.GmaoApp.model.Priorite;
 import com.huir.GmaoApp.model.Statut;
@@ -51,6 +51,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory; 
 
@@ -73,10 +75,14 @@ public class MaintenanceController {
     private MaintenanceService maintenanceService;
 
     // Récupérer toutes les maintenances   
+
     @GetMapping
-    public List<Maintenance> getAllMaintenances() {
-        return maintenanceService.findAllMaintenances();
+    public List<MaintenanceDTO> getAllServices() {
+        return maintenanceService.findAllMaintenances().stream()
+                .map(MaintenanceDTO::new)
+                .collect(Collectors.toList());
     }
+
     // Get  by ID
     @GetMapping("/{id}")
     public ResponseEntity<Maintenance> getMaintenancesById(@PathVariable Long id) {
@@ -113,14 +119,22 @@ public class MaintenanceController {
   //ethode de  batiment 
     
     @PutMapping("/{id}/complete")
-    public ResponseEntity<Maintenance> markAsCompleted(@PathVariable Long id) {
-        Maintenance updatedMaintenance = maintenanceService.markAsCompleted(id);
-        if (updatedMaintenance != null) {
-            return ResponseEntity.ok(updatedMaintenance);
-        } else {
-            return ResponseEntity.status(400).body(null); // Si la maintenance n'est pas trouvée ou ne peut être terminée
+    public ResponseEntity<?> markAsCompleted(@PathVariable Long id) {
+        try {
+            Maintenance updatedMaintenance = maintenanceService.markAsCompleted(id);
+            if (updatedMaintenance != null) {
+                return ResponseEntity.ok(updatedMaintenance);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Maintenance with id " + id + " not found or cannot be completed.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // Log l’exception complète
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("An error occurred: " + e.getMessage());
         }
     }
+
     
     @PutMapping("/{id}/start")
     public ResponseEntity<Maintenance> startTask(@PathVariable Long id) {
@@ -194,9 +208,9 @@ public class MaintenanceController {
         return maintenanceService.verifierSeuilMaintenance(nomIndice);
     }
     
-    @GetMapping("/Technicien/{technicien_maintenance_id_id}")
-    public List<MaintenanceDTO> getInterventionsByTechnicien(@PathVariable Long technicien_maintenance_id_id) {
-        return maintenanceService.getMaintenancesByTechnicien(technicien_maintenance_id_id);
+    @GetMapping("/Technicien/{userId}")
+    public List<MaintenanceDTO> getInterventionsByTechnicien(@PathVariable Long userId) {
+        return maintenanceService.getMaintenancesByTechnicien(userId);
     }
 
     @GetMapping("/technician/workload/{id}")

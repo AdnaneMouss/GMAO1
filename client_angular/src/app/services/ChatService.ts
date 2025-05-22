@@ -16,7 +16,9 @@ export class ChatService {
   sendChatMessage(message: ChatMessage): Observable<ChatMessage> {
     return this.http.post<ChatMessage>(`${this.apiUrl}/send`, message);
   }
-
+uploadFile(fileData: FormData): Observable<{ fileUrl: string }> {
+  return this.http.post<{ fileUrl: string }>(`${this.apiUrl}/upload`, fileData);
+}
   getChatHistory(): Observable<ChatMessage[]> {
     return this.http.get<ChatMessage[]>(`${this.apiUrl}/history`);
   }

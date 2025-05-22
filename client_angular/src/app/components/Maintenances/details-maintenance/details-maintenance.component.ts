@@ -106,12 +106,13 @@ export class DetailsMaintenanceComponent implements OnInit {
     repetition: 0,
     seuil: 0,
     equipementId: 0,
-    equipementNom:'',
+    equipementNom: '',
 
     RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
     message: '',
     NonSeuil: '',
-    equipementBatiment: "", equipementEtage: 0, equipementSalle: 0
+    equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
+    dateCreation: ''
   };
   errorMessage: string = '';
   isEditMode: boolean = false;  // Mode édition

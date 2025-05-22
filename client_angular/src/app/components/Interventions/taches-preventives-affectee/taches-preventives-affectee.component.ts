@@ -135,7 +135,7 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
 
 generatedDates: Date[] = [];
 showEmptyPage = false; // Contrôle l'affichage de la page vide
-  selectedPieces: { id: number; nom: string; quantite: number }[] = [];
+selectedPieces: number[] = [];
   pieceSearch: string = '';
 
 
@@ -147,16 +147,8 @@ showEmptyPage = false; // Contrôle l'affichage de la page vide
 
 
 
- onAddPiece(pieceId: string): void {
-    const id = +pieceId;
-    const selected = this.piecesList.find(p => p.id === id);
-    if (selected && !this.isPieceSelected(id)) {
-      this.selectedPieces.push({ ...selected, quantite: 1 });
-    }
-  }
-   isPieceSelected(pieceId: number): boolean {
-    return this.selectedPieces.some(p => p.id === +pieceId);
-  }
+
+   
 
   removePiece(index: number): void {
     this.selectedPieces.splice(index, 1);
@@ -298,7 +290,7 @@ onAttributChange(attribut: any) {
     seuil: 0,
     endDaterep: new Date(''),
     equipementId: null,
-    equipementNom:'',
+    equipementNom: '',
 
 
     indicateurs: [],
@@ -315,7 +307,8 @@ onAttributChange(attribut: any) {
     RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
     message: '',
     NonSeuil: '',
-    equipementBatiment: "", equipementEtage: 0, equipementSalle: 0
+    equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
+    dateCreation: ''
   };
 
 
@@ -346,7 +339,7 @@ onAttributChange(attribut: any) {
 
 
 
-  nextRepetitionDates:  string | Date[] = [];
+  nextRepetitionDates:   Date[] = [];
 
 
 
@@ -402,7 +395,7 @@ onAttributChange(attribut: any) {
       const debutAujourdhui = m.dateDebutPrevue?.startsWith(aujourdhui.toISOString().split('T')[0]);
 
       // 2. Filtre pour les dates de répétition aujourd'hui
-      const repetitionAujourdhui = m.nextRepetitionDates?.some((date: string | Date) => {
+      const repetitionAujourdhui = m.nextRepetitionDatesString?.some((date: string | Date) => {
         // Convertit la date en string si c'est un objet Date
         const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
 
@@ -414,6 +407,25 @@ onAttributChange(attribut: any) {
       return debutAujourdhui || repetitionAujourdhui;
     });
   }
+
+  openedGroups: { [id: number]: boolean } = {};
+
+toggleGroup(id: number): void {
+  this.openedGroups[id] = !this.openedGroups[id];
+}
+
+isGroupOpen(id: number): boolean {
+  return !!this.openedGroups[id];
+}
+
+getNextRepetitionDatess(maintenance: any): string[] {
+  return maintenance.next_repetition_dates || [];
+}
+
+trackById(index: number, item: any): number {
+  return item.id;
+}
+
 
 
   getNextRepetitionDates(dates: Date[]): Date[] {
@@ -543,71 +555,83 @@ onAttributChange(attribut: any) {
     }
   }
 
-  ngOnInit(): void {
-    // 1. Récupérer d'abord l'utilisateur connecté
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    this.technicienId = user.id;
-    console.log("ID user connecté:", this.technicienId);
+ngOnInit(): void {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  this.technicienId = user.id;
+  console.log("ID user connecté:", this.technicienId);
+  
 
-    // 2. Ensuite charger les maintenances pour cet utilisateur
-    this.getMaintenancesByTechnicien(this.technicienId);
+console.log(this.maintenance.map(m => m.nextRepetitionDates));
+console.log(this.maintenance.map(m => m.nextRepetitionDatesString));
+console.log(this.filteredMaintenace.map(m => m.nextRepetitionDatesString));
+  this.maintenances.forEach((m, index) => {
+      console.log(`Maintenance ${index} →`, m.nextRepetitionDates, Array.isArray(m.nextRepetitionDates));
+    });
 
-    this.expandMaintenances();
+  this.getMaintenancesByTechnicien(this.technicienId);
 
-    // 3. Charger les autres données (optionnel)
-   // this.chargerEquipements();
-    this.chargerUsers();
-    this.filteredMaintenace = this.maintenances;
-    this.loadPiecesDetachees();
-    this.loadTechnicianInterventions();
-    // Dans la subscription
+  this.chargerUsers();
+  // Exemple dans ton component TypeScript (ngOnInit ou autre endroit pertinent)
 
-
-
+ this.expandMaintenances();
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-  }
-
-  expandMaintenances() {
-  this.expandedMaintenances = [];
-
-  this.filteredMaintenace.forEach((maintenance) => {
-    const dates = maintenance.nextRepetitionDates;
-
-    // S'il n'y a pas de dates, on ajoute quand même une ligne avec la date répétition vide
-    if (!dates || dates.length === 0) {
-      this.expandedMaintenances.push({
-        ...maintenance,
-        singleRepetitionDate: null
-      });
-    } else {
-      dates.forEach((date) => {
-        // If the date is a string and needs to be treated as Date, parse it
-        this.expandedMaintenances.push({
-          ...maintenance,
-          singleRepetitionDate: new Date(date) // Ensure it's a Date object if necessary
-        });
-      });
-    }
-  });
 }
 
 
 
+  expandMaintenances() {
+    this.expandedMaintenances = [];
+  
+    this.filteredMaintenace.forEach((maintenance) => {
+      if (maintenance.nextRepetitionDates?.length) {
+        maintenance.nextRepetitionDates?.forEach((date) => {
+          this.expandedMaintenances.push({
+            ...maintenance,
+            singleRepetitionDate: date
+          });
+        });
+      } else {
+        this.expandedMaintenances.push({
+          ...maintenance,
+          singleRepetitionDate: null
+        });
+      }
+    });
+  }
 
+
+
+
+
+
+
+onPiecesChange(event: Event): void {
+  const selectedOptions = (event.target as HTMLSelectElement).selectedOptions;
+  this.selectedPieces = Array.from(selectedOptions).map(opt => Number(opt.value));
+}
+
+// À ajouter dans votre composant
+getNextOccurrenceDate(maintenance: any): Date {
+  // Implémentez la logique pour calculer la prochaine date
+  // selon le type de répétition (HEBDOMADAIRE, MENSUELLE, etc.)
+ return maintenance.next_repetition_dates?.join(', ') || 'pas dates';
+}
+
+getFrequencyText(maintenance: any): string {
+  switch(maintenance.repetitiontype) {
+    case 'HEBDOMADAIRE': return 'Chaque semaine';
+    case 'MENSUELLE': return 'Chaque mois';
+    case 'ANNUELLE': return 'Chaque année';
+    default: return '';
+  }
+}
+
+showAllOccurrences(maintenance: any) {
+  // Implémentez l'affichage de toutes les occurrences
+  // par exemple dans une modale ou un autre composant
+}
 
 
 
@@ -711,11 +735,30 @@ filteredInterventions(): Intervention[] {
       }
     });
   }
-  getMaintenancesByTechnicien(technicienId: number): void {
-    if (!technicienId) {
-      console.error("Aucun ID technicien fourni");
-      return;
-    }
+
+    getMaintenancesByTechnicien(technicienId: number) : void{
+  this.maintenanceService.getMaintenancesByTechnicien(technicienId).subscribe(response => {
+  this.filteredMaintenace = response;
+
+    // Transformer les strings en Date ici :
+    this.filteredMaintenace.forEach(m => {
+      if (m.nextRepetitionDates && typeof m.nextRepetitionDates[0] === 'string') {
+        m.nextRepetitionDates = m.nextRepetitionDates.map(dateStr => new Date(dateStr));
+      }
+      if (!m.nextRepetitionDates) {
+        m.nextRepetitionDates = [];
+      }
+    });
+
+    // Puis appeler expandMaintenances ici, quand filteredMaintenace est bien défini
+    this.expandMaintenances();
+
+    // Autres chargements si besoin
+    this.loadPiecesDetachees();
+    this.loadTechnicianInterventions();
+  });
+
+
 
     this.maintenanceService.getAllMaintenances().subscribe({
       next: (data) => {
@@ -1113,7 +1156,7 @@ startTask(id: number): void {
       const index = this.maintenances.findIndex(m => m.id === id);
       if (index !== -1) {
         this.maintenances[index] = updatedMaintenance;
-        this.filteredMaintenace = [...this.maintenances];
+        this.maintenances = [...this.maintenances];
       }
       this.toastr.success('Tâche commencée avec succès');
     },

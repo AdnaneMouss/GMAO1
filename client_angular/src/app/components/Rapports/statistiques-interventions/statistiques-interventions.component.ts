@@ -7,6 +7,10 @@ import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
+import { MaintenanceCorrective } from '../../../models/maintenance-corrective';
+import { MaintenanceCorrectiveService } from '../../../services/maintenance-corrective.service';
+import { forkJoin } from 'rxjs';
+import { th } from 'date-fns/locale';
 
 @Component({
   selector: 'app-statistiques-interventions',
@@ -23,7 +27,7 @@ export class StatistiquesInterventionsComponent implements OnInit {
   customReportEnd: string | null = null;
   generatedReports: any[] = [];
  
-  
+  selectedTypeMaint: 'CORRECTIVE' | 'PREVENTIVE' | null = null;
 
 
 
@@ -42,17 +46,54 @@ prevPage(): void {
   }
 }
 
+
+get filteredMaintenancesM() {
+  let maintenances;
+
+  switch (this.selectedTypeMaint) {
+    case 'CORRECTIVE':
+      maintenances = this.maintenanceCorrective;
+      break;
+    case 'PREVENTIVE':
+      maintenances = this.maintenancePreventive;
+      break;
+    default: // 'TOUS' ou null ou autre
+      maintenances = this.allMaintenances;
+  }
+
+  // Filtrer pour ne garder que les maintenances terminées ou annulées
+  return maintenances.filter(m => m.statut === 'TERMINEE' || m.statut === 'ANNULEE');
+}
+
+
+
+showAll() {
+  this.selectedTypeMaint = null; // ou 'TOUS' si tu préfères
+}
+
+showCorrective() {
+  this.selectedTypeMaint = 'CORRECTIVE';
+}
+
+showPreventive() {
+  this.selectedTypeMaint = 'PREVENTIVE';
+}
+
 nextPage(): void {
   if ((this.currentPage + 1) * this.pageSize < this.filteredMaintenances.length) {
     this.currentPage++;
   }
 }
   // Data
-  allMaintenances: maintenance[] = [];
+  //allMaintenances: maintenance[] = [];
+  allMaintenances: (MaintenanceCorrective | maintenance)[] = [];
 
-  filteredMaintenances: maintenance[] = [];
-  paginatedMaintenances: maintenance[] = [];
-  
+maintenanceCorrective: MaintenanceCorrective[] = [];
+maintenancePreventive: maintenance[] = [];
+
+filteredMaintenances: (maintenance | MaintenanceCorrective)[] = [];
+paginatedMaintenances: (maintenance | MaintenanceCorrective)[] = [];
+
   // Filtres
   selectedStatus: string = '';
   selectedPriorite: string = '';
@@ -95,7 +136,7 @@ nextPage(): void {
   statutChart!: Chart;
   prioriteChart!: Chart;
 
-  constructor(private maintenanceService: MaintenanceService) {
+  constructor(private maintenanceService: MaintenanceService, private maintenanceCorrectiveService : MaintenanceCorrectiveService) {
     this.generateReports();
   }
 
@@ -103,6 +144,7 @@ nextPage(): void {
     this.loadMaintenances();
     this.filteredMaintenace;
     this.allMaintenances;
+   
 
     setTimeout(() => {
       this.generateMonthlyReportIfScheduled();
@@ -113,82 +155,118 @@ nextPage(): void {
     }, );
   }
 
-  loadMaintenances(): void {
-    this.maintenanceService.getAllMaintenances().subscribe({
-      next: (data) => {
-        this.allMaintenances = data;
-        this.applyFilters();
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement des maintenances', err);
-      }
+ loadMaintenances(): void {
+  this.allMaintenances = [];
+  this.maintenancePreventive = [];
+  this.maintenanceCorrective = [];
+
+  forkJoin([
+    this.maintenanceService.getAllMaintenances(),
+    this.maintenanceCorrectiveService.getAllMaintenances()
+  ]).subscribe({
+    next: ([preventiveData, correctiveData]) => {
+      this.maintenancePreventive = preventiveData;
+      this.maintenanceCorrective = correctiveData;
+
+      this.allMaintenances = [...this.maintenancePreventive, ...this.maintenanceCorrective];
+
+      // 🔄 Calcul des statistiques correctement
+      this.calculateStats();
+
+      // Appliquer les filtres + afficher
+      this.applyFilters();
+    },
+    error: (error) => {
+      console.error('Erreur lors du chargement des données', error);
+    }
+  });
+}
+
+
+
+ applyFilters(): void {
+  this.filteredMaintenances = this.allMaintenances.filter(m => {
+    let date: Date | null = null;
+
+    if ('dateDebutPrevue' in m && m.dateDebutPrevue) {
+      date = new Date(m.dateDebutPrevue);
+    }
+
+    // Debug
+    console.log('Filtrage:', {
+      statut: m.statut,
+      priorite: m.priorite,
+      selectedPriorite: this.selectedPriorite,
+      date: date ? date.toISOString() : null
     });
-  }
 
-  applyFilters(): void {
-    // Filtrer les données
-    this.filteredMaintenances = this.allMaintenances.filter(m => {
-      const date = new Date(m.dateDebutPrevue);
-      return (
-        (!this.selectedStatus || m.statut === this.selectedStatus) &&
-        (!this.selectedPriorite || m.priorite === this.selectedPriorite) &&
-        (!this.selectedType || m.type_maintenance === this.selectedType) &&
-        (!this.selectedMonth || date.getMonth() + 1 === this.selectedMonth) &&
-        (!this.selectedYear || date.getFullYear() === this.selectedYear)
-      );
-    });
+    return (
+      (!this.selectedStatus || m.statut === this.selectedStatus) &&
+      (!this.selectedPriorite || (('priorite' in m) && m.priorite === this.selectedPriorite)) &&
+      (!this.selectedMonth || (date && date.getMonth() + 1 === this.selectedMonth)) &&
+      (!this.selectedYear || (date && date.getFullYear() === this.selectedYear))
+    );
+  });
 
-    // Calculer les statistiques
-    this.calculateStats();
-    
-    // Trier les données
-    this.sortData();
-    
-    // Paginer les données
-    this.paginateData();
-    
-    // Mettre à jour les graphiques
-    this.updateCharts();
-  }
+  this.calculateStats();
+  this.sortData();
+  this.paginateData();
+  this.updateCharts();
+}
 
-  calculateStats(): void {
-    this.stats = {
-      totalMaintenances: this.filteredMaintenances.length,
-      maintenancesPreventives: this.filteredMaintenances.filter(m => m.type_maintenance === 'PREVENTIVE').length,
-      maintenancesCorrectives: this.filteredMaintenances.filter(m => m.type_maintenance === 'CORRECTIVE').length,
-   
-      byStatus: {
-        EN_ATTENTE: this.filteredMaintenances.filter(m => m.statut === 'EN_ATTENTE').length,
-        EN_COURS: this.filteredMaintenances.filter(m => m.statut === 'EN_COURS').length,
-        TERMINEE: this.filteredMaintenances.filter(m => m.statut === 'TERMINEE').length,
-        ANNULEE: this.filteredMaintenances.filter(m => m.statut === 'ANNULEE').length
-      },
-      byPriority: {
-        FAIBLE: this.filteredMaintenances.filter(m => m.priorite === 'FAIBLE').length,
-        NORMALE: this.filteredMaintenances.filter(m => m.priorite === 'NORMALE').length,
-        URGENTE: this.filteredMaintenances.filter(m => m.priorite === 'URGENTE').length
-      }
-    };
-  }
 
-  sortData(): void {
-    this.filteredMaintenances.sort((a, b) => {
-      let valueA, valueB;
-      
-      // Gestion des propriétés imbriquées (comme equipment.name)
-      if (this.sortColumn.includes('.')) {
-        const props = this.sortColumn.split('.');
-      
-      } else {
-        valueA = a[this.sortColumn as keyof maintenance];
-        valueB = b[this.sortColumn as keyof maintenance];
-      }
-      
-      // Comparaison
-  
-      return 0;
-    });
-  }
+calculateStats(): void {
+  this.stats = {
+    totalMaintenances: this.allMaintenances.length,
+    maintenancesPreventives: this.maintenancePreventive.length,
+   maintenancesCorrectives: this.maintenanceCorrective.length,
+    byStatus: {
+      EN_ATTENTE: this.allMaintenances.filter(m => m.statut === 'EN_ATTENTE').length,
+      EN_COURS: this.allMaintenances.filter(m => m.statut === 'EN_COURS').length,
+      TERMINEE: this.allMaintenances.filter(m => m.statut === 'TERMINEE').length,
+      ANNULEE: this.allMaintenances.filter(m => m.statut === 'ANNULEE').length
+    },
+    byPriority: {
+      FAIBLE: this.allMaintenances.filter(m => m.priorite === 'FAIBLE').length,
+      NORMALE: this.allMaintenances.filter(m => m.priorite === 'NORMALE').length,
+      URGENTE: this.allMaintenances.filter(m => m.priorite === 'URGENTE').length
+    }
+  };
+}
+
+
+
+sortData(): void {
+  if (!this.sortColumn) return;
+
+  this.filteredMaintenances.sort((a, b) => {
+    let valueA: any;
+    let valueB: any;
+
+    if (this.sortColumn.includes('.')) {
+      const props = this.sortColumn.split('.');
+     
+    } else {
+      // Sécurité : vérifier que la propriété existe avant d'accéder
+      if (this.sortColumn in a) valueA = (a as any)[this.sortColumn];
+      if (this.sortColumn in b) valueB = (b as any)[this.sortColumn];
+    }
+
+    if (valueA == null) return 1;
+    if (valueB == null) return -1;
+
+    if (typeof valueA === 'string') {
+      return valueA.localeCompare(valueB);
+    }
+
+    if (typeof valueA === 'number' || valueA instanceof Date) {
+      return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
+    }
+
+    return 0;
+  });
+}
+
 
   paginateData(): void {
     const start = this.currentPage * this.pageSize;
@@ -292,271 +370,202 @@ nextPage(): void {
 
   // Export
 
+   
+ 
+exportMaintenancePDF(maintenances: (MaintenanceCorrective | maintenance)[]): void {
+  const doc = new jsPDF();
 
-  exportToExcel(): void {
-    const worksheet = XLSX.utils.json_to_sheet(
-      this.filteredMaintenances.map(m => ({
-        ID: m.id,
-     
-        Type: m.type_maintenance === 'PREVENTIVE' ? 'Préventive' : 'preventive',
-        'Date début': new Date(m.dateDebutPrevue).toLocaleDateString(),
-        Statut: this.getStatusLabel(m.statut),
-        Priorité: this.getPriorityLabel(m.priorite),
-      
-      }))
-    );
-    
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Maintenances');
-    XLSX.writeFile(workbook, 'rapport_maintenances.xlsx');
+  const primaryColor = '#4169E1';
+  const secondaryColor = '#A9A9A9';
+  const textColor = '#000000';
+  const lineHeight = 7;
+  const sectionSpacing = 10;
+  const pageMargin = 15;
+  const maxWidth = 180; // Largeur maximale du texte
+
+  const logoUrl = 'assets/logo.png';
+  const img = new Image();
+  img.src = logoUrl;
+
+  function isMaintenancePreventive(m: MaintenanceCorrective | maintenance): m is maintenance {
+    return (m as maintenance).dateFinPrevue !== undefined;
   }
 
-  exportMaintenancePDF(maintenance: maintenance): void {
-    const doc = new jsPDF();
-    
-    // Configuration des couleurs
-    const primaryColor = '#4169E1';
-    const secondaryColor = '#A9A9A9';
-    const preventiveColor = '#228B22';
-    const correctiveColor = '#DC143C';
-    const textColor = '#000000';
-    const lineColor = '#E0E0E0';
-    const repetitionColor = '#00008B'; // Couleur pour les dates de répétition
+  // Fonction pour ajouter du texte avec retour à la ligne automatique
+  const addTextWithWrap = (text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
+    const lines = doc.splitTextToSize(text, maxWidth);
+    doc.text(lines, x, y);
+    return lines.length * lineHeight;
+  };
 
-    // Configuration des polices
-    const titleFontSize = 14;
-    const headerFontSize = 12;
-    const bodyFontSize = 10;
-    const lineHeight = 7;
-    const sectionSpacing = 10;
+  img.onload = () => {
+    try {
+      maintenances.forEach((maintenance, index) => {
+        let yPosition = 20;
 
-    // Logo
-    const logoUrl = 'assets/logo.png';
-    const img = new Image();
-    img.src = logoUrl;
+        // Logo
+        doc.addImage(img, 'PNG', pageMargin, yPosition, 30, 15);
+        yPosition += 10;
 
-    img.onload = () => {
-        try {
-            // Position initiale
-            let yPosition = 20;
+        // En-tête
+        doc.setFontSize(12);
+        doc.setTextColor(secondaryColor);
+        doc.text('H.U.I.R', 50, yPosition);
+        yPosition += 5;
+        doc.text('HOPITAL UNIVERSITAIRE INTERNATIONAL DE RABAT', 50, yPosition);
+        yPosition += 15;
 
-            // Ajout du logo
-            doc.addImage(img, 'PNG', 15, yPosition, 30, 15);
-            yPosition += 5;
+        // Titre
+        doc.setFontSize(14);
+        doc.setTextColor(primaryColor);
+        doc.text('Fiche Maintenance', 105, yPosition, { align: 'center' });
+        yPosition += 10;
 
-            // En-tête
-            doc.setFontSize(headerFontSize);
-            doc.setTextColor(secondaryColor);
-            doc.text('H.U.I.R', 50, yPosition);
-            yPosition += 5;
-            doc.text('HOPITAL UNIVERSITAIRE INTERNATIONAL DE RABAT', 50, yPosition);
-            yPosition += 15;
+        doc.setDrawColor(primaryColor);
+        doc.setLineWidth(0.5);
+        doc.line(pageMargin, yPosition, 195, yPosition);
+        yPosition += sectionSpacing;
 
-            // Titre principal
-            doc.setFontSize(titleFontSize);
-            doc.setTextColor(primaryColor);
-            doc.text('Fiche Maintenance', 105, yPosition, { align: 'center' });
-            yPosition += 10;
+        doc.setFontSize(10);
+        doc.setTextColor(textColor);
 
-            // Ligne de séparation
-            doc.setDrawColor(primaryColor);
-            doc.setLineWidth(0.5);
-            doc.line(15, yPosition, 195, yPosition);
-            yPosition += sectionSpacing;
-
-            // Configuration de la police pour le corps du document
-            doc.setFontSize(bodyFontSize);
+        const addField = (label: string, value: string | number | undefined, valueColor?: string) => {
+          doc.setFont('helvetica', 'bold');
+          doc.text(`${label}:`, pageMargin, yPosition);
+          doc.setFont('helvetica', 'normal');
+          
+          if (value) {
+            if (valueColor) doc.setTextColor(valueColor);
+            const text = value.toString();
+            const heightAdded = addTextWithWrap(text, pageMargin + 50, yPosition, maxWidth - 50, lineHeight);
             doc.setTextColor(textColor);
+            yPosition += Math.max(lineHeight, heightAdded);
+          } else {
+            doc.text('-', pageMargin + 50, yPosition);
+            yPosition += lineHeight;
+          }
+          doc.setTextColor(textColor);
+        };
 
-            // Fonction pour ajouter une ligne de champ
-            const addField = (label: string, value: string | number, valueColor?: string) => {
-                doc.setFont('helvetica', 'bold');
-                doc.text(`${label}:`, 20, yPosition);
-                
-                doc.setFont('helvetica', 'normal');
-                if (valueColor) doc.setTextColor(valueColor);
-                doc.text(value.toString(), 70, yPosition);
-                doc.setTextColor(textColor);
-                
-                yPosition += lineHeight;
-            };
+        if (isMaintenancePreventive(maintenance)) {
+          // Maintenance préventive : tous les champs détaillés
+          addField('ID Maintenance', maintenance.id);
+          addField('Durée Intervention', maintenance.dureeIntervention);
+          addField('Date début prévue', maintenance.dateDebutPrevue ? new Date(maintenance.dateDebutPrevue).toLocaleDateString() : undefined);
+          addField('Date fin prévue', maintenance.dateFinPrevue ? new Date(maintenance.dateFinPrevue).toLocaleDateString() : undefined);
+        
+          const equipementInfos = maintenance.equipement
+            ? `${maintenance.equipementNom} - Bâtiment: ${maintenance.equipement.batimentNom ?? 'N/A'}, Étage: ${maintenance.equipement.etageNum ?? 'N/A'}, Salle: ${maintenance.equipement.salleNum ?? 'N/A'}`
+            : `${maintenance.equipementNom} - Bâtiment: ${maintenance.equipementBatiment ?? 'N/A'}, Étage: ${maintenance.equipementEtage ?? 'N/A'}, Salle: ${maintenance.equipementSalle ?? 'N/A'}`;
 
-            // Informations de base
-            addField('ID Maintenance', maintenance.id.toString());
-            
-            if (maintenance.equipementNom != null) {
-                addField('Équipement', maintenance.equipementNom.toString());
-            }
-
-            // Type de maintenance
-            addField(
-                'Type', 
-                maintenance.type_maintenance === 'PREVENTIVE' ? 'Préventive' : 'Préventive',
-                maintenance.type_maintenance === 'PREVENTIVE' ? preventiveColor : correctiveColor
-            );
-
-            // Dates
-            addField('Date début prévue', new Date(maintenance.dateDebutPrevue).toLocaleDateString());
-            addField('Date fin prévue', new Date(maintenance.dateFinPrevue).toLocaleDateString());
-
-            // Durée d'intervention
-            if (maintenance.dureeIntervention) {
-                addField('Durée intervention', `${maintenance.dureeIntervention} jours`);
-            }
-
-            // Statut et priorité
-            addField('Statut', this.getStatusLabel(maintenance.statut), this.getStatusColor(maintenance.statut));
-            addField('Priorité', this.getPriorityLabel(maintenance.priorite), this.getPriorityColor(maintenance.priorite));
-
-            // Section Commentaires
-            if (maintenance.commentaires) {
-                yPosition += 3;
-                addMultilineField('Commentaires', maintenance.commentaires);
-            }
-
-            // Section Action
-            if (maintenance.action) {
-                yPosition += 3;
-                addMultilineField('Action de maintenance', maintenance.action);
-            }
-
-            // Répétition
-            if (maintenance.repetitiontype) {
-                addField('Type de répétition', maintenance.repetitiontype);
-            }
-            if (Array.isArray(maintenance.nextRepetitionDatesAsList)) {
-              maintenance.nextRepetitionDatesAsList.forEach((date) => {
-                  // ton traitement ici
-              });
-          } else if (typeof maintenance.nextRepetitionDatesAsList === 'string') {
-              // Si c'est une seule date sous forme de string, traite-la autrement
-              // Par exemple :
-              // - Soit tu la mets dans un tableau pour uniformiser :
-              [maintenance.nextRepetitionDatesAsList].forEach((date) => {
-                  // même traitement que si c'était un tableau
-              });
+          addField('Équipement', equipementInfos);
+          addField('Date prochain entretien', maintenance.dateProchainemaintenance ? new Date(maintenance.dateProchainemaintenance).toLocaleDateString() : undefined);
+          addField('Commentaires', maintenance.commentaires);
+          addField('Statut', maintenance.statut, this.getStatusColor(maintenance.statut));
+          addField('Priorité', maintenance.priorite, this.getPriorityColor(maintenance.priorite));
+          addField('Technicien', maintenance.user ? `${maintenance.user.nom} | ${maintenance.user.email} | ${maintenance.user.gsm}` : undefined);
+          addField('Action', maintenance.action);
+          addField('Début répétition', maintenance.startDaterep ? new Date(maintenance.startDaterep).toLocaleDateString() : undefined);
+          addField('Fin répétition', maintenance.endDaterep ? new Date(maintenance.endDaterep).toLocaleDateString() : undefined);
+         
+          // Répétition
+          if (maintenance.repetitiontype) {
+              addField('Type de répétition', maintenance.repetitiontype);
           }
           
-          
-          
+          // Jours/Mois de répétition
+          if (maintenance.selectedjours?.length > 0) {
+              addField('Jours de répétition', maintenance.selectedjours.join(', '));
+          }
 
-            // Jours/Mois de répétition
-            if (maintenance.selectedjours?.length > 0) {
-                addField('Jours de répétition', maintenance.selectedjours.join(', '));
-            }
-
-            if (maintenance.selectedmois?.length > 0) {
-                addField('Mois de répétition', maintenance.selectedmois.join(', '));
-            }
+          if (maintenance.selectedmois?.length > 0) {
+              addField('Mois de répétition', maintenance.selectedmois.join(', '));
+          }
 
           // Section Dates de Répétition
-// Section Dates de Répétition
-if (maintenance.nextRepetitionDatesAsList) {
-  let repetitionDates: string[] = [];
+          if (maintenance.nextRepetitionDatesString) {
+            let repetitionDates: string[] = [];
 
-  if (Array.isArray(maintenance.nextRepetitionDatesAsList)) {
-      repetitionDates = maintenance.nextRepetitionDatesAsList;
-  } else if (typeof maintenance.nextRepetitionDatesAsList === 'string') {
-      repetitionDates = [maintenance.nextRepetitionDatesAsList];
-  }
+            if (Array.isArray(maintenance.nextRepetitionDatesString)) {
+                repetitionDates = maintenance.nextRepetitionDatesString;
+            } else if (typeof maintenance.nextRepetitionDatesString === 'string') {
+                repetitionDates = [maintenance.nextRepetitionDatesString];
+            }
 
-  if (repetitionDates.length > 0) {
-      yPosition += sectionSpacing;
-      addSectionHeader('Jours de Répétition', repetitionColor);
-
-      // Icône de répétition
-      
-    
-
-      // Liste des dates
-      doc.setFontSize(bodyFontSize);
-      doc.setTextColor(textColor);
-      doc.setFont('helvetica', 'normal');
-
-      let datesY = yPosition;
-      repetitionDates.forEach(date => {
-          const formattedDate = new Date(date).toLocaleDateString();
-          doc.text(formattedDate, 30, datesY);
-          datesY += lineHeight;
-      });
-
-      yPosition = datesY;
-  }
-}
-
-
-
-            // Section Technicien
-            if (maintenance.user) {
+            if (repetitionDates.length > 0) {
                 yPosition += sectionSpacing;
-                addSectionHeader('Technicien assigné');
-                
-                addField('Civilité', maintenance.user.civilite || 'Non renseigné');
-                addField('Nom', maintenance.user.nom || 'Non renseigné');
-                addField('Email', maintenance.user.email || 'Non renseigné');
-                
-                if (maintenance.user.username) {
-                    addField('Nom utilisateur', maintenance.user.username);
-                }
-                
-                addField('Contact', maintenance.user.gsm || 'Non renseigné');
-                
-                if (maintenance.user.role) {
-                    addField('Fonction', maintenance.user.role);
-                }
-                
-                if (maintenance.user.actif !== undefined) {
-                    addField('Actif', maintenance.user.actif ? 'Oui' : 'Non');
-                }
-            }
-
-            // Pied de page
-            yPosition = 285;
-            doc.setFontSize(8);
-            doc.setTextColor(secondaryColor);
-            doc.text(`Document généré le ${new Date().toLocaleDateString()} - H.U.I.R`, 105, yPosition, { align: 'center' });
-
-            // Sauvegarde du PDF
-            doc.save(`fiche_maintenance_${maintenance.id}.pdf`);
-
-            // Fonction pour les champs multilignes
-            function addMultilineField(label: string, text: string) {
                 doc.setFont('helvetica', 'bold');
-                doc.text(`${label}:`, 20, yPosition);
-                
-                const textLines = doc.splitTextToSize(text, 160);
+                doc.text('Dates de répétition:', pageMargin, yPosition);
+                yPosition += lineHeight;
+
+                doc.setTextColor(primaryColor);
                 doc.setFont('helvetica', 'normal');
-                doc.text(textLines, 25, yPosition + 5);
-                
-                yPosition += 5 + (textLines.length * lineHeight);
-            }
 
-            // Fonction pour les en-têtes de section (modifiée pour accepter une couleur personnalisée)
-            function addSectionHeader(title: string, color: string = primaryColor) {
-                doc.setFontSize(bodyFontSize + 1);
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(color);
-                doc.text(title, 20, yPosition);
-                
-                doc.setDrawColor(lineColor);
-                doc.setLineWidth(0.3);
-                doc.line(20, yPosition + 2, 50, yPosition + 2);
-                
-                yPosition += lineHeight + 3;
-                doc.setFontSize(bodyFontSize);
+                repetitionDates.forEach(date => {
+                    const formattedDate = new Date(date).toLocaleDateString();
+                    doc.text(`• ${formattedDate}`, pageMargin + 5, yPosition);
+                    yPosition += lineHeight;
+                    
+                    // Vérification pour éviter le débordement de page
+                    if (yPosition > 270) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                });
                 doc.setTextColor(textColor);
             }
+          }
 
-        } catch (e) {
-            console.error('Erreur lors de la génération du PDF:', e);
+        } else {
+          // Maintenance corrective : champs spécifiques
+          const mCorrective = maintenance as MaintenanceCorrective;
+          addField('ID Maintenance', mCorrective.id);
+          addField('Titre', mCorrective.titre);
+          addField('Description', mCorrective.description);
+          addField('Statut', mCorrective.statut, this.getStatusColor(mCorrective.statut));
+          addField('Priorité', mCorrective.priorite, this.getPriorityColor(mCorrective.priorite));
+          addField('Date création', mCorrective.dateCreation ? new Date(mCorrective.dateCreation).toLocaleDateString() : undefined);
+          addField('Date clôture', mCorrective.dateCloture ? new Date(mCorrective.dateCloture).toLocaleDateString() : undefined);
+          addField('Date commencement', mCorrective.dateCommencement ? new Date(mCorrective.dateCommencement).toLocaleDateString() : undefined);
+          addField('Assigné à (ID)', mCorrective.affecteAId);
+          addField('Assigné à (Nom)', mCorrective.affecteANom);
+          addField('Créé par (Nom)', mCorrective.creeParNom);
+          addField('Créé par (ID)', mCorrective.creeParId);
+          addField('Équipement', mCorrective.equipementNom);
+          addField('Numéro de série', mCorrective.equipementNumSerie);
+          addField('Bâtiment', mCorrective.equipementBatiment);
+          addField('Salle', mCorrective.equipementSalle);
+          addField('Étage', mCorrective.equipementEtage);
+          addField('Nombre d\'interventions', mCorrective.interventions?.length || 0);
         }
-    };
 
-    img.onerror = () => {
-        console.error('Le logo est introuvable, génération sans logo...');
-        this.generateMaintenancePDFWithoutLogo(doc, maintenance);
-    };
+        // Pied de page
+        yPosition = 285;
+        doc.setFontSize(8);
+        doc.setTextColor(secondaryColor);
+        doc.text(`Document généré le ${new Date().toLocaleDateString()} - H.U.I.R`, 105, yPosition, { align: 'center' });
+
+        if (index < maintenances.length - 1) {
+          doc.addPage();
+        }
+      });
+
+      doc.save(`fiche_maintenance.pdf`);
+    } catch (e) {
+      console.error('Erreur lors de la génération du PDF:', e);
+    }
+  };
+
+  img.onerror = () => {
+    console.error('Le logo est introuvable, génération sans logo...');
+  };
 }
+
+
+
+
+
+
 
 
   
@@ -651,9 +660,9 @@ if (maintenance.nextRepetitionDatesAsList) {
   
     // Filtrage des maintenances clôturées le mois passé
     const filtered = this.allMaintenances.filter(m => {
-      if (!m.dateFinPrevue) return false;
-      const dateFinPrevue = new Date(m.dateFinPrevue);
-      return dateFinPrevue >= startOfLastMonth && dateFinPrevue <= endOfLastMonth;
+    //  if (!m.dateFinPrevue) return false;
+     // const dateFinPrevue = new Date(m.dateFinPrevue);
+      return //dateFinPrevue >= startOfLastMonth && dateFinPrevue <= endOfLastMonth;
     });
   
     if (filtered.length === 0) {
@@ -673,7 +682,7 @@ if (maintenance.nextRepetitionDatesAsList) {
     
     content += '\nDétail des maintenances :\n';
     filtered.forEach((m, i) => {
-      content += `${i + 1}. [${m.repetitiontype}] ${m.equipement} - ${m.commentaires || 'sans commentaire'} (Clôturé le ${new Date(m.dateFinPrevue).toLocaleDateString('fr-FR')})\n`;
+     // content += `${i + 1}. [${m.repetitiontype}] ${m.equipement} - ${m.commentaires || 'sans commentaire'} (Clôturé le ${new Date(m.dateFinPrevue).toLocaleDateString('fr-FR')})\n`;
     });
   
     content += `\nGénéré automatiquement le ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR')}`;
@@ -726,8 +735,15 @@ downloadReport(maintenances: any[]): void {
   const previousMonthName = monthNames[previousMonth];
 
   const filteredMaintenances = maintenances.filter(m => {
-    const dateDebut = new Date(m.dateDebutPrevue);
-    return dateDebut.getMonth() === previousMonth && dateDebut.getFullYear() === yearOfPreviousMonth;
+    try {
+      const dateStr = m.dateDebutPrevue || m.dateCommencement;
+      const date = new Date(dateStr);
+      return !isNaN(date.getTime()) &&
+             date.getMonth() === previousMonth &&
+             date.getFullYear() === yearOfPreviousMonth;
+    } catch {
+      return false;
+    }
   });
 
   const logo = new Image();
@@ -739,29 +755,24 @@ downloadReport(maintenances: any[]): void {
     const primaryColor = '#4169E1';
     const textColor = '#000000';
 
-    // Logo
     doc.addImage(logo, 'PNG', 15, y, 30, 15);
-
-    // Titre principal
     doc.setFontSize(12);
     doc.setTextColor(primaryColor);
     doc.text('HOPITAL UNIVERSITAIRE INTERNATIONAL DE RABAT', 105, y + 5, { align: 'center' });
-
     doc.setFontSize(10);
     doc.text(`Rapport Mensuel des Maintenances - ${previousMonthName} ${yearOfPreviousMonth}`, 105, y + 15, { align: 'center' });
-
     doc.setTextColor(textColor);
     doc.setFontSize(10);
     doc.text(`Nombre total de maintenances prévues : ${filteredMaintenances.length}`, 105, y + 23, { align: 'center' });
 
     y += 35;
 
-    // En-tête du tableau
+    // En-tête tableau
     doc.setFontSize(10);
     doc.setTextColor(primaryColor);
     doc.setFont('helvetica', 'bold');
     doc.text('ID', 15, y);
-    doc.text('Description', 35, y);
+    doc.text('Equipement', 35, y);
     doc.text('Date Début', 110, y);
     doc.text('Statut', 150, y);
     doc.text('Priorité', 180, y);
@@ -772,7 +783,6 @@ downloadReport(maintenances: any[]): void {
     doc.line(15, y, 200, y);
     y += 7;
 
-    // Corps du tableau
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(textColor);
 
@@ -782,24 +792,35 @@ downloadReport(maintenances: any[]): void {
         y = 20;
       }
 
-      const dateDebutFormatted = new Date(m.dateDebutPrevue).toLocaleDateString('fr-FR');
+      let dateToShow = '-';
+      try {
+        const datePrevue = new Date(m.dateDebutPrevue);
+        if (!isNaN(datePrevue.getTime())) {
+          dateToShow = datePrevue.toLocaleDateString('fr-FR');
+        } else {
+          const dateComm = new Date(m.dateCommencement);
+          if (!isNaN(dateComm.getTime())) {
+            dateToShow = dateComm.toLocaleDateString('fr-FR');
+          }
+        }
+      } catch (e) {
+        dateToShow = '-';
+      }
 
       doc.text(m.id?.toString() || '-', 15, y);
-      doc.text((m.commentaires || '-').substring(0, 60), 35, y);
-      doc.text(dateDebutFormatted, 110, y);
+      doc.text((m.equipementNom || '-').substring(0, 60), 35, y);
+      doc.text(dateToShow, 110, y);
       doc.text(this.getStatusLabel(m.statut), 150, y);
       doc.text(this.getPriorityLabel(m.priorite), 180, y);
 
       y += 8;
     });
 
-    // Pied de page
     const dateGeneration = now.toLocaleDateString('fr-FR');
     doc.setFontSize(8);
     doc.setTextColor('#A9A9A9');
     doc.text(`Document généré le ${dateGeneration} - H.U.I.R`, 105, 290, { align: 'center' });
 
-    // Sauvegarde
     const fileDate = dateGeneration.replace(/\//g, '-');
     doc.save(`Rapport_Maintenances_${previousMonthName}_${fileDate}.pdf`);
   };
@@ -808,6 +829,7 @@ downloadReport(maintenances: any[]): void {
     console.error("Erreur de chargement du logo, génération sans logo...");
   };
 }
+
 
   
   
@@ -846,7 +868,7 @@ generateMonthlyReportMetadata(baseDate: Date = new Date()): { type: string; peri
     filePath
   };
 }
-downloadWeeklyReport(maintenances: any[]): void { 
+downloadWeeklyReport(maintenances: any[]): void {
   if (!maintenances || maintenances.length === 0) {
     console.warn('Aucune maintenance à traiter.');
     return;
@@ -874,7 +896,8 @@ downloadWeeklyReport(maintenances: any[]): void {
 
   const filtered = maintenances.filter(m => {
     try {
-      const maintenanceDate = new Date(m.dateDebutPrevue);
+      const dateStr = m.dateCommencement || m.dateDebutPrevue;
+      const maintenanceDate = new Date(dateStr);
       return maintenanceDate >= monday && maintenanceDate <= sunday;
     } catch (e) {
       console.error('Erreur de conversion de date:', m.id, e);
@@ -921,7 +944,6 @@ downloadWeeklyReport(maintenances: any[]): void {
     doc.setFont('helvetica', 'bold');
     doc.text('ID', 20, y);
     doc.text('Équipement', 35, y);
-    doc.text('Type', 80, y);
     doc.text('Date Début', 110, y);
     doc.text('Statut', 150, y);
     doc.text('Priorité', 180, y);
@@ -942,10 +964,25 @@ downloadWeeklyReport(maintenances: any[]): void {
 
       doc.text(m.id.toString(), 20, y);
       doc.text(m.equipementNom || '-', 35, y);
-      doc.text(m.type_maintenance === 'PREVENTIVE' ? 'Préventive' : 'Corrective', 80, y);
-      doc.text(new Date(m.dateDebutPrevue).toLocaleDateString('fr-FR'), 110, y);
+
+      // Choix de la date à afficher
+      let dateToShow: string;
+      try {
+        const datePrevue = new Date(m.dateDebutPrevue);
+        if (!isNaN(datePrevue.getTime())) {
+          dateToShow = datePrevue.toLocaleDateString('fr-FR');
+        } else {
+          const dateComm = new Date(m.dateCommencement);
+          dateToShow = isNaN(dateComm.getTime()) ? '-' : dateComm.toLocaleDateString('fr-FR');
+        }
+      } catch (e) {
+        dateToShow = '-';
+      }
+
+      doc.text(dateToShow, 110, y);
       doc.text(this.getStatusLabel(m.statut), 150, y);
       doc.text(this.getPriorityLabel(m.priorite), 180, y);
+
       y += 8;
     });
 
