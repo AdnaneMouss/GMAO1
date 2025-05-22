@@ -12,7 +12,7 @@ export interface User {
   role: 'ADMIN' | 'RESPONSABLE' | 'TECHNICIEN' | 'MAGASINIER' | 'LAMBDA'; // Role avec des valeurs possibles
   actif: boolean;
   dateInscription: string;
-  Intervention: Intervention;
+  Intervention?: Intervention;
   notifications?: boolean;
-  interventionss?: Intervention[]; 
+  interventions?: Intervention[]; 
 }

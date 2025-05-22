@@ -20,6 +20,7 @@ export class MaintenanceService {
     return this.http.get<maintenance>(`${this.apiUrl}/${id}`);
   }
 
+  
   //createMaintenance(maintenance: Maintenance): Observable<Maintenance> {
     //return this.http.post<Maintenance>(this.apiUrl, maintenance);
   //}
@@ -34,7 +35,7 @@ export class MaintenanceService {
    
   updateMaintenance(id: number, maintenance: Partial<maintenance>): Observable<maintenance> {
     return this.http.put<maintenance>(`${this.apiUrl}/${id}`, maintenance);
-  }
+  } 
 
   updateMaintenanceP(id: number, maintenance: Partial<maintenance>): Observable<maintenance> {
   return this.http.put<maintenance>(`${this.apiUrl}/${id}`, maintenance);
@@ -63,8 +64,9 @@ export class MaintenanceService {
     // Fetch maintenances by technician ID
 // Dans MaintenanceService
 getMaintenancesByTechnicien(technicienId: number): Observable<maintenance[]> {
-  return this.http.get<maintenance[]>(`${this.apiUrl}/by-technicien/${technicienId}`);
+  return this.http.get<maintenance[]>(`${this.apiUrl}/Technicien/${technicienId}`);
 }
+
 
 changerStatutEnTermine(id: number): Observable<any> {
   return this.http.patch(`${this.apiUrl}/${id}`, { statut: 'ANNULEE' });

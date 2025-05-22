@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -30,21 +31,16 @@ public class Equipement {
     private String numeroSerie;
     private String modele;
     private String marque;
-    private String statut;
+    @Enumerated(EnumType.STRING)
+    private StatutEquipement statut = StatutEquipement.EN_SERVICE;
     private boolean actif;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
     private LocalDate dateAchat;
 
-    private LocalDate dateMiseEnService;
     private String garantie;
     private LocalDate dateDerniereMaintenance;
-    private String frequenceMaintenance;
-    private String historiquePannes;
     private Double coutAchat;
-    
-  
-
     private String labelSuivi;  // Indicateur
     private double valeurSuivi; // Seuil
 
@@ -57,21 +53,6 @@ public class Equipement {
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonBackReference // Cette annotation empêche la boucle infinie avec Services
     private Services service;
-
-    // Relation avec le responsable de maintenance
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JsonBackReference // Cette annotation empêche la boucle infinie avec User
-    private User responsableMaintenance;
-
-    // Relation avec les pièces détachées associées à l’équipement
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "equipement_piece_detachee",
-            joinColumns = @JoinColumn(name = "equipement_id"),
-            inverseJoinColumns = @JoinColumn(name = "piece_detachee_id")
-    )
-    @JsonManagedReference // Cette annotation permet la gestion des références JSON côté Equipement
-    private List<PieceDetachee> piecesDetachees;
 
     // Relation avec Salle (Chaque équipement est dans une salle)
     @ManyToOne(fetch = FetchType.EAGER)
@@ -154,11 +135,11 @@ public class Equipement {
 		this.marque = marque;
 	}
 
-	public String getStatut() {
+	public StatutEquipement getStatut() {
 		return statut;
 	}
 
-	public void setStatut(String statut) {
+	public void setStatut(StatutEquipement statut) {
 		this.statut = statut;
 	}
 
@@ -178,14 +159,6 @@ public class Equipement {
 		this.dateAchat = dateAchat;
 	}
 
-	public LocalDate getDateMiseEnService() {
-		return dateMiseEnService;
-	}
-
-	public void setDateMiseEnService(LocalDate dateMiseEnService) {
-		this.dateMiseEnService = dateMiseEnService;
-	}
-
 	public String getGarantie() {
 		return garantie;
 	}
@@ -200,22 +173,6 @@ public class Equipement {
 
 	public void setDateDerniereMaintenance(LocalDate dateDerniereMaintenance) {
 		this.dateDerniereMaintenance = dateDerniereMaintenance;
-	}
-
-	public String getFrequenceMaintenance() {
-		return frequenceMaintenance;
-	}
-
-	public void setFrequenceMaintenance(String frequenceMaintenance) {
-		this.frequenceMaintenance = frequenceMaintenance;
-	}
-
-	public String getHistoriquePannes() {
-		return historiquePannes;
-	}
-
-	public void setHistoriquePannes(String historiquePannes) {
-		this.historiquePannes = historiquePannes;
 	}
 
 	public Double getCoutAchat() {
@@ -258,22 +215,6 @@ public class Equipement {
 		this.service = service;
 	}
 
-	public User getResponsableMaintenance() {
-		return responsableMaintenance;
-	}
-
-	public void setResponsableMaintenance(User responsableMaintenance) {
-		this.responsableMaintenance = responsableMaintenance;
-	}
-
-	public List<PieceDetachee> getPiecesDetachees() {
-		return piecesDetachees;
-	}
-
-	public void setPiecesDetachees(List<PieceDetachee> piecesDetachees) {
-		this.piecesDetachees = piecesDetachees;
-	}
-
 	public Salle getSalle() {
 		return salle;
 	}
@@ -314,8 +255,7 @@ public class Equipement {
 		this.maintenances = maintenances;
 	}
 
-    // Getters et Setters (générés par Lombok)
-    
+
     
     
 }

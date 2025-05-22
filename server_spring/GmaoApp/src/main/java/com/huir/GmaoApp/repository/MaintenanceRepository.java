@@ -1,5 +1,6 @@
 package com.huir.GmaoApp.repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,8 +18,13 @@ import com.huir.GmaoApp.model.Statut;
 @Repository
 public interface MaintenanceRepository extends JpaRepository<Maintenance, Long> {
 	 Optional<Maintenance> findById(Long id);
-	 List<Maintenance> findByAffecteAId(Long affecteA);
-	 List<Maintenance> findByAffecteAIdAndStatutNotIn(Long technicianId, List<Statut> statuses);
+//	Optional<Maintenance> m = maintenanceRepository.findById(id); // ✅ CORRECT
+
+	 //List<Maintenance> findByAffecteAId(Long affecteA);
+	
+	 List<Maintenance> findByAffecteAIdAndStatutNotIn(Long userId, List<Statut> statuses);
+	 List<Maintenance> findByAffecteAId(Long id);
+	
 	
 	 default Maintenance save2(Maintenance maintenance) {
 	        // Exemple de vérification avant sauvegarde
@@ -29,5 +35,6 @@ public interface MaintenanceRepository extends JpaRepository<Maintenance, Long> 
 	            throw new IllegalArgumentException("Le statut ne permet pas l'enregistrement de cette maintenance.");
 	        }
 	    }
+	
 	
 }

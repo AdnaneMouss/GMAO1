@@ -1,5 +1,7 @@
 package com.huir.GmaoApp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,15 +22,13 @@ public class PhotosIntervention {
     private String url;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "intervention_id")
     private Intervention intervention;
     
     
     
-    @ManyToOne
-    @JoinColumn(name = "intervention_preventive_id")
-    private InterventionPreventive interventionPreventive;
-
+   
 
 	public Long getId() {
 		return id;
@@ -54,13 +54,7 @@ public class PhotosIntervention {
 		this.intervention = intervention;
 	}
 
-	public InterventionPreventive getInterventionPreventive() {
-		return interventionPreventive;
-	}
-
-	public void setInterventionPreventive(InterventionPreventive interventionPreventive) {
-		this.interventionPreventive = interventionPreventive;
-	}
+	
     
     
     

@@ -111,11 +111,13 @@ public class MaintenanceService {
         maintenance.setEndDaterep(maintenancedto.getEndDaterep());
         maintenance.setSelectedjours(maintenancedto.getSelectedjours());
         maintenance.setSelectedmois(maintenancedto.getSelectedmois());
+        long repetition = calculerRepetition(maintenancedto.getStartDaterep(), maintenancedto.getEndDaterep(), maintenancedto.getRepetitiontype());
+        maintenance.setRepetition(repetition);
         maintenance.setSeuil(maintenancedto.getSeuil());
         maintenance.setEquipementId(maintenancedto.getEquipementId()); 
         maintenance.setNonSeuil(maintenancedto.getNonSeuil());
         //maintenance.setNextRepetitionDatesAsList(maintenancedto.getNextRepetitionDatesAsList());
-        
+        maintenance.setSkipRepetitionCalculation(false);
 
 
         // Sérialisation des indicateurs sous forme JSON  ajouter date start et add aend des aintenance
@@ -258,14 +260,14 @@ public class MaintenanceService {
         maintenance.setSeuil(maintenancedto.getSeuil());
         maintenance.setNonSeuil(maintenancedto.getNonSeuil());
         maintenance.setNextRepetitionDates(maintenancedto.getNextRepetitionDates());
-
+      
         // Calculs
         long repetition = calculerRepetition(maintenancedto.getStartDaterep(), maintenancedto.getEndDaterep(), maintenancedto.getRepetitiontype());
         maintenance.setRepetition(repetition);
 
         long duree = calculerDureeIntervention(maintenancedto.getDateDebutPrevue(), maintenancedto.getDateFinPrevue());
         maintenance.setDureeIntervention(duree);
-
+        maintenance.setSkipRepetitionCalculation(false);
         // ✅ Corriger ici : associer l'objet Equipement
         Equipement equipement = equipementRepository.findById(maintenancedto.getEquipementId())
         	    .orElseThrow(() -> new RuntimeException("Équipement non trouvé avec ID : " + maintenancedto.getEquipementId()));
@@ -413,11 +415,13 @@ public class MaintenanceService {
 		        return count; // Retourner le nombre de dates de maintenance
 		    }
 		  
-		    public List<MaintenanceDTO> getMaintenancesByTechnicien(Long technicienId) {
-		        return maintenanceRepository.findByAffecteAId(technicienId).stream()
-		                .map(MaintenanceDTO::new)
-		                .collect(Collectors.toList());
-		    }
+		 public List<MaintenanceDTO> getMaintenancesByTechnicien(Long userId) {
+			    return maintenanceRepository.findByAffecteAId(userId)
+			           .stream()
+			           .map(MaintenanceDTO::new)
+			           .collect(Collectors.toList());
+			}
+
 		    
 		    public int getTechnicianWorkload(Long technicianId) {
 		        List<Maintenance> assignedTasks = maintenanceRepository.findByAffecteAIdAndStatutNotIn(technicianId, Arrays.asList(Statut.TERMINEE, Statut.ANNULEE));

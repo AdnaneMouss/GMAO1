@@ -20,22 +20,25 @@
       <p class="text-3xl font-bold text-purple-600">{{ stats.totalTechniciens }}</p>
     </div>
   </div>
-
-  <!-- Filtres -->
-  <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-    <h3 class="text-lg font-semibold mb-3">Filtrer par Rôle</h3>
-    <div class="flex flex-wrap gap-3">
-      <button *ngFor="let role of roles" 
-              (click)="filterByRole(role.value)"
-              [class]="getRoleButtonClass(role.value)">
-        {{ role.label }}
-      </button>
-      <button (click)="resetFilters()" 
-              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg">
-        Tous les rôles
-      </button>
-    </div>
+ <!-- Filtres -->
+<div class="mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+  <h3 class="text-lg font-semibold mb-3 text-gray-700">Filtrer par Rôle</h3>
+  <div class="flex flex-wrap gap-3">
+    <!-- Bouton ADMIN -->
+    <button *ngFor="let role of roles" 
+            (click)="filterByRole(role.value)"
+            [class]="getRoleButtonClass(role.value)"
+            class="px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-white">
+      {{ role.label }}
+    </button>
+    
+    <!-- Bouton Reset -->
+    <button (click)="resetFilters()" 
+            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors duration-200 font-medium text-gray-700 border border-gray-300">
+      Tous les rôles
+    </button>
   </div>
+</div>
  
  
 

@@ -19,6 +19,7 @@ import jakarta.persistence.Table;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class ChatMessage {
     
     @Id
@@ -40,8 +41,8 @@ public class ChatMessage {
     
     @CreationTimestamp
     private LocalDateTime timestamp;
-    
+    private String fileUrl;
     public enum MessageType {
-        CHAT, JOIN, LEAVE
+        CHAT, JOIN, LEAVE,File
     }
 }

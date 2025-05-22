@@ -65,6 +65,8 @@ public class User {
 
     private boolean actif = true;
 
+    private boolean notifications = true;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime dateInscription = LocalDateTime.now();
 
@@ -79,15 +81,9 @@ public class User {
     @JsonManagedReference("user-affecteA")
     @OneToMany(mappedBy = "affecteA", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MaintenanceCorrective> maintenancesAssignees;
-
-    // Relation avec les équipements sous la responsabilité de l'utilisateur (maintenance)
-    @JsonIgnore // Empêche la sérialisation pour éviter les boucles infinies
-    @JsonManagedReference
-    @OneToMany(mappedBy = "responsableMaintenance", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Equipement> equipementsSousResponsabilite;
     
     @JsonIgnore // Empêche la sérialisation pour éviter les boucles infinies
-    @JsonManagedReference("user-intervention")
+    @JsonManagedReference("user-intervention1")
     @OneToMany(mappedBy = "technicien", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Intervention> interventions;
 
@@ -98,8 +94,119 @@ public class User {
 	public void setId(Long id) {
 		this.id = id;
 	}
-    
-    
-    
+
+	public String getNom() {
+		return nom;
+	}
+
+	public void setNom(String nom) {
+		this.nom = nom;
+	}
+
+	public Civilite getCivilite() {
+		return civilite;
+	}
+
+	public void setCivilite(Civilite civilite) {
+		this.civilite = civilite;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getGsm() {
+		return gsm;
+	}
+
+	public void setGsm(String gsm) {
+		this.gsm = gsm;
+	}
+
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
+	}
+
+	public Role getRole() {
+		return role;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
+
+	public boolean isActif() {
+		return actif;
+	}
+
+	public void setActif(boolean actif) {
+		this.actif = actif;
+	}
+
+	public boolean isNotifications() {
+		return notifications;
+	}
+
+	public void setNotifications(boolean notifications) {
+		this.notifications = notifications;
+	}
+
+	public LocalDateTime getDateInscription() {
+		return dateInscription;
+	}
+
+	public void setDateInscription(LocalDateTime dateInscription) {
+		this.dateInscription = dateInscription;
+	}
+
+	public List<MaintenanceCorrective> getMaintenancesCreees() {
+		return maintenancesCreees;
+	}
+
+	public void setMaintenancesCreees(List<MaintenanceCorrective> maintenancesCreees) {
+		this.maintenancesCreees = maintenancesCreees;
+	}
+
+	public List<MaintenanceCorrective> getMaintenancesAssignees() {
+		return maintenancesAssignees;
+	}
+
+	public void setMaintenancesAssignees(List<MaintenanceCorrective> maintenancesAssignees) {
+		this.maintenancesAssignees = maintenancesAssignees;
+	}
+
+	public List<Intervention> getInterventions() {
+		return interventions;
+	}
+
+	public void setInterventions(List<Intervention> interventions) {
+		this.interventions = interventions;
+	}
+
+
     
 }

@@ -73,5 +73,10 @@ export class UserService {
   }
 
 
+  exportUserPDF(userId: number): Observable<Blob> {
+  return this.http.get(`/api/pdf/user/${userId}`, { responseType: 'blob' });
+}
+
+
 
 }

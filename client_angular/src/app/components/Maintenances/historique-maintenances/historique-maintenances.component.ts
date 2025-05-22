@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MaintenanceService } from '../../../services/maintenance.service';
 import { maintenance } from '../../../models/maintenance';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-historique-maintenances',
@@ -19,7 +20,7 @@ export class HistoriqueMaintenancesComponent implements OnInit {
   ngOnInit(): void {
     this.loadMaintenances();
   }
-  constructor(private maintenanceService: MaintenanceService) {}
+  constructor(private maintenanceService: MaintenanceService,private router: Router) {}
    // Charger toutes les maintenances
    loadMaintenances(): void {
     this.maintenanceService.getAllMaintenances().subscribe({
@@ -38,6 +39,9 @@ export class HistoriqueMaintenancesComponent implements OnInit {
   filterTerminatedMaintenances(): void {
     this.terminatedMaintenances = this.maintenances.filter(m => m.statut === 'TERMINEE');
   }
+goToPreventiveMaintenance(): void {
+  this.router.navigate(['/maintenances/preventives']);
+}
 
   
 openModal(maintenance: any): void {

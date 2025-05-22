@@ -81,7 +81,7 @@ unreadMessagesCount: number = 0;
 
   notification: {id: number, message: string}[] = [];
   currentPage: number = 0;
-  pageSize: number = 15 // 20 éléments par page
+  pageSize: number = 10 // 20 éléments par page
  
 scrollTimeout: any;
  nextRepetitionDates: Date[] = [];
@@ -143,8 +143,8 @@ toggleFormSize() {
   this.isExpanded = !this.isExpanded;
 }
 hasRepetitionDates(): boolean {
-  return Array.isArray(this.selectedMaintenance?.nextRepetitionDatesAsList)
-    && this.selectedMaintenance!.nextRepetitionDatesAsList!.length > 0;
+  return Array.isArray(this.selectedMaintenance?.nextRepetitionDatesString)
+    && this.selectedMaintenance!.nextRepetitionDatesString!.length > 0;
 }
 handleDateChange(event: Event, index: number): void {
   const input = event.target as HTMLInputElement;
@@ -152,9 +152,9 @@ handleDateChange(event: Event, index: number): void {
 
   if (
     this.selectedMaintenance &&
-    Array.isArray(this.selectedMaintenance.nextRepetitionDatesAsList)
+    Array.isArray(this.selectedMaintenance.nextRepetitionDatesString)
   ) {
-    this.selectedMaintenance.nextRepetitionDatesAsList[index] = newDate;
+    this.selectedMaintenance.nextRepetitionDatesString[index] = newDate;
 
     console.log(`Date mise à jour à l'index ${index} : ${newDate}`);
 
@@ -276,10 +276,10 @@ selectedMoiss: { [key: string]: boolean } = {};
 
   selectedAttributs: AttributEquipements[] = [];
 addRepetitionDate(): void {
-  if (!this.newMaintenance.nextRepetitionDatesAsList) {
-    this.newMaintenance.nextRepetitionDatesAsList = [];
+  if (!this.newMaintenance.nextRepetitionDatesString) {
+    this.newMaintenance.nextRepetitionDatesString = [];
   }
-  this.newMaintenance.nextRepetitionDatesAsList.push('');
+  this.newMaintenance.nextRepetitionDatesString.push('');
 }
 
 
@@ -287,6 +287,7 @@ addRepetitionDate(): void {
 
   closeForm() {
     this.selectedForm= null; // Ferme le formulaire
+    this.showEditModal=false;
   }
   newMaintenance: maintenance = {
     equipement: {} as Equipement,
@@ -347,7 +348,7 @@ addRepetitionDate(): void {
     seuil: 0,
     endDaterep: new Date(''),
     equipementId: null,
-    equipementNom:'',
+    equipementNom: '',
 
 
     indicateurs: [],
@@ -364,7 +365,8 @@ addRepetitionDate(): void {
     RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
     message: '',
     NonSeuil: '',
-    equipementBatiment: "", equipementEtage: 0, equipementSalle: 0
+    equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
+    dateCreation: ''
   };
 
 
@@ -707,38 +709,43 @@ handleFrequenceChange() {
     this.filteredMaintenace = filtered;
   }
   
+applyAllFilters(): void {
+  let filtered = [...this.maintenances];
 
-  filterMaintenancesBydateDebutPrevue(){
-    console.log("Maintenances Data:", this.maintenances);
-
-    if (this.dateDebutPrevue) {
-      // Filtrer en fonction de la priorité sélectionnée
-      this.filteredMaintenace = this.maintenances.filter(e => e.dateDebutPrevue === this.dateDebutPrevue);
-      console.log("Filtered Maintenances:", this.filteredMaintenace);  // Afficher les maintenances filtrées
-      console.log("Selected date:", this.dateDebutPrevue);  // Afficher la priorité sélectionnée
-    } else {
-      // Réinitialiser la liste filtrée si aucune priorité n'est sélectionnée
-      this.filteredMaintenace = [...this.maintenances];
-      console.log("No priorite selected, showing all maintenances:", this.filteredMaintenace);
-    }
-
+  // Filtre par statut
+  if (this.selectedStatus) {
+    filtered = filtered.filter(e => e.statut === this.selectedStatus);
   }
 
-  filterMaintenancesBydatedateFinPrevue(){
-    console.log("Maintenances Data:", this.maintenances);
-
-    if (this.dateFinPrevue) {
-      // Filtrer en fonction de la priorité sélectionnée
-      this.filteredMaintenace = this.maintenances.filter(e => e.dateFinPrevue === this.dateFinPrevue);
-      console.log("Filtered Maintenances:", this.filteredMaintenace);  // Afficher les maintenances filtrées
-      console.log("Selected date:", this.dateFinPrevue);  // Afficher la priorité sélectionnée
-    } else {
-      // Réinitialiser la liste filtrée si aucune priorité n'est sélectionnée
-      this.filteredMaintenace = [...this.maintenances];
-      console.log("No priorite selected, showing all maintenances:", this.filteredMaintenace);
-    }
-
+  // Filtre par priorité
+  if (this.selectedPriorite) {
+    filtered = filtered.filter(e => e.priorite === this.selectedPriorite);
   }
+
+  // Filtre par équipement sélectionné
+  if (this.selectedEquipement) {
+    filtered = filtered.filter(e => e.equipementNom === this.selectedEquipement);
+  }
+
+  // Filtre par texte de recherche
+  if (this.searchText && this.searchText.trim() !== '') {
+    const searchLower = this.searchText.toLowerCase();
+    filtered = filtered.filter(e => e.equipementNom?.toLowerCase().includes(searchLower));
+  }
+
+  // Filtre par date début prévue
+  if (this.dateDebutPrevue) {
+    filtered = filtered.filter(e => e.dateDebutPrevue === this.dateDebutPrevue);
+  }
+
+  // Filtre par date fin prévue
+  if (this.dateFinPrevue) {
+    filtered = filtered.filter(e => e.dateFinPrevue === this.dateFinPrevue);
+  }
+
+  this.filteredMaintenace = filtered;
+}
+
   resetDates() {
     this.dateDebutPrevue = '';
     this.dateFinPrevue = '';
@@ -760,21 +767,30 @@ handleFrequenceChange() {
   
 
 
+onStatutChange() {
+  this.applyAllFilters();
+}
 
-  filterMaintenancesByPriorite() {
-    console.log("Maintenances Data:", this.maintenances);  // Vérifier si la donnée des maintenances est correcte
+onPrioriteChange() {
+  this.applyAllFilters();
+}
 
-    if (this.selectedPriorite) {
-      // Filtrer en fonction de la priorité sélectionnée
-      this.filteredMaintenace = this.maintenances.filter(e => e.priorite === this.selectedPriorite);
-      console.log("Filtered Maintenances:", this.filteredMaintenace);  // Afficher les maintenances filtrées
-      console.log("Selected Priorite:", this.selectedPriorite);  // Afficher la priorité sélectionnée
-    } else {
-      // Réinitialiser la liste filtrée si aucune priorité n'est sélectionnée
-      this.filteredMaintenace = [...this.maintenances];
-      console.log("No priorite selected, showing all maintenances:", this.filteredMaintenace);
-    }
-  }
+onEquipementChang() {
+  this.applyAllFilters();
+}
+
+onDateDebutChange() {
+  this.applyAllFilters();
+}
+
+onDateFinChange() {
+  this.applyAllFilters();
+}
+
+onSearchChange() {
+  this.applyAllFilters();
+}
+
 
   cancelTask(id: number): void {
     this.maintenanceService.cancelTask(id).subscribe(
@@ -1016,14 +1032,15 @@ toggleMoisSelectionn(mois: string, event: any) {
     this.chargerEquipements();
     this.loadBatiments();
     this.setupChatNotifications();
-    window.addEventListener('scroll', this.handleScroll.bind(this));
+
+    window.addEventListener('scroll', this.onScroll, true);
 
 
      for (let mois of this.getMois()) {
     this.selectedMoiss[mois] = false;
 
-    if (this.newMaintenance?.nextRepetitionDatesAsList) {
-    this.editableDates = this.newMaintenance.nextRepetitionDatesAsList.map(dateStr =>
+    if (this.newMaintenance?.nextRepetitionDatesString) {
+    this.editableDates = this.newMaintenance.nextRepetitionDatesString.map(dateStr =>
       new Date(dateStr).toISOString().slice(0, 10)
     );
   }
@@ -1065,14 +1082,13 @@ toggleMoisSelectionn(mois: string, event: any) {
 
 
 
-  handleScroll() {
-    this.isScrolling = true;
-  
-    clearTimeout(this.scrollTimeout);
-    this.scrollTimeout = setTimeout(() => {
-      this.isScrolling = false;
-    }, 1000); // 1 seconde après arrêt du scroll
-  }
+ onScroll = (): void => {
+  this.isScrolling = true;
+};
+
+ngOnDestroy() {
+  window.removeEventListener('scroll', this.onScroll, true);
+}
 
 
   getPaginatedMaintenances(): any[] {
@@ -1221,11 +1237,7 @@ toggleMoisSelectionn(mois: string, event: any) {
     this.notificationCount = 0;
     this.showNotificationsPanel = false;
   }
-  ngOnDestroy(): void {
-    if (this.checkInterval) {
-      this.checkInterval.unsubscribe();
-    }
-  }
+  
   onActionChange() {
     console.log('Action sélectionnée :', this.newMaintenance.action);
 
@@ -1316,16 +1328,30 @@ toggleMoisSelectionn(mois: string, event: any) {
 
 
 
-  exportToExcel(): void {
-    // Créer un tableau de données au format Excel
-    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.maintenances);
-    const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Maintenances');
+exportToExcel(): void {
+  const dataToExport = this.filteredMaintenace; 
 
-    // Télécharger le fichier Excel
-    XLSX.writeFile(wb, 'maintenances.xlsx');
+  if (!dataToExport || dataToExport.length === 0) {
+    alert('Aucune donnée filtrée à exporter.');
+    return;
   }
- 
+
+  console.log('Exporting filtered maintenances:', dataToExport);
+
+  const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
+
+  const firstRow = dataToExport[0];
+  const columnWidths = Object.keys(firstRow).map(key => ({ wch: key.length + 10 }));
+  ws['!cols'] = columnWidths;
+
+  const wb: XLSX.WorkBook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Maintenances');
+
+  XLSX.writeFile(wb, 'maintenances-filtrees.xlsx');
+}
+
+
+
 
 
 
@@ -1646,87 +1672,85 @@ enregistrerSelection() {
 }
 
 resetForm() {
+  this.newMaintenance = {
+    id: 0,
+    dureeIntervention: 0,
+    dateDebutPrevue: new Date(''),
+    dateFinPrevue: new Date(''),
+    dateProchainemaintenance: new Date(''),
+    commentaires: '',
+    documentPath: null,
+    statut: 'EN_ATTENTE',
+    priorite: 'NORMALE',
+    repetitiontype: 'Ne_pas_repeter',
+    frequence: '',
+    action: 'VERIFICATION_PERFORMANCES',
+    autreAction: '',
+    startDaterep: new Date(''),
+    endDaterep: new Date(''),
+    indicateurs: [],
+    selectedmois: [],
+    selectedjours: [],
+    selectedDays: {}, // { "LUNDI": true, ... }
+    selectedMonth: {}, // { "JANVIER": true, ... }
+    repetitionType: 'TOUS_LES_SEMAINES',
+    startDate: new Date(''),
+    endDate: new Date(''),
+    repetition: 0,
+    seuil: 0,
+    message: '',
+    NonSeuil: '',
+    RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
+  dateCreation: new Date().toISOString(),
 
-    this.newMaintenance = {
+
+    equipementId: null,
+    equipementBatiment: "",
+    equipementEtage: 0,
+    equipementSalle: 0,
+    equipementNom: '',
+    equipement: {} as Equipement,
+
+    user: {
       id: 0,
-     dureeIntervention: 0,
-      dateDebutPrevue: new Date(''), // Initialisé en tant qu'objet Date
-      dateFinPrevue: new Date(''), // Initialisé en tant qu'objet Date
-      dateProchainemaintenance: new Date(''),
-      commentaires: '',
-      documentPath :null,
-      statut: 'EN_ATTENTE',
-      priorite: 'NORMALE',
-      repetitiontype:'Ne_pas_repeter',
-      frequence:'',
-      action:'VERIFICATION_PERFORMANCES',
-      autreAction: '',
-      startDaterep: new Date(''),
-      endDaterep: new Date(''),
-      indicateurs: [],
-      selectedmois: [],
-      selectedjours: [],
-      selectedDays: {} , // Exemple : { "LUNDI": true, "MARDI": false }
-      selectedMonth: {} ,  // Exemple : { "JANVIER": true, "FÉVRIER": false }
-      repetitionType:'TOUS_LES_SEMAINES' ,
-      startDate: new Date(''),
-      endDate: new Date(''),
-      repetition:0,
-      seuil:0,
-      message:'',
-      NonSeuil:'',
-      RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
-      equipementId:  null,
-      equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
-      equipementNom:'',
-
-      equipement: {} as Equipement,
-      user: {
+      nom: '',
+      civilite: 'M',
+      email: '',
+      username: '',
+      password: '',
+      gsm: '',
+      image: '',
+      role: 'ADMIN',
+      actif: true,
+      dateInscription: '',
+      Intervention: {
         id: 0,
-        nom: '',
-        civilite: 'M',
-        email: '',
-        username: '',
-        password: '',
-        gsm: '',
-        image: '',
-        role: 'ADMIN',
-        actif: true,
-        dateInscription: '',
-
-        Intervention: {
-          id: 0,
-          technicienId: 0,
-          typeIntervention: 'PREVENTIVE',
-          description: '',
-          duree: 0,
-          maintenanceId: 0,
-          maintenanceStatut: 'EN_ATTENTE',
-          maintenancePriorite: 'NORMALE',
-          dateCommencement: undefined,
-          dateCloture: undefined,
-          dateCreation: undefined,
-          equipementMaintenu: '',
-          remarques: '',
-          photos: [],
-          piecesDetachees: []
-        }
-      },
-      batiment :{
-
-        id: 0,
-        numBatiment: 0,
-        intitule: '',
-        etages:[],
-
-
+        technicienId: 0,
+        typeIntervention: 'PREVENTIVE',
+        description: '',
+        duree: 0,
+        maintenanceId: 0,
+        maintenanceStatut: 'EN_ATTENTE',
+        maintenancePriorite: 'NORMALE',
+        dateCommencement: undefined,
+        dateCloture: undefined,
+        dateCreation: undefined,
+        equipementMaintenu: '',
+        remarques: '',
+        photos: [],
+        piecesDetachees: []
+      }
     },
 
-
-
-    };
-
+    batiment: {
+      id: 0,
+      numBatiment: 0,
+      intitule: '',
+      etages: [],
+    },
+  };
 }
+
 
 
 
