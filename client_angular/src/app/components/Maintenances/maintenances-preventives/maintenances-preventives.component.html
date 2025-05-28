@@ -20,8 +20,8 @@
       <h2 class="text-3xl font-semibold text-gray-800">Gestion des Maintenances Préventives</h2>
       <p class="text-gray-600">Consultez et gérez les maintenances préventives des équipements hospitaliers.</p>
     </div>
-    
-  
+
+
   </div>
 
   <!-- Filtres améliorés -->
@@ -41,7 +41,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Filtre par statut -->
     <div class="relative">
       <select [(ngModel)]="selectedStatus" (change)="filterMaintenancesByStatus()"
@@ -101,28 +101,28 @@
 
   <!-- Notifications -->
   <!-- Conteneur des icônes de notification et chat -->
-<div #iconsContainer 
+<div #iconsContainer
      [class.hidden]="isScrolling"
      class="fixed top-4 right-4 flex gap-3 z-50 transition-opacity duration-300">
-  
+
   <!-- Bouton Notification -->
   <div class="relative">
     <button (click)="toggleNotificationsPanel($event)"
             class="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-gray-100 transition-all duration-200 group">
       <i class="fas fa-bell text-gray-700 text-xl group-hover:text-blue-600"></i>
-      <span *ngIf="notificationCount > 0" 
+      <span *ngIf="notificationCount > 0"
             class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-sm">
         {{ notificationCount > 9 ? '9+' : notificationCount }}
       </span>
     </button>
   </div>
-  
+
   <!-- Bouton Chat -->
   <div class="relative">
     <button (click)="navigateToChat(); clearNotificationss()"
             class="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-200 group">
       <i class="fas fa-comment-dots text-white text-xl group-hover:scale-110"></i>
-      <span *ngIf="unreadMessagesCount > 0" 
+      <span *ngIf="unreadMessagesCount > 0"
             class="absolute -top-1 -right-1 bg-white text-red-500 text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-blue-500 shadow-sm">
         {{ unreadMessagesCount > 9 ? '9+' : unreadMessagesCount }}
       </span>
@@ -135,24 +135,24 @@
        class="fixed top-16 right-4 bg-white rounded-lg shadow-xl w-80 max-h-96 overflow-hidden z-50 border border-gray-200 animate-slide-down">
     <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
       <h3 class="font-semibold text-gray-800">Notifications</h3>
-      <button (click)="clearNotifications()" 
+      <button (click)="clearNotifications()"
               class="text-blue-500 hover:text-blue-700 text-sm font-medium">
         Tout effacer
       </button>
     </div>
-    
-    <div *ngIf="notifications.length === 0" 
+
+    <div *ngIf="notifications.length === 0"
          class="p-4 text-center text-gray-500">
       Aucune nouvelle notification
     </div>
-    
+
     <div class="overflow-y-auto max-h-80">
-      <div *ngFor="let notif of notification" 
+      <div *ngFor="let notif of notification"
            class="p-4 border-b border-gray-100 hover:bg-gray-50 transition duration-150">
-        <a [routerLink]="['/details-maintenance', notif.id]" 
+        <a [routerLink]="['/details-maintenance', notif.id]"
            class="block text-gray-700 hover:text-blue-600">
           <p>{{ notif.message }}</p>
-          
+
         </a>
       </div>
     </div>
@@ -172,10 +172,10 @@
   </button>
 
   <!-- Groupe de boutons secondaires -->
- 
+
 <div class="flex items-center gap-4 ml-auto">
   <!-- Bouton Export Excel amélioré -->
-  <button 
+  <button
     (click)="exportToExcel()"
     class="flex items-center gap-2 px-5 py-3 bg-white text-green-600 rounded-xl shadow-md hover:bg-green-50 hover:text-green-700 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-300/70 focus:shadow-lg border border-green-100"
     title="Exporter vers Excel"
@@ -197,10 +197,10 @@
 
 
 
-   
-    
 
- 
+
+
+
 <!-- Tableau des Maintenances -->
 <div class="overflow-x-auto rounded-xl shadow-md bg-white">
   <table class="min-w-full text-sm text-left border-collapse">
@@ -275,7 +275,7 @@
       <label class="block text-md font-medium mb-2 text-gray-700 flex items-center">
         <i class="fas fa-calendar-day text-green-600 mr-3 text-lg"></i> Date début prévue
       </label>
-      <input type="date" [(ngModel)]="selectedMaintenance.dateDebutPrevue" name="dateDebutPrevue" 
+      <input type="date" [(ngModel)]="selectedMaintenance.dateDebutPrevue" name="dateDebutPrevue"
              class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-lg">
     </div>
 
@@ -283,7 +283,7 @@
       <label class="block text-md font-medium mb-2 text-gray-700 flex items-center">
         <i class="fas fa-calendar-day text-green-600 mr-3 text-lg"></i> Date fin prévue
       </label>
-      <input type="date" [(ngModel)]="selectedMaintenance.dateFinPrevue" name="dateFinPrevue" 
+      <input type="date" [(ngModel)]="selectedMaintenance.dateFinPrevue" name="dateFinPrevue"
              class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-lg">
     </div>
 
@@ -291,7 +291,7 @@
       <label class="block text-md font-medium mb-2 text-gray-700 flex items-center">
         <i class="fas fa-calendar-check text-green-600 mr-3 text-lg"></i> Date prochaine maintenance
       </label>
-      <input type="date" [(ngModel)]="selectedMaintenance.dateProchainemaintenance" name="dateProchainemaintenance" 
+      <input type="date" [(ngModel)]="selectedMaintenance.dateProchainemaintenance" name="dateProchainemaintenance"
              class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-lg">
     </div>
   </div>
@@ -302,7 +302,7 @@
       <label class="block text-md font-medium mb-2 text-gray-700 flex items-center">
         <i class="fas fa-exclamation-triangle text-green-600 mr-3 text-lg"></i> Priorité
       </label>
-      <select [(ngModel)]="selectedMaintenance.priorite" name="priorite" 
+      <select [(ngModel)]="selectedMaintenance.priorite" name="priorite"
               class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-lg">
         <option value="FAIBLE">Faible</option>
         <option value="NORMALE">Normale</option>
@@ -325,7 +325,7 @@
       <label class="block text-md font-medium mb-2 text-gray-700 flex items-center">
         <i class="fas fa-info-circle text-green-600 mr-3 text-lg"></i> Statut
       </label>
-      <select [(ngModel)]="selectedMaintenance.statut" name="statut" 
+      <select [(ngModel)]="selectedMaintenance.statut" name="statut"
               class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-lg">
         <option value="EN_ATTENTE">En attente</option>
         <option value="EN_COURS">En cours</option>
@@ -349,7 +349,7 @@
       <label class="block text-md font-medium mb-2 text-gray-700 flex items-center">
         <i class="fas fa-calendar-day text-green-600 mr-3 text-lg"></i> SEUIL
       </label>
-      <input type="number" [(ngModel)]="selectedMaintenance.seuil" name="seuil" 
+      <input type="number" [(ngModel)]="selectedMaintenance.seuil" name="seuil"
              class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-lg">
     </div>
 
@@ -357,7 +357,7 @@
       <label class="block text-md font-medium mb-2 text-gray-700 flex items-center">
         <i class="fas fa-tasks text-green-600 mr-3 text-lg"></i> Action
       </label>
-      <select [(ngModel)]="selectedMaintenance.action" name="action" 
+      <select [(ngModel)]="selectedMaintenance.action" name="action"
               class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-lg">
         <option value="VERIFICATION_PERFORMANCES">Vérification des performances</option>
         <option value="NETTOYAGE_EQUIPEMENTS">Nettoyage des équipements</option>
@@ -377,7 +377,7 @@
     <h3 class="text-xl font-semibold text-gray-800 flex items-center">
       <i class="fas fa-redo-alt text-green-600 mr-3 text-xl"></i> Paramètres de répétition
     </h3>
-    
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>
         <label class="block text-md font-medium text-gray-700 mb-2 flex items-center">
@@ -468,7 +468,7 @@
             class="bg-gray-500 text-white px-8 py-3 rounded-lg hover:bg-gray-600 transition flex items-center text-lg shadow-md">
       <i class="fas fa-times mr-3"></i> Fermer
     </button>
-    
+
     <button type="submit"
             class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition flex items-center text-lg shadow-md">
       <i class="fas fa-save mr-3"></i> Mettre à jour
@@ -481,7 +481,7 @@
 
 
 </div>
-          
+
             <div class="flex items-center space-x-2">
   <!-- Bouton Détails -->
   <button
@@ -503,60 +503,60 @@
   </button>
 </div>
 
-           
 
-          
+
+
             <!-- Confirmation -->
-            
-          </div>
-          
 
-          
-          
-            
-        
+          </div>
+
+
+
+
+
+
         </td>
       </tr>
     </tbody>
   </table>
 </div>
 
-  
+
   <!-- Pagination -->
   <div class="flex justify-between items-center p-4 bg-gray-50 rounded-b-lg">
     <div class="text-sm text-gray-700">
-      Affichage de {{ (currentPage * pageSize) + 1 }} à 
+      Affichage de {{ (currentPage * pageSize) + 1 }} à
       {{ getMin((currentPage + 1) * pageSize, filteredMaintenace.length) }}
 
       sur {{ filteredMaintenace.length }} éléments
     </div>
     <div class="flex space-x-2">
-      <button 
-        (click)="goToPage(0)" 
+      <button
+        (click)="goToPage(0)"
         [disabled]="currentPage === 0"
         class="px-3 py-1 border rounded-md disabled:opacity-50"
       >
         <i class="fas fa-angle-double-left"></i>
       </button>
-      <button 
-        (click)="prevPage()" 
+      <button
+        (click)="prevPage()"
         [disabled]="currentPage === 0"
         class="px-3 py-1 border rounded-md disabled:opacity-50"
       >
         <i class="fas fa-angle-left"></i>
       </button>
-      
+
       <span class="px-3 py-1">Page {{ currentPage + 1 }} / {{ getTotalPages() }}</span>
-      
-      <button 
-        (click)="nextPage()" 
+
+      <button
+        (click)="nextPage()"
         [disabled]="currentPage >= getTotalPages() - 1"
         class="px-3 py-1 border rounded-md disabled:opacity-50"
       >
         <i class="fas fa-angle-right"></i>
       </button>
-      <button 
-        (click)="goToPage(getTotalPages() - 1)" 
+      <button
+        (click)="goToPage(getTotalPages() - 1)"
         [disabled]="currentPage >= getTotalPages() - 1"
         class="px-3 py-1 border rounded-md disabled:opacity-50"
       >
@@ -575,14 +575,14 @@
           <i class="fas fa-cogs text-blue-600 mr-3"></i> <!-- Icône changée (engrenages) -->
           Démarrer une maintenance
         </h4>
-      
+
       </div>
 
       <!-- Formulaire de maintenance -->
       <form (ngSubmit)="addMaintenance()" class="space-y-8">
         <!-- Première partie - Champs essentiels -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Technicien maintenance --> 
+          <!-- Technicien maintenance -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-user-cog text-blue-500 mr-2"></i> Technicien maintenance <span class="text-red-500">*</span>
@@ -594,11 +594,11 @@
               required
             >
               <option *ngFor="let user of filteredTechnicienUsers" [ngValue]="user">
-                {{ user.id }} - {{ user.role }}
+                {{ user.nom }}
               </option>
             </select>
           </div>
-      
+
           <!-- Action -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -623,7 +623,7 @@
               <option value="FORMATION_ENTRETIEN">Formation entretien</option>
               <option value="AUTRE">AUTRE</option>
             </select>
-      
+
             <!-- Champ pour préciser "Autre" -->
             <div *ngIf="newMaintenance.action === 'AUTRE'" class="mt-3">
               <label for="customAction" class="block text-sm font-medium text-gray-700 mb-1 flex items-center">
@@ -638,7 +638,7 @@
               />
             </div>
           </div>
-      
+
           <!-- Bâtiment -->
           <div>
             <label class="block text-gray-700 mb-2 font-medium flex items-center">
@@ -652,7 +652,7 @@
               <i class="fas fa-info-circle text-blue-500 mr-2 mt-0.5"></i> Choisissez un bâtiment pour accéder aux informations associées
             </p>
           </div>
-      
+
           <!-- Étage (apparaît seulement si un bâtiment est sélectionné) -->
           <div *ngIf="selectedBatiment && etages.length > 0">
             <label class="block text-gray-700 mb-2 font-medium flex items-center">
@@ -663,7 +663,7 @@
               <option *ngFor="let etage of etages" [value]="etage.id">{{ etage.num }}</option>
             </select>
           </div>
-      
+
           <!-- Salle (apparaît seulement si un étage est sélectionné) -->
           <div *ngIf="selectedEtage && salles.length > 0">
             <label class="block text-gray-700 mb-2 font-medium flex items-center">
@@ -674,7 +674,7 @@
               <option *ngFor="let salle of salles" [value]="salle.id">{{ salle.num }}</option>
             </select>
           </div>
-      
+
           <!-- Équipement -->
           <div *ngIf="selectedSalle && equipements.length > 0">
             <label class="block text-gray-700 mb-2 font-medium flex items-center">
@@ -684,7 +684,7 @@
                     class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
                     (change)="onEquipementChange($event)">
               <option *ngFor="let equipement of equipements" [value]="equipement.id">
-                {{ equipement.nom }} 
+                {{ equipement.nom }}
               </option>
             </select>
             <div *ngIf="selectedEquipementDetails" class="text-sm text-gray-700 mt-2 space-y-1 ml-1 bg-blue-50 p-3 rounded-lg">
@@ -694,7 +694,7 @@
               <div class="flex items-center"><i class="fas fa-calendar-check text-blue-400 mr-2 w-4"></i> <strong>Dernière maintenance:</strong> {{ selectedEquipementDetails.dateDerniereMaintenance }}</div>
             </div>
           </div>
-      
+
           <!-- Dates et durée -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -709,7 +709,7 @@
               (change)="validateDates()"
             />
           </div>
-      
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-calendar-times text-blue-500 mr-2"></i> Date de fin prévue <span class="text-red-500">*</span>
@@ -723,7 +723,7 @@
               (change)="validateDates()"
             />
           </div>
-      
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-hourglass-half text-blue-500 mr-2"></i> Durée d'Intervention (en jours)
@@ -736,7 +736,7 @@
               readonly
             />
           </div>
-      
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-calendar-plus text-blue-500 mr-2"></i> Date prochaine maintenance
@@ -748,7 +748,7 @@
               name="dateProchainemaintenance"
             />
           </div>
-      
+
           <!-- Statut et Priorité -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -766,7 +766,7 @@
               <option value="ANNULEE" disabled>ANNULEE</option>
             </select>
           </div>
-      
+
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
               <i class="fas fa-exclamation-triangle text-blue-500 mr-2"></i> Priorité <span class="text-red-500">*</span>
@@ -782,7 +782,7 @@
               <option value="URGENTE" class="text-red-500">URGENTE</option>
             </select>
           </div>
-      
+
           <!-- Type de maintenance -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -799,11 +799,11 @@
               <option value="indicateur">Indicateur</option>
             </select>
           </div>
-      
+
           <!-- Sélection de l'équipement -->
-         
+
         </div>
-      
+
         <!-- Deuxième partie - Champs conditionnels -->
         <div *ngIf="maintenanceType" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 border-t pt-6">
           <!-- Fréquence (si type est fréquence) -->
@@ -827,7 +827,7 @@
                   <option value="ANNUEL">Annuel</option>
                 </select>
               </div>
-      
+
               <!-- Dates de répétition -->
               <div *ngIf="newMaintenance.repetitiontype !== 'Ne_pas_repeter'" class="col-span-2 grid grid-cols-2 gap-6">
                 <div>
@@ -855,7 +855,7 @@
                   />
                 </div>
               </div>
-      
+
               <!-- Jours de la semaine -->
               <div *ngIf="newMaintenance.repetitiontype === 'TOUS_LES_SEMAINES'" class="col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -863,16 +863,16 @@
                 </label>
                 <div class="flex flex-wrap gap-4">
                   <div *ngFor="let day of getDays()" class="flex items-center">
-                    <input type="checkbox" 
-                          [id]="day" 
-                          [checked]="selectedDays[day]" 
+                    <input type="checkbox"
+                          [id]="day"
+                          [checked]="selectedDays[day]"
                           (change)="toggleDay(day)"
                           class="mr-2">
                     <label [for]="day" class="text-sm text-gray-700">{{day}}</label>
                   </div>
                 </div>
               </div>
-      
+
               <!-- Mois de l'année -->
               <div *ngIf="newMaintenance.repetitiontype === 'MENSUEL'" class="col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -894,7 +894,7 @@
               </div>
             </div>
           </div>
-      
+
           <!-- Indicateurs (si type est indicateur) -->
           <div *ngIf="maintenanceType === 'indicateur'" class="col-span-2">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -911,14 +911,14 @@
                 >
                   <option value="" disabled>Sélectionnez un attribut</option>
                   <option *ngFor="let attr of selectedAttributs" [value]="attr.nom">
-                    {{ attr.nom }} 
+                    {{ attr.nom }}
                   </option>
                 </select>
                 <p *ngIf="selectedAttributs.length === 0" class="text-xs text-red-500 mt-1 flex items-center">
                   <i class="fas fa-exclamation-circle mr-1"></i> Aucun attribut disponible
                 </p>
               </div>
-      
+
               <!-- Valeur NonSeuil -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
@@ -941,7 +941,7 @@
               </div>
             </div>
           </div>
-      
+
           <!-- Commentaires - Section améliorée -->
           <div class="col-span-2 mt-4">
             <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
@@ -961,7 +961,7 @@
             </div>
           </div>
         </div>
-      
+
         <!-- Boutons de soumission -->
         <div class="flex justify-end gap-4 mt-8">
           <button
@@ -980,7 +980,7 @@
         </div>
       </form>
 
-     
+
     </div>
   </div>
 </div>

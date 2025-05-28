@@ -61,13 +61,16 @@ import {
   DemandeMaintenancesComponent
 } from "./components/Maintenances/demande-maintenances/demande-maintenances.component";
 import {HistoriqueDemandesComponent} from "./components/Maintenances/historique-demandes/historique-demandes.component";
+import {DashboardAdminComponent} from "./components/dashboard-admin/dashboard-admin.component";
+import {EquipementFormComponent} from "./components/equipement-form/equipement-form.component";
 
 
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
+  { path: 'dashboard', component: DashboardAdminComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
+  { path: 'form', component: EquipementFormComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
   { path: 'utilisateurs/liste', component: ListeUtilisateursComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'equipements/liste', component: ListeEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
   { path: 'equipements/type_equipements', component: TypesEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },

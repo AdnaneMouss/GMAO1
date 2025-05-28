@@ -74,6 +74,16 @@ import { SallesListeComponent } from './components/batiments/salles-liste/salles
 import { EquipementsParSalleComponent } from './components/Equipements/equipements-par-salle/equipements-par-salle.component';
 import { DemandeMaintenancesComponent } from './components/Maintenances/demande-maintenances/demande-maintenances.component';
 import { HistoriqueDemandesComponent } from './components/Maintenances/historique-demandes/historique-demandes.component';
+import { DashboardAdminComponent } from './components/dashboard-admin/dashboard-admin.component';
+import { DashboardUsersComponent } from './components/dashboards/dashboard-users/dashboard-users.component';
+import { DashboardEquipementsComponent } from './components/dashboards/dashboard-equipements/dashboard-equipements.component';
+import { DashboardPiecesComponent } from './components/dashboards/dashboard-pieces/dashboard-pieces.component';
+import { DashboardMaintenanceComponent } from './components/dashboards/dashboard-maintenance/dashboard-maintenance.component';
+import { DashboardInterventionsComponent } from './components/dashboards/dashboard-interventions/dashboard-interventions.component';
+import { DashboardBatimentsComponent } from './components/dashboards/dashboard-batiments/dashboard-batiments.component';
+import { DashboardServicesComponent } from './components/dashboards/dashboard-services/dashboard-services.component';
+import {BaseChartDirective} from "ng2-charts";
+import { EquipementFormComponent } from './components/equipement-form/equipement-form.component';
 
 
 @NgModule({
@@ -113,42 +123,52 @@ import { HistoriqueDemandesComponent } from './components/Maintenances/historiqu
     EquipementsParSalleComponent,
     DemandeMaintenancesComponent,
     HistoriqueDemandesComponent,
+    DashboardAdminComponent,
+    DashboardUsersComponent,
+    DashboardEquipementsComponent,
+    DashboardPiecesComponent,
+    DashboardMaintenanceComponent,
+    DashboardInterventionsComponent,
+    DashboardBatimentsComponent,
+    DashboardServicesComponent,
+    EquipementFormComponent,
   ],
-  imports: [
-    AppRoutingModule,
-    MatFormFieldModule,
-    MatInputModule,
-  MatSelectModule,
-  MatAutocompleteModule,
-    ToastrModule.forRoot(),
-    ListeEquipementsComponent,
-    LoginComponent,
-    MatSnackBarModule,
-    FullCalendarModule,
-    BrowserModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    MatSidenavModule,
-    MatToolbarModule,
-    ReactiveFormsModule, // Required for formGroup
-    CommonModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatCardModule,
-    MatListModule,
-    MatDividerModule,
+    imports: [
+        AppRoutingModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatAutocompleteModule,
+        ToastrModule.forRoot(),
+        ListeEquipementsComponent,
+        LoginComponent,
+        MatSnackBarModule,
+        FullCalendarModule,
+        BrowserModule,
+        HttpClientModule,
+        BrowserAnimationsModule,
+        MatSidenavModule,
+        MatToolbarModule,
+        ReactiveFormsModule, // Required for formGroup
+        CommonModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCardModule,
+        MatListModule,
+        MatDividerModule,
 
-    MatOption,
-    MatSelect,
-    FormsModule,
-    RouterOutlet,
-    PanneauNavigationComponent,
-    NgOptimizedImage,
-    RouterLink,
-    ReactiveFormsModule,
-    ToastrModule.forRoot()
-  ],
+        MatOption,
+        MatSelect,
+        FormsModule,
+        RouterOutlet,
+        PanneauNavigationComponent,
+        NgOptimizedImage,
+        RouterLink,
+        ReactiveFormsModule,
+        ToastrModule.forRoot(),
+        BaseChartDirective
+    ],
   providers: [
     provideAnimationsAsync()
   ],

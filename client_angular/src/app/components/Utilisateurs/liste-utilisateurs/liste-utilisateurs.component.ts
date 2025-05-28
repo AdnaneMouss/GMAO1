@@ -184,11 +184,6 @@ export class ListeUtilisateursComponent implements OnInit {
     // If a file is selected, include it in the request
     const fileToSend = this.selectedFile === null ? undefined : this.selectedFile;
 
-    if (fileToSend) {
-      userData.file = fileToSend;
-    } else {
-      userData.file = undefined; // You can choose to set it to undefined or omit it, depending on backend requirements
-    }
 
     this.userService.createUserWithImage(userData, fileToSend).subscribe(
       (response) => {

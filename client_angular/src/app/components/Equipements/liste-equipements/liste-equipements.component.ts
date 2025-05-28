@@ -246,24 +246,6 @@ export class ListeEquipementsComponent implements OnInit {
 
 
 
-  saveEquipement(): void {
-    this.errorMessage = '';
-    this.equipementService.createEquipement(this.equipement).subscribe(
-      (savedEquipement: Equipement) => {
-        this.getEquipements();
-        this.resetForm();
-        this.message = 'Équipement ajouté avec succès!';
-      },
-      (error) => {
-        console.error('Erreur lors de l\'ajout du service:', error);
-        if (error.status != 200) {
-          this.errorMessage = 'Cet équipement exsite déjà. Veuillez en choisir un autre.';
-        }
-      }
-    );
-  }
-
-
   editEquipement(equipement: Equipement): void {
     this.equipement = { ...equipement };
   }
@@ -276,6 +258,15 @@ export class ListeEquipementsComponent implements OnInit {
   // Initialize an empty equipment object
   private initEquipement(): Equipement {
     return {
+      batimentId: 0,
+      batimentNum: 0,
+      etageId: 0,
+      garantie: "",
+      salleId: 0,
+      sallePrefixe: "",
+      serviceId: 0,
+      typeEquipementId: 0,
+      typeEquipementNom: "",
       attributsEquipement: [],
       batimentNom: "", etageNum: 0, salleNum: 0,
       serviceNom: "",
@@ -294,7 +285,7 @@ export class ListeEquipementsComponent implements OnInit {
       coutAchat: 0,
       valeurSuivi:0,
       labelSuivi:'',
-      typeEquipement: '',
+
       attributsValeurs: []  // Assuming this is an empty array initially
 
       }

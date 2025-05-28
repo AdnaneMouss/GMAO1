@@ -47,14 +47,15 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createUserWithImage(@RequestParam(value = "file", required = false) MultipartFile file,
-                                                 @RequestParam("nom") String nom,
-                                                 @RequestParam("email") String email,
-                                                 @RequestParam("username") String username,
-                                                 @RequestParam("password") String password,
-                                                 @RequestParam("gsm") String gsm,
-                                                 @RequestParam("civilite") String civilite,
-                                                 @RequestParam("role") String role) {
+    public ResponseEntity<?> createUserWithImage(
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam("nom") String nom,
+            @RequestParam("email") String email,
+            @RequestParam("username") String username,
+            @RequestParam("password") String password,
+            @RequestParam("gsm") String gsm,
+            @RequestParam("civilite") String civilite,
+            @RequestParam("role") String role) {
 
         if (userService.existsByUsername(username)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -84,19 +85,18 @@ public class UserController {
 
         user.setGsm(gsm);
         user.setCivilite(Civilite.valueOf(civilite));  // assuming Civilite is an enum
-        user.setRole(Role.valueOf(role));  // assuming Role is an enum
+        user.setRole(Role.valueOf(role));              // assuming Role is an enum
 
         try {
-            // Handle image upload
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path filePath = Paths.get("uploads", fileName);
-            Files.createDirectories(filePath.getParent());
-            Files.write(filePath, file.getBytes());
+            if (file != null && !file.isEmpty()) {
+                String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                Path filePath = Paths.get("uploads", fileName);
+                Files.createDirectories(filePath.getParent());
+                Files.write(filePath, file.getBytes());
 
-            // Set the image URL in the user
-            String imageUrl = fileName;
-            user.setImage(imageUrl);
-
+                // Set the image URL in the user
+                user.setImage(fileName);
+            }
 
             // Save the user to the database
             User savedUser = userService.addUser(user);

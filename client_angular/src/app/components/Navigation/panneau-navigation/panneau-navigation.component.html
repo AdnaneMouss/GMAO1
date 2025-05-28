@@ -356,7 +356,7 @@
         <div class="flex items-center justify-between" [ngClass]="{'flex-col': isSidebarCollapsed, 'flex-row': !isSidebarCollapsed}">
           <!-- Profile Info -->
           <div class="flex items-center space-x-4" *ngIf="!isSidebarCollapsed">
-            <img src="https://i.imgur.com/8nsPi8z.png" alt="User Avatar" class="w-10 h-10 rounded-full">
+            <img [src]="getImageUrl(user.image)" alt="User Avatar" class="w-10 h-10 rounded-full">
             <div class="flex flex-col">
               <span class="text-sm font-semibold">{{ user?.username }}</span>
             </div>

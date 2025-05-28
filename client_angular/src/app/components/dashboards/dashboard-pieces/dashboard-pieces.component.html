@@ -1,0 +1,72 @@
+<div id="equipements" class="section max-w-7xl mx-auto px-4 sm:px-6 py-12">
+  <!-- Header -->
+  <div class="mb-12 border-b pb-6">
+    <h2 class="text-3xl font-semibold text-green-900 tracking-tight">Aperçu des pièces</h2>
+    <p class="text-sm text-gray-500 mt-2">
+      Statistiques clés sur l'inventaire, la maintenance et le coût des équipements
+    </p>
+  </div>
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+  <!-- Total Users -->
+  <div class="rounded-2xl shadow-lg p-6 bg-gradient-to-br from-green-700 to-emerald-600 text-white">
+    <h4 class="text-sm font-semibold uppercase mb-2">Total Pieces</h4>
+    <div class="flex justify-between items-end">
+      <p class="text-4xl font-bold">{{ totalPieces }}</p>
+      <span class="text-sm font-medium flex items-center text-lime-200">
+          <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"/></svg>
+          +12%
+        </span>
+    </div>
+  </div>
+
+
+  <div class="rounded-2xl shadow-lg p-6 bg-gradient-to-br from-lime-600 to-green-500 text-white">
+    <h4 class="text-sm font-semibold uppercase mb-2">Disponibles</h4>
+    <div class="flex justify-between items-end">
+      <p class="text-4xl font-bold">{{ disponibleCount }}</p>
+      <span class="text-sm font-medium bg-white/10 px-2 py-1 rounded-full">
+          {{ Math.round((disponibleCount/totalPieces)*100) || 0 }}%
+        </span>
+    </div>
+  </div>
+
+  <div class="rounded-2xl shadow-lg p-6 bg-gradient-to-br from-yellow-600 to-orange-500 text-white">
+    <h4 class="text-sm font-semibold uppercase mb-2">En alerte de stock</h4>
+    <div class="flex justify-between items-end">
+      <p class="text-4xl font-bold">{{ stockBasCount }}</p>
+      <span class="text-sm font-medium bg-white/10 px-2 py-1 rounded-full">
+          {{ Math.round((stockBasCount/totalPieces)*100) || 0 }}%
+        </span>
+    </div>
+  </div>
+
+  <div class="rounded-2xl shadow-lg p-6 bg-gradient-to-br from-orange-600 to-red-500 text-white">
+    <h4 class="text-sm font-semibold uppercase mb-2">En rupture de stock</h4>
+    <div class="flex justify-between items-end">
+      <p class="text-4xl font-bold">{{ ruptureCount }}</p>
+      <span class="text-sm font-medium bg-white/10 px-2 py-1 rounded-full">
+          {{ Math.round((ruptureCount/totalPieces)*100) || 0 }}%
+        </span>
+    </div>
+  </div>
+
+
+    <div class="flex flex-col lg:flex-row gap-6 items-start">
+
+    <div class="w-full lg:w-1/2 bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+      <h5 class="text-xl font-semibold text-gray-800 mb-6">Statistiques Pièces</h5>
+      <div class="w-full h-full">
+        <canvas baseChart
+                [data]="achatChartData"
+                [options]="barChartOptions"
+                [type]="barChartType"
+                class="w-full h-auto max-h-[400px]">
+        </canvas>
+      </div>
+    </div>
+</div>
+
+</div>
+</div>

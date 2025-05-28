@@ -44,10 +44,6 @@ public class PieceDetachee {
 
     private String image;  // Image (peut être un URL ou chemin de fichier)
 
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    private List<String> historiqueUtilisation;  // Liste des utilisations de la pièce
-
     @OneToMany(mappedBy = "pieceDetachee", cascade = CascadeType.ALL)
     @JsonBackReference(value = "intervention-piece")
     private List<InterventionPieceDetachee> interventionPieces;
@@ -55,7 +51,6 @@ public class PieceDetachee {
 	@OneToMany(mappedBy = "pieceDetachee", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnoreProperties("pieceDetachee")
 	private List<AchatPiece> achats;
-
 
     @Setter
     @Transient

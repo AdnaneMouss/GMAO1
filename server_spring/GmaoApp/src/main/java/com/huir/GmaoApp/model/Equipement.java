@@ -39,6 +39,9 @@ public class Equipement {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
     private LocalDate dateAchat;
 
+    @Column(nullable = true, updatable = false)
+    private LocalDateTime dateMiseEnService;
+
     private String garantie;
     private LocalDate dateDerniereMaintenance;
     private Double coutAchat;

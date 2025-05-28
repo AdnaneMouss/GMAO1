@@ -293,7 +293,7 @@ async generateWeeklyReport(): Promise<void> {
   yPosition += 15;
 
   // ➤ Statistiques générales (à compléter si nécessaire)
-  
+
 
   // ➤ Équipements critiques
   doc.setFontSize(14);
@@ -355,8 +355,8 @@ async generateMonthlyReport(): Promise<void> {
   const equipementsDansPeriode = this.equipements.filter(eq => {
     const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
     return (
-      dateDerniereMaintenance && 
-      dateDerniereMaintenance >= dateDebut && 
+      dateDerniereMaintenance &&
+      dateDerniereMaintenance >= dateDebut &&
       dateDerniereMaintenance <= dateFin
     );
   });
@@ -535,12 +535,12 @@ async viewWeeklyReport(): Promise<void> {
   const maintenancesCetteSemaine = this.getMaintenancesForPeriod(dateDebut, dateFin);
 
   const equipementsDansPeriode = this.equipements.filter(eq => {
-    const derniereMaintenance = eq.dateDerniereMaintenance 
-      ? new Date(eq.dateDerniereMaintenance) 
+    const derniereMaintenance = eq.dateDerniereMaintenance
+      ? new Date(eq.dateDerniereMaintenance)
       : null;
     return (
-      derniereMaintenance && 
-      derniereMaintenance >= dateDebut && 
+      derniereMaintenance &&
+      derniereMaintenance >= dateDebut &&
       derniereMaintenance <= dateFin
     );
   });
@@ -553,8 +553,8 @@ async viewWeeklyReport(): Promise<void> {
   // ➤ 5. Création du rapport avec formatage amélioré
   this.rapportHebdo = {
     dateGeneration: currentDate,
-    periode: { 
-      debut: dateDebut, 
+    periode: {
+      debut: dateDebut,
       fin: dateFin,
       // Formatage lisible ex: "Semaine du 15/04/2024 au 21/04/2024"
       semaine: `Semaine du ${dateDebut.toLocaleDateString('fr-FR')} au ${dateFin.toLocaleDateString('fr-FR')}`,
@@ -567,7 +567,7 @@ async viewWeeklyReport(): Promise<void> {
       maintenances: maintenancesCetteSemaine.length,
       tauxDisponibilite: tauxDisponibilite,
       // Ajouts optionnels
-     
+
     },
     pannes: pannesCetteSemaine,
     maintenances: maintenancesCetteSemaine,
@@ -617,16 +617,16 @@ private getWeekNumber(date: Date): string {
   const equipementsDansPeriode = this.equipements.filter(eq => {
     const derniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
     return (
-      derniereMaintenance && 
-      derniereMaintenance >= dateDebut && 
+      derniereMaintenance &&
+      derniereMaintenance >= dateDebut &&
       derniereMaintenance <= dateFin
     );
   });
 
   this.rapportMens = {
     dateGeneration: currentDate,
-    periode: { 
-      debut: dateDebut, 
+    periode: {
+      debut: dateDebut,
       fin: dateFin,
       nomMois: dateDebut.toLocaleString('fr-FR', { month: 'long', year: 'numeric' }) // Ajout du nom du mois
     },
@@ -807,7 +807,7 @@ private getWeekNumber(date: Date): string {
               { label: 'Description', value: equipment.description || 'N/A' },
               { label: 'Statut', value: equipment.statut || 'N/A', special: 'status' },
               { label: 'Actif', value: equipment.actif ? 'Oui' : 'Non' },
-              { label: 'Type', value: equipment.typeEquipement || 'N/A' }
+              { label: 'Type', value: equipment.typeEquipementNom || 'N/A' }
             ]
           },
           {

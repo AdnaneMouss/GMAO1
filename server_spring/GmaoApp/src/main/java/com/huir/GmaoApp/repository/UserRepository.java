@@ -25,5 +25,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByGsm(String gsm);
 
     List<User> findByRole(Role role);
+
+    long countByActif(boolean actif);
 }
 
