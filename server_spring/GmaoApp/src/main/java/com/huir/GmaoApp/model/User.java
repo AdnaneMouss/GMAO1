@@ -87,6 +87,12 @@ public class User {
     @JsonManagedReference("user-affecteA")
     @OneToMany(mappedBy = "affecteA", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MaintenanceCorrective> maintenancesAssignees;
+
+    // Relation avec les maintenances assignées à l'utilisateur
+    @JsonIgnore // Empêche la sérialisation de cette relation
+    @JsonManagedReference("user-inventaire")
+    @OneToMany(mappedBy = "responsable", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Inventaire> inventaires;
     
     @JsonIgnore // Empêche la sérialisation pour éviter les boucles infinies
     @JsonManagedReference("user-intervention1")

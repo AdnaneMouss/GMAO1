@@ -63,6 +63,10 @@ import {
 import {HistoriqueDemandesComponent} from "./components/Maintenances/historique-demandes/historique-demandes.component";
 import {DashboardAdminComponent} from "./components/dashboard-admin/dashboard-admin.component";
 import {EquipementFormComponent} from "./components/equipement-form/equipement-form.component";
+import {
+  AccepterDemandesMaintenancesComponent
+} from "./components/Maintenances/accepter-demandes-maintenances/accepter-demandes-maintenances.component";
+import {InventaireComponent} from "./components/Stocks/inventaire/inventaire.component";
 
 
 
@@ -84,9 +88,11 @@ const routes: Routes = [
   { path: 'stock/liste', component: ListePiecesDetacheesComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN','RESPONSABLE','MAGASINIER'] } },
   { path: 'stock/lot/:pieceId', component: LotAchatPieceComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN','RESPONSABLE'] } },
   { path: 'stock/demande', component: DemandePieceDetacheeComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE'] } },
+  { path: 'stock/inventaire', component: InventaireComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path:'details-maintenance/:id',component:DetailsMaintenanceComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path:'details/:id',component:DetailsHistoComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'maintenances/correctives', component: MaintenancesCorrectivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
+  { path: 'maintenances/demandes/accepter-demande', component: AccepterDemandesMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/preventives', component: MaintenancesPreventivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/historique', component: HistoriqueMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/historique-maintenances-correctives', component: HistoriqueMaintenancesCorrectivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },

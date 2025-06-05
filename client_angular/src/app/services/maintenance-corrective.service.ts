@@ -39,8 +39,8 @@ export class MaintenanceCorrectiveService {
     return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${id}/cancel`, {});
   }
 
-  approveRequest(id: number): Observable<MaintenanceCorrective> {
-    return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${id}/approveRequest`, {});
+  approveRequest(id: number, requestDTO: Partial<MaintenanceCorrective>): Observable<MaintenanceCorrective> {
+    return this.http.put<MaintenanceCorrective>(`${this.apiUrl}/${id}/approveRequest`, requestDTO);
   }
 
   // Mark a maintenance task as completed

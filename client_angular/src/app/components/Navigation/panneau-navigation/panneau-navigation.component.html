@@ -135,6 +135,13 @@
             <i class="fas fa-boxes text-sm"></i>
             <span *ngIf="!isSidebarCollapsed">Liste des pièces détachées</span>
           </a>
+          <a *ngIf="user?.role !== 'TECHNICIEN'"
+             [ngClass]="{'bg-green-800 text-white': isActive('/stock/inventaire')}"
+             routerLink="/stock/inventaire"
+             class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300">
+            <i class="fas fa-boxes text-sm"></i>
+            <span *ngIf="!isSidebarCollapsed">Inventaire</span>
+          </a>
 
         </div>
       </div>

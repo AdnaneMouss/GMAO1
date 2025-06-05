@@ -84,6 +84,8 @@ import { DashboardBatimentsComponent } from './components/dashboards/dashboard-b
 import { DashboardServicesComponent } from './components/dashboards/dashboard-services/dashboard-services.component';
 import {BaseChartDirective} from "ng2-charts";
 import { EquipementFormComponent } from './components/equipement-form/equipement-form.component';
+import { AccepterDemandesMaintenancesComponent } from './components/Maintenances/accepter-demandes-maintenances/accepter-demandes-maintenances.component';
+import { InventaireComponent } from './components/Stocks/inventaire/inventaire.component';
 
 
 @NgModule({
@@ -132,6 +134,8 @@ import { EquipementFormComponent } from './components/equipement-form/equipement
     DashboardBatimentsComponent,
     DashboardServicesComponent,
     EquipementFormComponent,
+    AccepterDemandesMaintenancesComponent,
+    InventaireComponent,
   ],
     imports: [
         AppRoutingModule,
