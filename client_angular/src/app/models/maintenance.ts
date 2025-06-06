@@ -5,6 +5,7 @@ import { Equipement } from "./equipement";
 import { Etage } from "./etage";
 import { Indicateur } from "./Indicateur";
 import { indice } from "./indice";
+import { repetitionInstances } from "./repetitionInstances";
 import { RepetitionType } from "./RepetitionType";
 import { Salle } from "./salle";
 import { User } from "./user";
@@ -50,10 +51,11 @@ export interface maintenance{
   RepetitionType:RepetitionType;
   repetition:number;
   seuil:number;
-  NonSeuil : string;
+  nonSeuil : string;
   message:'',
   type_maintenance?:string;
   equipementId: number | null ;
+  typeMaintenance?:'preventive';
 
   equipementBatiment: string;
   equipementSalle: number;
@@ -65,7 +67,8 @@ export interface maintenance{
   dateCloture?: string; // ISO 8601 format date string, optional
   dateCommencement?: string; // ISO 8601 format date string, optional
 
-  
+
+  attributId?:  number | null ,
    
 
 
@@ -84,6 +87,7 @@ export interface maintenance{
   
 attributsValeurs?: AttributEquipementValeur[];
  indice?:indice;
+ repetitions?:repetitionInstances[];
 
 
 

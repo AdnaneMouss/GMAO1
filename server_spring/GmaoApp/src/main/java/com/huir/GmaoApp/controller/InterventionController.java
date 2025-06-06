@@ -36,6 +36,8 @@ public class InterventionController {
     private MaintenanceCorrectiveRepository maintenanceCorrectiveRepository;
     @Autowired
     private MaintenanceRepository maintenanceRepository;
+    @Autowired
+    private com.huir.GmaoApp.repository.RepetitionInstanceRepository RepetitionInstanceRepository;
 
     @Autowired
     private PieceDetacheeRepository pieceDetacheeRepository;
@@ -180,8 +182,9 @@ public class InterventionController {
             @RequestParam("maintenanceId") Long maintenanceId,
             @RequestParam("technicienId") Long technicienId,
             @RequestParam("piecesDetachees") List<Long> pieceDetacheesIds,
-            @RequestParam("quantites") List<Integer> quantites) {
-
+            @RequestParam("quantites") List<Integer> quantites,
+            @RequestParam(value = "repetitionId", required = false) Long repetitionId // 👈 ajouté
+    ) {
         try {
             // Vérifie la maintenance
             Maintenance maintenance = maintenanceRepository.findById(maintenanceId)
@@ -199,6 +202,13 @@ public class InterventionController {
             intervention.setTechnicien(technicien);
             intervention.setMaintenance(maintenance);
 
+            // 👉 Lien avec la répétition préventive si applicable
+            if (repetitionId != null) {
+                RepetitionInstance repetition = RepetitionInstanceRepository.findById(repetitionId).orElse(null);
+                intervention.setRepetitionInstance(repetition); // 👈 Si non trouvé, reste null
+            }
+
+
             // Gestion des fichiers (photos)
             List<PhotosIntervention> photos = new ArrayList<>();
             if (files != null && files.length > 0) {
@@ -211,7 +221,7 @@ public class InterventionController {
 
                         PhotosIntervention photo = new PhotosIntervention();
                         photo.setUrl(fileName);
-                        photo.setIntervention(intervention); // Lien photo -> intervention
+                        photo.setIntervention(intervention);
                         photos.add(photo);
                     }
                 }
@@ -219,10 +229,10 @@ public class InterventionController {
 
             intervention.setPhotos(photos);
 
-            // 💾 ENREGISTREMENT de l'intervention AVANT d'ajouter les pièces
+            // Sauvegarde de l’intervention
             Intervention savedIntervention = interventionService.save(intervention);
 
-            // 🔄 Ajout des pièces détachées
+            // Ajout des pièces détachées
             List<PieceDetachee> pieceDetachees = pieceDetacheeRepository.findAllById(pieceDetacheesIds);
             List<InterventionPieceDetachee> interventionPieces = new ArrayList<>();
 
@@ -231,17 +241,15 @@ public class InterventionController {
                 Integer quantityUsed = quantites.get(i);
 
                 InterventionPieceDetachee interventionPiece = new InterventionPieceDetachee();
-                interventionPiece.setIntervention(savedIntervention); // Maintenant elle est bien persistée
+                interventionPiece.setIntervention(savedIntervention);
                 interventionPiece.setPieceDetachee(piece);
                 interventionPiece.setQuantiteUtilisee(quantityUsed);
 
                 interventionPieces.add(interventionPiece);
             }
 
-            // 💾 Sauvegarde des relations avec pièces détachées
             interventionPieceDetacheeRepository.saveAll(interventionPieces);
 
-            // 🎁 Retour DTO
             InterventionDTO savedInterventionDTO = new InterventionDTO(savedIntervention);
             return ResponseEntity.ok(savedInterventionDTO);
 
@@ -251,5 +259,4 @@ public class InterventionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur: " + e.getMessage());
         }
     }
-
 }

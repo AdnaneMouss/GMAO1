@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { maintenance } from '../models/maintenance';
 import { RepetitionType } from '../models/RepetitionType';
+import { repetitionInstances } from '../models/repetitionInstances';
 
 
 @Injectable({
@@ -73,7 +74,7 @@ changerStatutEnTermine(id: number): Observable<any> {
 }
 
 cancelTask(id: number): Observable<maintenance> {
-    return this.http.put<maintenance>(`${this.apiUrl}/${id}/cancel`, {});
+    return this.http.post<maintenance>(`${this.apiUrl}/${id}/cancel`, {});
   }
 
 
@@ -81,12 +82,17 @@ cancelTask(id: number): Observable<maintenance> {
 
  // Start a maintenance task
   startTask(id: number): Observable<maintenance> {
-    return this.http.put<maintenance>(`${this.apiUrl}/${id}/start`, {});
+    return this.http.post<maintenance>(`${this.apiUrl}/${id}/start`, {});
   }
+ 
+
   //startTask(id: number, repetitionDate?: string): Observable<maintenance> {
     //const body = repetitionDate ? { repetitionDate } : {};
     //return this.http.put<maintenance>(`${this.apiUrl}/${id}/start`, body);
   //}
+
+   
+
   
 
  
@@ -96,7 +102,34 @@ cancelTask(id: number): Observable<maintenance> {
       return this.http.put<maintenance>(`${this.apiUrl}/${id}/complete`, {});
     }
 
+    
+  
 
+    
+
+startRepetition(id: number): Observable<void> {
+  return this.http.put<void>(`http://localhost:8080/api/repetitions/${id}/start`, {});
+}
+
+
+
+getRepetitionInstances(): Observable<repetitionInstances[]> {
+    return this.http.get<repetitionInstances[]>(this.apiUrl);
+  }
+
+
+
+   getAllRepetitions(): Observable<repetitionInstances[]> {
+    return this.http.get<repetitionInstances[]>(`${this.apiUrl}/repetitions`);
+  }
+
+  // ✅ Récupérer les répétitions par maintenanceId
+  getRepetitionsByMaintenanceId(maintenanceId: number): Observable<repetitionInstances[]> {
+    return this.http.get<repetitionInstances[]>(`${this.apiUrl}/repetitions/maintenance/${maintenanceId}`);
+  }
+  
+
+  
     
 
 

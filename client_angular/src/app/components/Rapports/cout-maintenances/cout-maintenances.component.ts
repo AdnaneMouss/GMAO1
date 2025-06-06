@@ -835,7 +835,7 @@ exportEquipmentPDF(equipment: Equipement): void {
             fields: [
               
               { label: 'Date dernière maintenance', value: equipment.dateDerniereMaintenance ? new Date(equipment.dateDerniereMaintenance).toLocaleDateString() : 'N/A', color: textColor },
-              { label: 'Date Mise en  service', value: equipment.dateMiseEnService ? new Date(equipment.dateMiseEnService).toLocaleDateString() : 'N/A', color: warningColor }
+             // { label: 'Date Mise en  service', value: equipment.dateMiseEnService ? new Date(equipment.dateMiseEnService).toLocaleDateString() : 'N/A', color: warningColor }
             ]
           },
           {

@@ -63,6 +63,13 @@ public class Intervention {
     @JsonIgnore
     private Maintenance maintenance;
 
+    
+    // Lien avec la maintenance corrective si applicable
+    @ManyToOne
+    @JoinColumn(name = "RepetitionP_id", nullable = true)
+    @JsonBackReference
+    @JsonIgnore
+    private RepetitionInstance RepetitionInstance;
 
     // Commentaires du technicien après l'intervention
     @Column(columnDefinition = "TEXT")
@@ -87,6 +94,15 @@ public class Intervention {
 
 	public User getTechnicien() {
 		return technicien;
+	}
+	
+
+	public RepetitionInstance getRepetitionInstance() {
+		return RepetitionInstance;
+	}
+
+	public void setRepetitionInstance(RepetitionInstance repetitionInstance) {
+		RepetitionInstance = repetitionInstance;
 	}
 
 	public void setTechnicien(User technicien) {

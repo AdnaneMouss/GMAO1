@@ -39,6 +39,45 @@ export class InterventionService {
 
     return this.http.post<Intervention>(`${this.apiUrl}/create`, formData);
   }
+createInterventionP(
+  files: File[] | null,
+  description: string,
+  remarques: string,
+  maintenanceId: number, // 👈 nom corrigé ici
+  technicienId: number,
+  pieceDetacheeIds: number[],
+  quantites: number[],
+  repetitionId: number | null
+): Observable<any> {
+  const formData = new FormData();
+
+  if (files) {
+    for (const file of files) {
+      formData.append('files', file);
+    }
+  }
+
+  formData.append('description', description);
+  formData.append('remarques', remarques || '');
+  formData.append('maintenanceId', maintenanceId.toString()); // 👈 nom corrigé ici
+  formData.append('technicienId', technicienId.toString());
+
+  pieceDetacheeIds.forEach(id => {
+    formData.append('piecesDetachees', id.toString());
+  });
+
+  quantites.forEach(qte => {
+    formData.append('quantites', qte.toString());
+  });
+
+  if (repetitionId !== null && repetitionId !== undefined) {
+    formData.append('repetitionId', repetitionId.toString());
+  }
+
+  return this.http.post(`${this.apiUrl}/createP`, formData);
+}
+
+
 
 
   getPiecesByInterventionId(interventionId: number): Observable<PieceDetachee[]> {

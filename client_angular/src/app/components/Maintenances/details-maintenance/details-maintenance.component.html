@@ -102,18 +102,7 @@
           </p>
         </div>
 
-        <!-- Indicateurs (visible seulement si type_maintenance n'est pas 'frequence') -->
-        <div *ngIf="maintenance.type_maintenance !== 'frequence'" class="bg-gray-50 p-4 rounded-lg">
-          <div class="flex items-center space-x-3 mb-3">
-            <div class="p-2 bg-green-100 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            <h3 class="font-semibold text-gray-700">Indicateurs</h3>
-          </div>
-          <p class="text-gray-600 ml-11">{{ maintenance.indicateurs }}</p>
-        </div>
+        
       </div>
 
     <!-- Colonne 2: Planning (visible seulement si type_maintenance n'est pas 'indicateur') -->
@@ -131,15 +120,16 @@
     </div>
 
     <div class="space-y-3 ml-11">
-      <div>
+   <div>
         <label class="text-sm font-medium text-gray-500 flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          Date début prévue
+          Date Debut prévue
         </label>
-        <p class="text-gray-600">{{ maintenance.dateDebutPrevue | date:'dd/MM/yyyy' }}</p>
+        <p class="text-gray-600">{{ maintenance.dateDebutPrevue| date:'dd/MM/yyyy' }}</p>
       </div>
+
 
       <div>
         <label class="text-sm font-medium text-gray-500 flex items-center">
@@ -206,14 +196,19 @@
       <h3 class="font-semibold text-gray-700">Prochaines dates</h3>
     </div>
 
-    <ul class="space-y-1 ml-11">
-      <li *ngFor="let date of nextRepetitionDates" class="text-gray-600 flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-        </svg>
-        {{ date | date:'dd/MM/yyyy' }}
-      </li>
-    </ul>
+<ul class="space-y-1 ml-11">
+  <li *ngFor="let instance of maintenance.repetitions || []" class="text-gray-600 flex items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+    </svg>
+    {{ instance.dateRepetition | date:'dd/MM/yyyy' }}
+  </li>
+</ul>
+
+
+
+
+
   </div>
 </div>
 
@@ -221,7 +216,7 @@
       <!-- Colonne 3: Détails techniques -->
       <div class="space-y-4">
         <!-- Seuil et surveillance (visible seulement si type_maintenance n'est pas 'frequence') -->
-        <div *ngIf="maintenance.type_maintenance !== 'frequence'" class="bg-gray-50 p-4 rounded-lg">
+      <div *ngIf="maintenance.repetitiontype === 'Ne_pas_repeter'" class="bg-gray-50 p-4 rounded-lg">
           <div class="flex items-center space-x-3 mb-3">
             <div class="p-2 bg-purple-100 rounded-full">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -236,6 +231,15 @@
               <label class="text-sm font-medium text-gray-500">Seuil</label>
               <p class="text-gray-600">{{ maintenance.seuil }}</p>
             </div>
+
+            <p class="mt-4 text-sm text-blue-600" *ngIf="maintenance">
+  Non seuil suivie :
+  <strong>{{ maintenance.nonSeuil }}</strong>
+</p>
+
+
+
+
             
             <div *ngIf="selectedAttribut">
               <label class="text-sm font-medium text-gray-500">Attribut surveillé</label>

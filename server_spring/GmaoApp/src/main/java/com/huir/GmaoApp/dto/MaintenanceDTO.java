@@ -54,7 +54,6 @@ private Statut statut;
 private repetitiontype repetitiontype;
 private String commentaires;
 private String documentPath;
-private frequence frequence;
 @Enumerated(EnumType.STRING) // Ajout de l'enum ActionMaintenance
 private ActionMaintenance action;
 private String autreAction;
@@ -74,15 +73,24 @@ private Long equipementId;
 private String equipementNom; 
 private String labelsuivie;
 private Double valeursuivie;
+private String nextRepetitionDatesString;
 
+@Column(name = "statuts_repetition_json", columnDefinition = "TEXT") 
+private String statutsRepetitionJson;
 
 private long repetition;
-
+private String frequence;
 private int seuil; // et non pas "double"
 private  String nonSeuil;
+private Long attributId; // id de attributs_equipements sélectionné
+
 
 @JsonProperty("next_repetition_dates")
 private List<LocalDate> nextRepetitionDates;
+
+private String maintenanceType; 
+
+private List<RepetitionInstanceDTO> repetitions;
 
 
 
@@ -147,6 +155,30 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		
 		
 		
+		public List<RepetitionInstanceDTO> getRepetitions() {
+			return repetitions;
+		}
+		public void setRepetitions(List<RepetitionInstanceDTO> repetitions) {
+			this.repetitions = repetitions;
+		}
+		public String getMaintenanceType() {
+			return maintenanceType;
+		}
+		public void setMaintenanceType(String maintenanceType) {
+			this.maintenanceType = maintenanceType;
+		}
+		public Long getAttributId() {
+			return attributId;
+		}
+		public void setAttributId(Long attributId) {
+			this.attributId = attributId;
+		}
+		public String getStatutsRepetitionJson() {
+			return statutsRepetitionJson;
+		}
+		public void setStatutsRepetitionJson(String statutsRepetitionJson) {
+			this.statutsRepetitionJson = statutsRepetitionJson;
+		}
 		public String getEquipementNom() {
 			return equipementNom;
 		}
@@ -202,11 +234,17 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		
 		
 		
+	
+		
 		public List<String> getSelectedjours() {
 			return selectedjours;
 		}
-		
-		
+		public String getFrequence() {
+			return frequence;
+		}
+		public void setFrequence(String frequence) {
+			this.frequence = frequence;
+		}
 		public String getDocumentPath() {
 			return documentPath;
 		}
@@ -254,12 +292,7 @@ public MaintenanceDTO(Maintenance maintenance ) {
 			this.commentaires = commentaires;
 		}
 		
-		public frequence getFrequence() {
-			return frequence;
-		}
-		public void setFrequence(frequence frequence) {
-			this.frequence = frequence;
-		}
+		
 		@Transient
 		public String getNextRepetitionDatesAsString() {
 		    if (nextRepetitionDates == null || nextRepetitionDates.isEmpty()) {
@@ -447,6 +480,12 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		}
 		
 		
+		public String getNextRepetitionDatesString() {
+			return nextRepetitionDatesString;
+		}
+		public void setNextRepetitionDatesString(String nextRepetitionDatesString) {
+			this.nextRepetitionDatesString = nextRepetitionDatesString;
+		}
 		public Map<String, Boolean> getSelectedDayss() {
 			return selectedDayss;
 		}
@@ -508,6 +547,7 @@ public MaintenanceDTO(Maintenance maintenance ) {
 		
 		
 		///////////////////////////////////
+		
 		
 		
 		public String getLabelsuivie() {
