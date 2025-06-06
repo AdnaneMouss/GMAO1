@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 
+
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
@@ -68,11 +69,12 @@ import { CommonModule } from '@angular/common'; // <- pour les pipes slice, uppe
 
 
 import { MatInputModule } from '@angular/material/input';
-import { DetailsHistoComponent } from './details-histo/details-histo.component';
 import { LotAchatPieceComponent } from './components/Stocks/lot-achat-piece/lot-achat-piece.component';
 import { EtagesListeComponent } from './components/batiments/etages-liste/etages-liste.component';
 import { SallesListeComponent } from './components/batiments/salles-liste/salles-liste.component';
-import { EquipementsParSalleComponent } from './components/Equipements/equipements-par-salle/equipements-par-salle.component'; // <- pour input matInput
+import { EquipementsParSalleComponent } from './components/Equipements/equipements-par-salle/equipements-par-salle.component';
+import { ListeFournisseursComponent } from './components/fournisseur/fournisseur.component';
+
 
 
 @NgModule({
@@ -105,11 +107,12 @@ import { EquipementsParSalleComponent } from './components/Equipements/equipemen
     InfosUtilisateursComponent,
     ChangePasswordComponent,
     HistoriqueMaintenancesCorrectivesComponent,
-    DetailsHistoComponent,
     LotAchatPieceComponent,
     EtagesListeComponent,
     SallesListeComponent,
     EquipementsParSalleComponent,
+    ListeFournisseursComponent
+  
   ],
   imports: [
     AppRoutingModule,

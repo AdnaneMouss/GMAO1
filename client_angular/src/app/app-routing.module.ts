@@ -50,13 +50,14 @@ import { InterventionsPreventivesPrecedentesComponent } from './components/Inter
 import { TachesPreventivesAffecteeComponent } from './components/Interventions/taches-preventives-affectee/taches-preventives-affectee.component';
 import { HistoriqueMaintenancesCorrectivesComponent } from './components/Maintenances/historique-maintenances-correctives/historique-maintenances-correctives.component';
 import { ChatComponent } from './chat/chat.component';
-import { DetailsHistoComponent } from './details-histo/details-histo.component';
+
 import {LotAchatPieceComponent} from "./components/Stocks/lot-achat-piece/lot-achat-piece.component";
 import {EtagesListeComponent} from "./components/batiments/etages-liste/etages-liste.component";
 import {SallesListeComponent} from "./components/batiments/salles-liste/salles-liste.component";
 import {
   EquipementsParSalleComponent
 } from "./components/Equipements/equipements-par-salle/equipements-par-salle.component";
+import { ListeFournisseursComponent } from './components/fournisseur/fournisseur.component';
 
 
 
@@ -78,7 +79,7 @@ const routes: Routes = [
   { path: 'stock/lot/:pieceId', component: LotAchatPieceComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN','RESPONSABLE'] } },
   { path: 'stock/demande', component: DemandePieceDetacheeComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE'] } },
   { path:'details-maintenance/:id',component:DetailsMaintenanceComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
-  { path:'details/:id',component:DetailsHistoComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
+  
   { path: 'maintenances/correctives', component: MaintenancesCorrectivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/preventives', component: MaintenancesPreventivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/historique', component: HistoriqueMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
@@ -93,6 +94,9 @@ const routes: Routes = [
   { path: 'interventionsP/liste', component: InterventionsPreventivesPrecedentesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
   { path: 'CHAT', component: ChatComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN','RESPONSABLE','MAGASINIER','TECHNICIEN'] } },
   { path: 'parametres', component: ParametresGenerauxComponent},
+   { path: 'fournisseur', component: ListeFournisseursComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN','RESPONSABLE','MAGASINIER'] } },
+  
+
 
 
   { path: '**', redirectTo: '/login' }

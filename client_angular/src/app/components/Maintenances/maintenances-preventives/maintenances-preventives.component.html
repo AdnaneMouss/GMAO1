@@ -386,7 +386,7 @@
     </div>
 
     <!-- Jours de la semaine -->
-    <div *ngIf="selectedMaintenance.repetitiontype === 'TOUS_LES_SEMAINES'">
+    <div *ngIf="selectedMaintenance?.repetitiontype === 'TOUS_LES_SEMAINES'">
       <label class="block mb-1 text-gray-700">Jours de la semaine</label>
       <div class="grid grid-cols-2 md:grid-cols-7 gap-2">
         <div *ngFor="let day of getDays()">
@@ -400,7 +400,7 @@
     </div>
 
     <!-- Mois -->
-    <div *ngIf="selectedMaintenance.repetitiontype === 'MENSUEL'">
+    <div *ngIf="selectedMaintenance?.repetitiontype === 'MENSUEL'">
       <label class="block mb-1 text-gray-700">Mois</label>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
         <div *ngFor="let mois of getMois()">
@@ -866,14 +866,15 @@
                 </label>
                 <select
                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  [(ngModel)]="selectedAttribut"
-                  name="selectedAttribut"
+                  [(ngModel)]="newMaintenance.attributId"
+                  name="attributId"
                   required
                 >
                   <option value="" disabled>Sélectionnez un attribut</option>
-                  <option *ngFor="let attr of selectedAttributs" [value]="attr.nom">
-                    {{ attr.nom }} 
-                  </option>
+                 <option *ngFor="let attr of selectedAttributs" [value]="attr.id">
+  {{ attr.nom }}
+</option>
+
                 </select>
                 <p *ngIf="selectedAttributs.length === 0" class="text-xs text-red-500 mt-1 flex items-center">
                   <i class="fas fa-exclamation-circle mr-1"></i> Aucun attribut disponible
@@ -893,12 +894,10 @@
                   min="0"
                   max="100"
                   step="0.01"
-                  required
-                  [disabled]="!selectedAttribut"
+                  
+                 
                 />
-                <p *ngIf="!selectedAttribut" class="text-xs text-gray-500 mt-1 flex items-center">
-                  <i class="fas fa-info-circle mr-1"></i> Sélectionnez d'abord un attribut
-                </p>
+              
               </div>
             </div>
           </div>

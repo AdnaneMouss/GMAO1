@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -86,9 +88,19 @@ public class MaintenanceController {
     // Get  by ID
     @GetMapping("/{id}")
     public ResponseEntity<Maintenance> getMaintenancesById(@PathVariable Long id) {
+    	
         Optional<Maintenance> maintenance = maintenanceService.findMaintenanceById(id);
+        
         return maintenance.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
+    
+    @GetMapping("/maintenance/{id}")
+    public ResponseEntity<Maintenance> getMaintenance(@PathVariable Long id) {
+        return maintenanceRepository.findById(id)
+               .map(ResponseEntity::ok)
+               .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/add")
     public ResponseEntity<Map<String, String>> addMaintenance(@RequestBody MaintenanceDTO maintenanceDTO) {
         try {
@@ -99,6 +111,31 @@ public class MaintenanceController {
             return ResponseEntity.badRequest().body(Map.of("error", "Error adding ."));
         }
     }
+
+   
+    
+   @PostMapping("/{id}/repetitions/start")
+   public ResponseEntity<?> startRepetition(@PathVariable Long id, @RequestBody Map<String, String> body) {
+       String dateStr = body.get("date");
+       if (dateStr == null) {
+           return ResponseEntity.badRequest().body("Date manquante");
+       }
+
+       try {
+           LocalDate date = LocalDate.parse(dateStr);
+           Optional<LocalDate> result = maintenanceService.startRepetition(id, date);
+           if (result.isPresent()) {
+               return ResponseEntity.ok("Répétition démarrée pour le " + result.get());
+           } else {
+               return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aucune répétition à cette date");
+           }
+       } catch (DateTimeParseException e) {
+           return ResponseEntity.badRequest().body("Format de date invalide (attendu : yyyy-MM-dd)");
+       }
+   }
+
+
+
     private static final Logger logger = LoggerFactory.getLogger(MaintenanceController.class);
 
     
@@ -114,6 +151,16 @@ public class MaintenanceController {
        
     }
 
+    
+    @PostMapping("/{id}/start")
+    public ResponseEntity<Maintenance> startMaintenance(@PathVariable Long id) {
+        Maintenance maintenance = maintenanceService.startTask(id);
+        if (maintenance != null) {
+            return ResponseEntity.ok(maintenance);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 
 
   //ethode de  batiment 
@@ -136,19 +183,19 @@ public class MaintenanceController {
     }
 
     
-    @PutMapping("/{id}/start")
-    public ResponseEntity<Maintenance> startTask(@PathVariable Long id) {
-        Maintenance updatedMaintenance = maintenanceService.startTask(id);
-        if (updatedMaintenance != null) {
-            return ResponseEntity.ok(updatedMaintenance);
-        } else {
-            return ResponseEntity.status(400).body(null); // Si la maintenance n'est pas trouvée ou ne peut être commencée
-        }
-    }
+  //  @PutMapping("/{id}/start")
+    //public ResponseEntity<Maintenance> startTask(@PathVariable Long id) {
+      //  Maintenance updatedMaintenance = maintenanceService.startTask(id);
+        //if (updatedMaintenance != null) {
+          //  return ResponseEntity.ok(updatedMaintenance);
+        //} else {
+          //  return ResponseEntity.status(400).body(null); // Si la maintenance n'est pas trouvée ou ne peut être commencée
+       // }
+    //}
     
 
 
-        
+    
          
         
 

@@ -371,7 +371,10 @@ sortData(): void {
   // Export
 
    
- 
+ getNextRepetitionDatess(maintenance: any): string[] {
+  return maintenance.next_repetition_dates || [];
+}
+
 exportMaintenancePDF(maintenances: (MaintenanceCorrective | maintenance)[]): void {
   const doc = new jsPDF();
 
@@ -390,6 +393,7 @@ exportMaintenancePDF(maintenances: (MaintenanceCorrective | maintenance)[]): voi
   function isMaintenancePreventive(m: MaintenanceCorrective | maintenance): m is maintenance {
     return (m as maintenance).dateFinPrevue !== undefined;
   }
+  
 
   // Fonction pour ajouter du texte avec retour à la ligne automatique
   const addTextWithWrap = (text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
@@ -454,12 +458,14 @@ exportMaintenancePDF(maintenances: (MaintenanceCorrective | maintenance)[]): voi
           addField('Date début prévue', maintenance.dateDebutPrevue ? new Date(maintenance.dateDebutPrevue).toLocaleDateString() : undefined);
           addField('Date fin prévue', maintenance.dateFinPrevue ? new Date(maintenance.dateFinPrevue).toLocaleDateString() : undefined);
         
-          const equipementInfos = maintenance.equipement
-            ? `${maintenance.equipementNom} - Bâtiment: ${maintenance.equipement.batimentNom ?? 'N/A'}, Étage: ${maintenance.equipement.etageNum ?? 'N/A'}, Salle: ${maintenance.equipement.salleNum ?? 'N/A'}`
-            : `${maintenance.equipementNom} - Bâtiment: ${maintenance.equipementBatiment ?? 'N/A'}, Étage: ${maintenance.equipementEtage ?? 'N/A'}, Salle: ${maintenance.equipementSalle ?? 'N/A'}`;
+        
 
-          addField('Équipement', equipementInfos);
-          addField('Date prochain entretien', maintenance.dateProchainemaintenance ? new Date(maintenance.dateProchainemaintenance).toLocaleDateString() : undefined);
+
+
+
+           
+         
+          //addField('Date prochain entretien', maintenance.dateProchainemaintenance ? new Date(maintenance.dateProchainemaintenance).toLocaleDateString() : undefined);
           addField('Commentaires', maintenance.commentaires);
           addField('Statut', maintenance.statut, this.getStatusColor(maintenance.statut));
           addField('Priorité', maintenance.priorite, this.getPriorityColor(maintenance.priorite));
@@ -468,53 +474,39 @@ exportMaintenancePDF(maintenances: (MaintenanceCorrective | maintenance)[]): voi
           addField('Début répétition', maintenance.startDaterep ? new Date(maintenance.startDaterep).toLocaleDateString() : undefined);
           addField('Fin répétition', maintenance.endDaterep ? new Date(maintenance.endDaterep).toLocaleDateString() : undefined);
          
-          // Répétition
-          if (maintenance.repetitiontype) {
-              addField('Type de répétition', maintenance.repetitiontype);
-          }
           
-          // Jours/Mois de répétition
-          if (maintenance.selectedjours?.length > 0) {
-              addField('Jours de répétition', maintenance.selectedjours.join(', '));
-          }
+         // Dates de répétition (pour les maintenances préventives avec répétition)
+// Dates de répétition
+const repetitionDates = this.getNextRepetitionDatess(maintenance);
+if (repetitionDates.length > 0) {
+  const formattedDates = repetitionDates.map(date => {
+    try {
+      return new Date(date).toLocaleDateString('fr-FR');
+    } catch {
+      return date;
+    }
+  }).join('\n');
+  addField('Dates de répétition', formattedDates);
+}
 
-          if (maintenance.selectedmois?.length > 0) {
-              addField('Mois de répétition', maintenance.selectedmois.join(', '));
-          }
+// Jours sélectionnés
+if (maintenance.selectedjours && maintenance.selectedjours.length > 0) {
+  const joursText = maintenance.selectedjours.join('\n');
+  addField('Jours sélectionnés', joursText);
+}
 
-          // Section Dates de Répétition
-          if (maintenance.nextRepetitionDatesString) {
-            let repetitionDates: string[] = [];
+// Mois sélectionnés
+if (maintenance.selectedmois && maintenance.selectedmois.length > 0) {
+  const moisText = maintenance.selectedmois.join('\n');
+  addField('Mois sélectionnés', moisText);
+}
 
-            if (Array.isArray(maintenance.nextRepetitionDatesString)) {
-                repetitionDates = maintenance.nextRepetitionDatesString;
-            } else if (typeof maintenance.nextRepetitionDatesString === 'string') {
-                repetitionDates = [maintenance.nextRepetitionDatesString];
-            }
 
-            if (repetitionDates.length > 0) {
-                yPosition += sectionSpacing;
-                doc.setFont('helvetica', 'bold');
-                doc.text('Dates de répétition:', pageMargin, yPosition);
-                yPosition += lineHeight;
 
-                doc.setTextColor(primaryColor);
-                doc.setFont('helvetica', 'normal');
 
-                repetitionDates.forEach(date => {
-                    const formattedDate = new Date(date).toLocaleDateString();
-                    doc.text(`• ${formattedDate}`, pageMargin + 5, yPosition);
-                    yPosition += lineHeight;
-                    
-                    // Vérification pour éviter le débordement de page
-                    if (yPosition > 270) {
-                        doc.addPage();
-                        yPosition = 20;
-                    }
-                });
-                doc.setTextColor(textColor);
-            }
-          }
+          
+            
+          
 
         } else {
           // Maintenance corrective : champs spécifiques
@@ -772,7 +764,8 @@ downloadReport(maintenances: any[]): void {
     doc.setTextColor(primaryColor);
     doc.setFont('helvetica', 'bold');
     doc.text('ID', 15, y);
-    doc.text('Equipement', 35, y);
+    doc.text('Type', 30, y);
+    doc.text('Équipement', 70, y);
     doc.text('Date Début', 110, y);
     doc.text('Statut', 150, y);
     doc.text('Priorité', 180, y);
@@ -808,7 +801,8 @@ downloadReport(maintenances: any[]): void {
       }
 
       doc.text(m.id?.toString() || '-', 15, y);
-      doc.text((m.equipementNom || '-').substring(0, 60), 35, y);
+      doc.text(m.repetitiontype || 'maintenance corrective', 30, y);
+      doc.text(m.equipementNom || '-', 70, y);
       doc.text(dateToShow, 110, y);
       doc.text(this.getStatusLabel(m.statut), 150, y);
       doc.text(this.getPriorityLabel(m.priorite), 180, y);
@@ -829,6 +823,7 @@ downloadReport(maintenances: any[]): void {
     console.error("Erreur de chargement du logo, génération sans logo...");
   };
 }
+
 
 
   
@@ -876,23 +871,19 @@ downloadWeeklyReport(maintenances: any[]): void {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  // Trouver le lundi de la semaine actuelle
   const currentDay = today.getDay();
   const offset = currentDay === 0 ? -6 : 1 - currentDay;
   const mondayThisWeek = new Date(today);
   mondayThisWeek.setDate(today.getDate() + offset);
 
-  // Semaine dernière
   const monday = new Date(mondayThisWeek);
   monday.setDate(mondayThisWeek.getDate() - 7);
-
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   sunday.setHours(23, 59, 59, 999);
 
   const generatedDate = new Date(monday);
-  generatedDate.setHours(8, 0, 0, 0); // lundi à 08:00
+  generatedDate.setHours(8, 0, 0, 0);
 
   const filtered = maintenances.filter(m => {
     try {
@@ -926,7 +917,6 @@ downloadWeeklyReport(maintenances: any[]): void {
     doc.setFontSize(10);
     doc.text('Rapport Hebdomadaire des Maintenances', 105, y + 15, { align: 'center' });
 
-    // Période
     const formatDate = (date: Date): string => {
       return date.toLocaleDateString('fr-FR', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -939,11 +929,13 @@ downloadWeeklyReport(maintenances: any[]): void {
 
     y += 35;
 
+    // En-têtes
     doc.setFontSize(10);
     doc.setTextColor(primaryColor);
     doc.setFont('helvetica', 'bold');
-    doc.text('ID', 20, y);
-    doc.text('Équipement', 35, y);
+    doc.text('ID', 15, y);
+    doc.text('Type', 30, y);
+    doc.text('Équipement', 55, y);
     doc.text('Date Début', 110, y);
     doc.text('Statut', 150, y);
     doc.text('Priorité', 180, y);
@@ -951,9 +943,10 @@ downloadWeeklyReport(maintenances: any[]): void {
     y += 3;
     doc.setDrawColor(primaryColor);
     doc.setLineWidth(0.5);
-    doc.line(20, y, 190, y);
+    doc.line(15, y, 200, y);
     y += 7;
 
+    // Corps du tableau
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(textColor);
     filtered.forEach(m => {
@@ -962,10 +955,9 @@ downloadWeeklyReport(maintenances: any[]): void {
         y = 20;
       }
 
-      doc.text(m.id.toString(), 20, y);
-      doc.text(m.equipementNom || '-', 35, y);
-
-      // Choix de la date à afficher
+      doc.text(m.id?.toString() || '-', 15, y);
+      doc.text(m.repetitiontype || 'maintenance corrective', 30, y);  // 👈 ICI : le typeMaintenance bien affiché
+     doc.text(m.equipementNom || '-', 70, y);  // 
       let dateToShow: string;
       try {
         const datePrevue = new Date(m.dateDebutPrevue);
@@ -973,9 +965,9 @@ downloadWeeklyReport(maintenances: any[]): void {
           dateToShow = datePrevue.toLocaleDateString('fr-FR');
         } else {
           const dateComm = new Date(m.dateCommencement);
-          dateToShow = isNaN(dateComm.getTime()) ? '-' : dateComm.toLocaleDateString('fr-FR');
+          dateToShow = !isNaN(dateComm.getTime()) ? dateComm.toLocaleDateString('fr-FR') : '-';
         }
-      } catch (e) {
+      } catch {
         dateToShow = '-';
       }
 
@@ -997,6 +989,7 @@ downloadWeeklyReport(maintenances: any[]): void {
     console.error("Erreur de chargement du logo, génération sans logo...");
   };
 }
+
 
 
 generateWeeklyReportMetadata(baseDate: Date = new Date()): { type: string; period: string; generatedDate: Date; filePath: string } {

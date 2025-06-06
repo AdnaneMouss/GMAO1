@@ -286,7 +286,12 @@
       <div *ngIf="user?.role === 'TECHNICIEN'" class="border-t border-gray-200 my-2"></div>
       <div *ngIf="user?.role === 'TECHNICIEN'" class="h-[20px]"></div>
 
-
+ <a routerLink="/fournisseur" class="flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-green-700 hover:text-white transition-all ease-in-out duration-300"
+           [ngClass]="{'bg-green-800 text-white': isActive('/fournisseur')}">
+         <i class="fas fa-truck text-xl"></i>  
+          <span *ngIf="!isSidebarCollapsed">fournisseur</span>
+        </a>
+       
         <!-- Settings -->
         <a routerLink="/parametres" class="flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-green-700 hover:text-white transition-all ease-in-out duration-300"
            [ngClass]="{'bg-green-800 text-white': isActive('/parametres')}">

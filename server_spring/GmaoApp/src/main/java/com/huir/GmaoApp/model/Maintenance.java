@@ -80,6 +80,8 @@ public class Maintenance {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateProchainemaintenance;
     
+    private String frequence;
+    
     @Column(name = "type_maintenance")
     private String typeMaintenance = "PREVENTIVE";
 
@@ -100,11 +102,23 @@ public class Maintenance {
     private Statut statut;
 
     private String commentaires;
+    
+    
 
-    @Enumerated(EnumType.STRING)
+    public String getFrequence() {
+		return frequence;
+	}
+
+	public void setFrequence(String frequence) {
+		this.frequence = frequence;
+	}
+
+	@Enumerated(EnumType.STRING)
     private repetitiontype repetitiontype;
 
     private long repetition;
+    
+    private Long attributId;
     
     
 
@@ -133,6 +147,7 @@ public class Maintenance {
     
     @OneToMany(mappedBy = "maintenance", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference("maintenance-interventions2")
+    
     private List<Intervention> interventions;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -145,28 +160,27 @@ public class Maintenance {
     @JoinColumn(name = "technicien_maintenance_id_id")
     private User user;
 
-    @Enumerated(EnumType.STRING)
-    private frequence frequence;
+ 
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonManagedReference // Gestion de la relation parent
     @JoinColumn(name = "service_id")
     private Services service;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JsonManagedReference // Gestion de la relation parent
-    @JoinColumn(name = "salle_id")
-    private Salle salle;
+   // @ManyToOne(fetch = FetchType.EAGER)
+    //@JsonManagedReference // Gestion de la relation parent
+    //@JoinColumn(name = "salle_id")
+    //private Salle salle;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JsonManagedReference // Gestion de la relation parent
-    @JoinColumn(name = "etage_id")
-    private Etage etage;
+    //@ManyToOne(fetch = FetchType.EAGER)
+    //@JsonManagedReference // Gestion de la relation parent
+    //@JoinColumn(name = "etage_id")
+    //private Etage etage;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JsonManagedReference // Gestion de la relation parent
-    @JoinColumn(name = "batiment_id")
-    private Batiment batiment;
+    //@ManyToOne(fetch = FetchType.EAGER)
+    //@JsonManagedReference // Gestion de la relation parent
+    //@JoinColumn(name = "batiment_id")
+    //private Batiment batiment;
 
     @ManyToOne
     @JoinColumn(name = "equipement_id")
@@ -174,7 +188,15 @@ public class Maintenance {
     private Equipement equipement;
 
     
-    @JsonIgnore
+    public Long getAttributId() {
+		return attributId;
+	}
+
+	public void setAttributId(Long attributId) {
+		this.attributId = attributId;
+	}
+
+	@JsonIgnore
     private String documentPath;
 
     @Enumerated(EnumType.STRING)
@@ -201,9 +223,12 @@ public class Maintenance {
 	    
 	    private String selectedjours;	
 	    private String selectedmois;
-	    
-	    
-	    
+	 
+	    @OneToMany(mappedBy = "maintenance", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	    @JsonManagedReference
+	    private List<RepetitionInstance> repetitions = new ArrayList<>();
+
+
 	 // Champ stocké en base de données
 	    @Column(name = "next_repetition_dates")
 	    private String nextRepetitionDatesString;
@@ -234,7 +259,15 @@ public class Maintenance {
 
 	    
 	   
-	    private List<LocalDate> calculateRepetitionDates(
+	    public List<RepetitionInstance> getRepetitions() {
+			return repetitions;
+		}
+
+		public void setRepetitions(List<RepetitionInstance> repetitions) {
+			this.repetitions = repetitions;
+		}
+
+		private List<LocalDate> calculateRepetitionDates(
 	    	    LocalDate start,
 	    	    LocalDate end,
 	    	    repetitiontype repetitiontype,
@@ -417,7 +450,9 @@ public class Maintenance {
 	  
 
 	    
-	    public void setEquipementId(Long equipementId) {
+	  
+
+		public void setEquipementId(Long equipementId) {
 	        this.equipement = new Equipement();
 	        this.equipement.setId(equipementId);  // Lier uniquement l'ID
 	    }
@@ -610,6 +645,9 @@ public class Maintenance {
 	
 
 	
+	
+
+
 	public ActionMaintenance getAction() {
 	        return action;
 	    }
@@ -664,14 +702,7 @@ public class Maintenance {
 			this.responsableMaintenance = responsableMaintenance;
 		}
 
-		public frequence getFrequence() {
-			return frequence;
-		}
-
-		public void setFrequence(frequence frequence) {
-			this.frequence = frequence;
-		}
-
+	
 		public Services getService() {
 			return service;
 		}
@@ -680,29 +711,9 @@ public class Maintenance {
 			this.service = service;
 		}
 
-		public Salle getSalle() {
-			return salle;
-		}
+		
 
-		public void setSalle(Salle salle) {
-			this.salle = salle;
-		}
-
-		public Etage getEtage() {
-			return etage;
-		}
-
-		public void setEtage(Etage etage) {
-			this.etage = etage;
-		}
-
-		public Batiment getBatiment() {
-			return batiment;
-		}
-
-		public void setBatiment(Batiment batiment) {
-			this.batiment = batiment;
-		}
+		
 
 		public Equipement getEquipement() {
 			return equipement;

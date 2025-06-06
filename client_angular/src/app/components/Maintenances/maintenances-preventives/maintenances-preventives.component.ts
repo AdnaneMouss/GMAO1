@@ -18,7 +18,7 @@ import { RepetitionType } from '../../../models/RepetitionType';
 import { interval, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { NotificationService } from '../../../services/NotificationService';
 import { AttributEquipements } from '../../../models/attribut-equipement';
 import { EtageService } from '../../../services/etage.service';
@@ -46,7 +46,7 @@ export class MaintenancesPreventivesComponent implements OnInit {
   message: string = '';
   searchText: string = '';
   isScrolling = false;
-
+selectedMaintenance: maintenance = {} as maintenance; // Ou créez une nouvelle instance
   filteredMaintenace = [...this.maintenance];
   equipements: Equipement[] = [];
   typesEquipements: TypesEquipements[] = []
@@ -107,6 +107,7 @@ scrollTimeout: any;
 
 
 
+
 private checkInterval: Subscription | undefined;
 
 
@@ -118,7 +119,7 @@ notificationMessagecHAT: string = '';
 
   private unreadMessages: {[key: string]: number} = {};
 
-selectedMaintenance: maintenance | null = null;
+//selectedMaintenance: maintenance | null = null;
 showUpdatePanel: boolean = false;
 showModal: boolean = false;
 
@@ -168,6 +169,19 @@ handleDateChange(event: Event, index: number): void {
     });
   }
 }
+initSelectedDays(joursSelectionnes: string[]) {
+  this.selectedDays = {};
+  this.joursSemaine.forEach(day => {
+    this.selectedDays[day] = joursSelectionnes.includes(day);
+  });
+}
+initSelectedMois(moisSelectionnes: string[]) {
+  this.selectedMois = {};
+  this.moisAnnee.forEach(mois => {
+    this.selectedMois[mois] = moisSelectionnes.includes(mois);
+  });
+}
+
 
 
 
@@ -259,14 +273,16 @@ selectedMoiss: { [key: string]: boolean } = {};
 
 
    updateSelectedJours(): void {
-    this.newMaintenance.selectedjours = Object.keys(this.selectedDays)
+    this.selectedMaintenance.selectedjours = Object.keys(this.selectedDays)
       .filter(day => this.selectedDays[day]);
   }
 
   updateSelectedMois(): void {
-    this.newMaintenance.selectedmois = Object.keys(this.selectedMois)
+    this.selectedMaintenance.selectedmois = Object.keys(this.selectedMois)
       .filter(mois => this.selectedMois[mois]);
   }
+
+  
   joursSemaine: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
   moisAnnee: string[] = [
     "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
@@ -348,6 +364,7 @@ addRepetitionDate(): void {
     seuil: 0,
     endDaterep: new Date(''),
     equipementId: null,
+    attributId: null,
     equipementNom: '',
 
 
@@ -364,12 +381,29 @@ addRepetitionDate(): void {
     endDate: new Date(''),
     RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
     message: '',
-    NonSeuil: '',
+    nonSeuil: '',
     equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
     dateCreation: ''
   };
 
 
+loadSelectedValues(): void {
+  if (this.selectedMaintenance.selectedjours) {
+    this.selectedMaintenance.selectedjours.forEach(day => {
+      if (this.selectedDays.hasOwnProperty(day)) {
+        this.selectedDays[day] = true;
+      }
+    });
+  }
+
+  if (this.selectedMaintenance.selectedmois) {
+    this.selectedMaintenance.selectedmois.forEach(mois => {
+      if (this.selectedMois.hasOwnProperty(mois)) {
+        this.selectedMois[mois] = true;
+      }
+    });
+  }
+}
 
   onEquipementChange(event: Event) {
     const target = event.target as HTMLSelectElement;
@@ -1032,7 +1066,7 @@ toggleMoisSelectionn(mois: string, event: any) {
     this.chargerEquipements();
     this.loadBatiments();
     this.setupChatNotifications();
-
+      this.loadSelectedValues();
     window.addEventListener('scroll', this.onScroll, true);
 
 
@@ -1577,6 +1611,7 @@ addMaintenance() {
     this.newMaintenance.dateProchainemaintenance = new Date(this.newMaintenance.dateProchainemaintenance);
   }
 
+  this.newMaintenance.nonSeuil = this.selectedAttribut;
 
   // Vérifiez que la date de début est avant la date de fin
   if (this.newMaintenance.dateDebutPrevue && this.newMaintenance.dateFinPrevue) {
@@ -1591,7 +1626,7 @@ addMaintenance() {
 
   // Vérification et remplacement de la valeur vide pour 'frequence'
   if (this.newMaintenance.frequence === "") {
-    this.newMaintenance.frequence = null;  // Remplacez "" par null
+    this.newMaintenance.frequence = null;
   }
 
   // Vérifiez que les indicateurs sont présents
@@ -1599,7 +1634,7 @@ addMaintenance() {
     this.newMaintenance.indicateurs = [];
   }
 
-  // Ajoutez un nouvel indicateur si nécessaire
+  // Ajoutez un nouvel indicateur vide si nécessaire
   this.newMaintenance.indicateurs.push({ nom: '', valeur: '' });
 
   // Vérifiez que tous les champs requis sont remplis
@@ -1623,48 +1658,55 @@ addMaintenance() {
   if (!this.newMaintenance.priorite) {
     champsManquants.push("Priorité");
   }
-
   if (!this.newMaintenance.repetitiontype) {
-    champsManquants.push("repetitiontype");
+    champsManquants.push("Type de répétition");
   }
-
-
-  if(!this.newMaintenance.action)
-  {
-    champsManquants.push("action")
+  if (!this.newMaintenance.action) {
+    champsManquants.push("Action");
   }
-  if(!this.newMaintenance.selectedjours)
-    {
-      champsManquants.push("selectedjours")
-    }
-
-
-
-
-
-
+  if (!this.newMaintenance.selectedjours) {
+    champsManquants.push("Jours sélectionnés");
+  }
 
   // Si un champ est manquant, afficher un message d'erreur
   if (champsManquants.length > 0) {
     this.errorMessage = "Veuillez remplir les champs suivants : " + champsManquants.join(", ");
+    console.error(this.errorMessage);
     return;
   }
 
   // Envoyer la maintenance au backend
   this.maintenanceService.createMaintenance(this.newMaintenance).subscribe({
     next: (response) => {
-      console.log("Maintenance ajoutée avec succès", response);
-      this.fetchMaintenances();  // Rafraîchir la liste
+      console.log("✅ Maintenance ajoutée avec succès", response);
+      this.fetchMaintenances();
       this.resetForm();
       this.showPanel = false;
       this.successMessage = "Maintenance ajoutée avec succès";
+      this.errorMessage = "";
     },
-    error: (err) => {
-      console.error("Erreur lors de l'ajout de la maintenance", err);
-      this.errorMessage = "Erreur lors de l'ajout de la maintenance.";
+    error: (err: HttpErrorResponse) => {
+      console.error("❌ Erreur lors de l'ajout de la maintenance :", err);
+
+      if (err.error && typeof err.error === 'object') {
+        if (err.error.error) {
+          this.errorMessage = "Erreur : " + err.error.error;
+          console.error("🛑 Détail de l'erreur : ", err.error.error);
+        } else {
+          this.errorMessage = "Erreur serveur : " + JSON.stringify(err.error);
+          console.error("🛑 Détail brut :", err.error);
+        }
+      } else if (typeof err.error === 'string') {
+        this.errorMessage = "Erreur : " + err.error;
+        console.error("🛑 Erreur texte : ", err.error);
+      } else {
+        this.errorMessage = "Erreur inconnue lors de l'ajout de la maintenance.";
+        console.error("🛑 Erreur inconnue : ", err);
+      }
     }
   });
 }
+
 
 joursSelectionnes: string[] = []; // Liste des jours validés
 enregistrerSelection() {
@@ -1699,7 +1741,7 @@ resetForm() {
     repetition: 0,
     seuil: 0,
     message: '',
-    NonSeuil: '',
+    nonSeuil: '',
     RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
   dateCreation: new Date().toISOString(),
 

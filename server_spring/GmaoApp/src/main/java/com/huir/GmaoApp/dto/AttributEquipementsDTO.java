@@ -21,7 +21,7 @@ public class AttributEquipementsDTO {
     private String attributEquipementType;  // Change this to String
     private TypesEquipements typeEquipement;
     private List<AttributEquipementValeurDTO> attributEquipementValeurs;
-
+    private Long attributId;
     public AttributEquipementsDTO(AttributEquipements attributEquipements) {
         this.id = attributEquipements.getId();
         this.nom = attributEquipements.getNom();
@@ -33,4 +33,12 @@ public class AttributEquipementsDTO {
                 : null;
         this.typeEquipement = attributEquipements.getTypeEquipement();
     }
+	public Long getAttributId() {
+		return attributId;
+	}
+	public void setAttributId(Long attributId) {
+		this.attributId = attributId;
+	}
+    
+    
 }

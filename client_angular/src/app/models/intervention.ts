@@ -8,6 +8,10 @@ export interface Intervention {
   description: string;
   duree: number;
   maintenanceId: number;
+  maintenancepId? : number;
+repetitionId?: number | null;
+
+
   maintenanceStatut: 'EN_ATTENTE' | 'EN_COURS' | 'TERMINEE' | 'ANNULEE';
   maintenancePriorite: 'NORMALE' | 'URGENTE' | 'FAIBLE';
   dateCommencement: string | undefined;

@@ -29,6 +29,9 @@ import { AttributEquipements } from '../../../models/attribut-equipement';
 import { AuthService } from '../../../services/auth.service';
 import { Intervention } from '../../../models/intervention';
 import { DateAdapter } from '@angular/material/core';
+import { formatDate } from '@angular/common';
+import { repetitionInstances } from '../../../models/repetitionInstances';
+import { RepetitionService } from '../../../services/repetition.service';
 
 @Component({
   selector: 'app-taches-preventives-affectee',
@@ -36,6 +39,12 @@ import { DateAdapter } from '@angular/material/core';
   styleUrls: ['./taches-preventives-affectee.component.css']
 })
 export class TachesPreventivesAffecteeComponent implements OnInit{
+startRepetition(arg0: any) {
+throw new Error('Method not implemented.');
+}
+completeRepetition(arg0: any) {
+throw new Error('Method not implemented.');
+}
   expandedMaintenances: any[] = [];
   technicienId: number = 0;
   showNotificationsPanel: boolean = false;
@@ -66,13 +75,18 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
   selectedStatus: string = '';
   selectedPriorite: string = '';
   notifications: string[] = [];
+  selectedFiles: File[] = [];
+  selectedPieces: { id: number; nom: string; quantite: number }[] = [];
+repetitionInstances: repetitionInstances[] = [];
+confirmationHandler: 'v1' | 'v2' = 'v1'; // ou 'v2' selon ce que tu veux exécuter
+  repetitionId!: number | null;
 
   currentPage: number = 0;
-  pageSize: number = 15 // 20 éléments par page
+  pageSize: number = 10 ;
 
   selectedAttribut: any;
   //selectedEquipementId: number | null = null;
-
+maintenanceRepetitionsMap = new Map<number, repetitionInstances[]>();
   filteredMaintenances = [...this.maintenance];
   currentTechnicienId: number | null = null;
 
@@ -83,7 +97,7 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
   confirmationMessage: string = '';
   dateDebutFiltre: string | null = null;
   dateFinFiltre: string | null = null;
-
+maintenancepId : number | null = null;
   technicianId: number | null = null;
   interventions: Intervention[] = [];
   piecesByIntervention: { [key: number]: PieceDetachee[] } = {};
@@ -100,7 +114,8 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
   // For intervention form
   showInterventionForm: boolean = false;
   intervention: {
-    maintenanceId: number;
+   
+    maintenancepId: number;
     maintenanceStatut: string;
     remarques: string;
     technicienId: number;
@@ -110,17 +125,22 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
     photos: any[];
     typeIntervention: string;
     piecesDetachees: number[];
+     repetitionId?:  number | null;
+     
   } = {
     description: "",
     duree: 0,
     id: 0,
-    maintenanceId: 0,
+    maintenancepId: 0,
+     repetitionId: 0,
     maintenanceStatut: 'EN_ATTENTE',
     photos: [],
     remarques: "",
     technicienId: 0,
     typeIntervention: 'CORRECTIVE',
-    piecesDetachees: []
+    piecesDetachees: [],
+   
+    
   };
 
 
@@ -135,7 +155,8 @@ export class TachesPreventivesAffecteeComponent implements OnInit{
 
 generatedDates: Date[] = [];
 showEmptyPage = false; // Contrôle l'affichage de la page vide
-selectedPieces: number[] = [];
+
+
   pieceSearch: string = '';
 
 
@@ -306,7 +327,7 @@ onAttributChange(attribut: any) {
     endDate: new Date(''),
     RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
     message: '',
-    NonSeuil: '',
+    nonSeuil: '',
     equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
     dateCreation: ''
   };
@@ -353,11 +374,12 @@ onAttributChange(attribut: any) {
   maintenances: any[] = []; // Tableau pour stocker les maintenances
 
 
-  constructor(private maintenanceService: MaintenanceService, private cdr: ChangeDetectorRef,private equipementService: EquipementService,private userService: UserService, batimentservice:BatimentService,  private route: ActivatedRoute,private toastr: ToastrService,private http: HttpClient,private notificationService: NotificationService, private authService: AuthService,  private interventionService: InterventionService,
+  constructor(private maintenanceService: MaintenanceService, 
+    private repetitionService: RepetitionService ,private cdr: ChangeDetectorRef,private equipementService: EquipementService,private userService: UserService, batimentservice:BatimentService,  private route: ActivatedRoute,private toastr: ToastrService,private http: HttpClient,private notificationService: NotificationService, private authService: AuthService,  private interventionService: InterventionService,
     private PieceDetacheeService: PieceDetacheeService,
     private InterventionPreventiceService:InterventionPreventiceService,
-
-    private router: Router ) { }
+    private cdRef: ChangeDetectorRef,
+private router: Router ) { }
 
 
   validateDates() {
@@ -575,9 +597,78 @@ console.log(this.filteredMaintenace.map(m => m.nextRepetitionDatesString));
 
  this.expandMaintenances();
 
+    this.loadAllRepetitions();
+
+
+ 
+
 
 
 }
+loadRepetitionsByMaintenanceId(maintenanceId: number): void {
+  console.log(`Début du chargement des répétitions pour maintenanceId=${maintenanceId}...`);
+  
+  this.maintenanceService.getRepetitionsByMaintenanceId(maintenanceId).subscribe({
+    next: (data) => {
+      console.log('Répétitions brutes chargées :', data);
+
+      // Filtrer les répétitions dont la maintenance n’est pas terminée ou annulée
+      this.repetitionInstances = data.filter(r =>
+        r.statut !== 'TERMINEE' &&
+        r.statut !== 'ANNULEE'
+      );
+
+      console.log('Répétitions filtrées :', this.repetitionInstances);
+    },
+    error: (err) => {
+      console.error('Erreur chargement répétitions :', err);
+    },
+    complete: () => {
+      console.log('Chargement des répétitions terminé');
+    }
+  });
+}
+
+
+
+
+
+loadAllRepetitions(): void {
+  this.repetitionService.getAllRepetitions().subscribe({
+    next: (data) => {
+      console.log('Toutes les répétitions chargées :', data);
+      this.repetitionInstances = data;
+    },
+    error: (err) => {
+      console.error('Erreur chargement répétitions :', err);
+    },
+    complete: () => {
+      console.log('Chargement des répétitions terminé');
+    }
+  });
+}
+
+
+ isPieceSelected(pieceId: number): boolean {
+    return this.selectedPieces.some(p => p.id === +pieceId);
+  } 
+  onAddPiece(pieceId: string): void {
+    const id = +pieceId;
+    const selected = this.piecesList.find(p => p.id === id);
+    if (selected && !this.isPieceSelected(id)) {
+      this.selectedPieces.push({ ...selected, quantite: 1 });
+    }
+  }
+
+
+
+
+
+
+getRepetitionsForMaintenance(maintenanceId: number): repetitionInstances[] {
+  return this.maintenanceRepetitionsMap.get(maintenanceId) || [];
+}
+
 
 
 
@@ -609,7 +700,7 @@ console.log(this.filteredMaintenace.map(m => m.nextRepetitionDatesString));
 
 onPiecesChange(event: Event): void {
   const selectedOptions = (event.target as HTMLSelectElement).selectedOptions;
-  this.selectedPieces = Array.from(selectedOptions).map(opt => Number(opt.value));
+ // this.selectedPieces = Array.from(selectedOptions).map(opt => Number(opt.value));
 }
 
 // À ajouter dans votre composant
@@ -775,6 +866,12 @@ filteredInterventions(): Intervention[] {
         console.error("Erreur lors du chargement des maintenances", err);
       }
     });
+    
+
+
+    
+    
+  
   }
 
   loadTechnicienMaintenances(): void {
@@ -1150,13 +1247,13 @@ onNotificationClick(notification: any): void {
 
 
 startTask(id: number): void {
-  this.maintenanceService.startTask(id).subscribe(
+  this.repetitionService.startTask(id).subscribe(
     (updatedMaintenance) => {
       // Mettre à jour à la fois maintenances et filteredMaintenace
-      const index = this.maintenances.findIndex(m => m.id === id);
+      const index = this.repetitionInstances.findIndex(m => m.id === id);
       if (index !== -1) {
-        this.maintenances[index] = updatedMaintenance;
-        this.maintenances = [...this.maintenances];
+        this.repetitionInstances[index] = updatedMaintenance;
+        this.repetitionInstances = [...this.repetitionInstances];
       }
       this.toastr.success('Tâche commencée avec succès');
     },
@@ -1167,39 +1264,88 @@ startTask(id: number): void {
   );
 }
 
-
-markAsCompleted(id: number): void {
-  this.maintenanceService.markAsCompleted(id).subscribe(
-    (updatedMaintenance) => {
-      const index = this.maintenances.findIndex(m => m.id === id);
-      if (index !== -1) {
-        this.maintenances[index] = updatedMaintenance;
+startTasKk(id: number): void {
+   console.log('→ Démarrage de la tâche pour la maintenance ID :', id);
+    this.maintenanceService.startTask(id).subscribe(
+      (updatedMaintenance) => {
+        const index = this.maintenances.findIndex(m => m.id === id);
+        if (index !== -1) {
+          this.maintenances[index] = updatedMaintenance;
+          
+        }
+         this.toastr.success('Tâche commencée avec succès');
+          this.cdRef.detectChanges();
+      },
+      (error) => {
+        console.error('Error starting task:', error);
+      this.toastr.error('Erreur lors du démarrage de la tâche');
       }
-      // Trigger the intervention form after marking as completed
-      this.openInterventionForm(id);
-    },
-    (error) => {
-      console.error('Error marking task as completed:', error);
-    }
-  );
+    );
+  }
+
+
+
+
+  markAsCompleted(maintenancepId: number): void {
+    this.maintenanceService.markAsCompleted(maintenancepId).subscribe(
+      (updatedMaintenance) => {
+        const index = this.maintenances.findIndex(m => m.maintenancepId === maintenancepId);
+        if (index !== -1) {
+          this.maintenances[index] = updatedMaintenance;
+        }
+        // Trigger the intervention form after marking as completed
+        this.openInterventionForm(maintenancepId);
+      },
+      (error) => {
+        console.error('Error marking task as completed:', error);
+      }
+    );
+  }
+
+
+  markAsCompletedd(id: number): void {
+    this.repetitionService.completeRepetition(id).subscribe(
+      (updatedMaintenance) => {
+        const index = this.maintenances.findIndex(m => m.id === id);
+        if (index !== -1) {
+          this.maintenances[index] = updatedMaintenance;
+        }
+        // Trigger the intervention form after marking as completed
+        this.openInterventionForm(id);
+      },
+      (error) => {
+        console.error('Error marking task as completed:', error);
+      }
+    );
+  }
+
+
+
+  openInterventionForm(maintenancepId: number, repetitionId: number | null = null): void {
+this.showInterventionForm = true;
+  this.intervention.maintenancepId = maintenancepId;
+  this.intervention.technicienId = this.technicienId;
+
+  if (repetitionId !== null) {
+    this.intervention.repetitionId = repetitionId;
+  } else {
+    this.intervention.repetitionId = null;
+  }
+    console.log('Opening intervention form for maintenance:', maintenancepId, 'and repetition:', repetitionId);
+  
 }
 
 
-markAsCompletedd(id: number): void {
-  this.maintenanceService.markAsCompleted(id).subscribe(
-    (updatedMaintenance) => {
-      const index = this.maintenances.findIndex(m => m.id === id);
-      if (index !== -1) {
-        this.maintenances[index] = updatedMaintenance;
-      }
-      // Trigger the intervention form after marking as completed
-      this.openInterventionForm(id);
-    },
-    (error) => {
-      console.error('Error marking task as completed:', error);
-    }
-  );
-}
+
+  
+    
+   
+
+
+
+
+
+
 navigateToChat() {
   this.router.navigate(['/CHAT']);
 }
@@ -1226,24 +1372,76 @@ clearNotifications(): void {
   this.notificationCount = 0;
   this.showNotificationsPanel = false;
 }
+getRepetitionsByMaintenanceId(maintenancepId: number): repetitionInstances[] {
+  return this.repetitionInstances.filter(rep =>
+    rep.maintenanceId === maintenancepId &&
+    rep?.statut !== 'TERMINEE' &&
+    rep?.statut !== 'ANNULEE'
+  );
+}
 
-openConfirmationDialog(action: 'start' | 'complete', maintenanceId: number): void {
+
+openConfirmationDialog1(action: 'start' | 'complete', id: number): void {
   this.actionType = action;
-  this.currentMaintenanceId = maintenanceId;
-
-  if (action === 'start') {
-    this.confirmationMessage = 'Êtes-vous sûr de vouloir commencer cette tâche ?';
-  } else if (action === 'complete') {
-    this.confirmationMessage = 'Êtes-vous sûr de vouloir marquer cette tâche comme terminée ?';
-  }
-
+  this.currentMaintenanceId = id;
+  this.confirmationHandler = 'v2'; // ← version confirmAction1
+  this.confirmationMessage = action === 'start'
+    ? 'Êtes-vous sûr de vouloir commencer cette tâche ?'
+    : 'Êtes-vous sûr de vouloir marquer cette tâche comme terminée ?';
   this.showConfirmation = true;
 }
+
+ 
+
+
+
+
+
+startTaskk(id: number): void {
+   console.log('→ Démarrage de la 1400 tâche pour la maintenance ID :', id);
+  this.maintenanceService.startTask(id).subscribe(
+    (updatedMaintenance) => {
+      const index = this.maintenances.findIndex(m => m.id === id);
+      if (index !== -1) {
+        this.maintenances[index] = updatedMaintenance;
+      }
+    },
+    (error) => {
+      console.error('Error starting task:', error);
+      alert('Erreur lors du démarrage de la tâche.');
+    }
+  );
+}
+
+
+
+
+
+openConfirmationDialog(action: 'start' | 'complete', maintenancepId: number): void {
+  this.actionType = action;
+  this.currentMaintenanceId = maintenancepId;
+  this.confirmationHandler = 'v1'; // ← version confirmAction
+  this.confirmationMessage = action === 'start'
+    ? 'Êtes-vous sûr de vouloir commencer cette tâche ?'
+    : 'Êtes-vous sûr de vouloir marquer cette tâche comme terminée ?';
+  this.showConfirmation = true;
+}
+
+
 confirmAction(): void {
   if (this.actionType === 'start' && this.currentMaintenanceId !== null) {
-    this.startTask(this.currentMaintenanceId); // Utilisez startTaskk() au lieu de startTask()
+    this.startTask(this.currentMaintenanceId);
   } else if (this.actionType === 'complete' && this.currentMaintenanceId !== null) {
     this.markAsCompleted(this.currentMaintenanceId);
+  }
+  this.showConfirmation = false;
+}
+
+confirmAction1(): void {
+  if (this.actionType === 'start' && this.currentMaintenanceId !== null) {
+    this.startTasKk(this.currentMaintenanceId); // Utilisez startTaskk() au lieu de startTask()
+  } else if (this.actionType === 'complete' && this.currentMaintenanceId !== null) {
+    this.markAsCompletedd(this.currentMaintenanceId);
   }
   this.showConfirmation = false;
 }
@@ -1253,32 +1451,61 @@ cancelAction(): void {
   this.showConfirmation = false;
 }
 
-openInterventionForm(maintenanceId: number): void {
-  console.log('Opening intervention form for maintenance:', maintenanceId);
-  this.showInterventionForm = true;
-  this.intervention.maintenanceId = maintenanceId;
-  this.intervention.technicienId = this.technicienId;
-}
+
 
  // Method to handle file input change
  onFileChange(event: any): void {
   this.selectedFile = event.target.files[0]; // Capture the selected file
 }
-submitIntervention(): void {
-  if (this.selectedFile) {
-    // Prepare the intervention data along with the file for upload
-    const interventionData = {
-      description: this.intervention.description,
-      remarques: this.intervention.remarques,
-      maintenanceId: this.intervention.maintenanceId,
-      technicienId: this.intervention.technicienId,
-      piecesDetachees: this.selectedPieces,
-    };
 
-    // Call the service method to send the data along with the file
-    
-}
 
+
+
+ submitIntervention(): void {
+    if (!this.selectedPieces || this.selectedPieces.length === 0) {
+      console.warn('Aucune pièce détachée sélectionnée.');
+      return;
+    }
+
+    if (!this.intervention.description || !this.intervention.maintenancepId || !this.intervention.technicienId) {
+      console.warn('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
+    // 📦 Préparer les IDs et quantités séparément
+    const pieceDetacheeIds = this.selectedPieces.map(p => p.id);
+    const quantites = this.selectedPieces.map(p => p.quantite);
+
+    // 🧠 Vérification rapide de correspondance
+    if (pieceDetacheeIds.length !== quantites.length) {
+      console.error('Mismatch entre les pièces détachées et les quantités.');
+      return;
+    }
+
+    // 🔍 Log des IDs et quantités avant l'envoi
+    console.log('ID des pièces détachées:', pieceDetacheeIds);
+    console.log('Quantités des pièces détachées:', quantites);
+
+
+this.interventionService.createInterventionP(
+  this.selectedFiles || null,
+  this.intervention.description,
+  this.intervention.remarques || '',
+  this.intervention.maintenancepId,
+  this.intervention.technicienId,
+  pieceDetacheeIds,
+  quantites,
+ this.intervention.repetitionId ?? null // 👈 null si non défini
+).subscribe({
+  next: (newIntervention) => {
+    console.log('✅ Intervention créée avec succès:', newIntervention);
+    this.showInterventionForm = false;
+    this.router.navigate(['/interventionsP/liste']);
+  },
+  error: (err) => {
+    console.error('🚨 Erreur lors de la création de l\'intervention:', err);
+  }
+});
 
 
 }

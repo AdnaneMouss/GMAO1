@@ -15,6 +15,7 @@ import { Equipement } from '../../../models/equipement';
 import { AttributEquipements } from '../../../models/attribut-equipement';
 import { EquipementService } from '../../../services/equipement.service';
 import {TypesEquipements} from "../../../models/types-equipements";
+import { repetitionInstances } from '../../../models/repetitionInstances';
 
 @Component({
   selector: 'app-details-maintenance',
@@ -110,7 +111,7 @@ export class DetailsMaintenanceComponent implements OnInit {
 
     RepetitionType: RepetitionType.NE_SE_REPETE_PAS,
     message: '',
-    NonSeuil: '',
+    nonSeuil: '',
     equipementBatiment: "", equipementEtage: 0, equipementSalle: 0,
     dateCreation: ''
   };
@@ -132,6 +133,12 @@ constructor(
     private _snackBar: MatSnackBar
 
   ) { }
+
+isValidDate(date: any): boolean {
+  return date && !isNaN(new Date(date).getTime());
+}
+
+
 
 
 
@@ -173,11 +180,13 @@ constructor(
 
     this.messageSeuil = this.verifierSeuilMaintenance(seuil,valeurAttribut);
     this.chargerEquipements();
+     this.maintenance.nonSeuil = this.selectedAttribut;  
+
+  
 
 
 
-
-
+  
 
   }
 
@@ -227,6 +236,10 @@ isArray(value: any): boolean {
 getJoined(value: any): string {
   return this.isArray(value) ? value.join(', ') : value;
 }
+
+
+
+
 
   joursSemaine: string[] = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
   moisAnnee: string[] = [

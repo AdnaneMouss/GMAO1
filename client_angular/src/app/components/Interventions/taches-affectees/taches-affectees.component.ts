@@ -234,7 +234,7 @@ export class TachesAffecteesComponent implements OnInit {
       console.warn('Aucune pièce détachée sélectionnée.');
       return;
     }
-
+    
     if (!this.intervention.description || !this.intervention.maintenanceId || !this.intervention.technicienId) {
       console.warn('Veuillez remplir tous les champs obligatoires.');
       return;
