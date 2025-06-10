@@ -26,12 +26,12 @@ export class StatistiquesInterventionsComponent implements OnInit {
   customReportStart: string | null = null;
   customReportEnd: string | null = null;
   generatedReports: any[] = [];
- 
+
   selectedTypeMaint: 'CORRECTIVE' | 'PREVENTIVE' | null = null;
 
 
 
- 
+
   currentPage: number = 0;
 pageSize: number = 10;
 sortTable(column: string): void {
@@ -108,17 +108,17 @@ paginatedMaintenances: (maintenance | MaintenanceCorrective)[] = [];
 
 
 
-  
- 
+
+
   sortColumn: string = 'dateDebutPrevue';
   sortDirection: 'asc' | 'desc' = 'desc';
-  
+
   // Statistiques
   stats = {
     totalMaintenances: 0,
     maintenancesPreventives: 0,
     maintenancesCorrectives: 0,
-  
+
     byStatus: {
       EN_ATTENTE: 0,
       EN_COURS: 0,
@@ -131,9 +131,9 @@ paginatedMaintenances: (maintenance | MaintenanceCorrective)[] = [];
       URGENTE: 0
     }
   };
-  
+
   // Graphiques
-  statutChart!: Chart;
+  statutChart!: Chart<'pie', number[], string>;
   prioriteChart!: Chart;
 
   constructor(private maintenanceService: MaintenanceService, private maintenanceCorrectiveService : MaintenanceCorrectiveService) {
@@ -144,7 +144,7 @@ paginatedMaintenances: (maintenance | MaintenanceCorrective)[] = [];
     this.loadMaintenances();
     this.filteredMaintenace;
     this.allMaintenances;
-   
+
 
     setTimeout(() => {
       this.generateMonthlyReportIfScheduled();
@@ -245,7 +245,7 @@ sortData(): void {
 
     if (this.sortColumn.includes('.')) {
       const props = this.sortColumn.split('.');
-     
+
     } else {
       // Sécurité : vérifier que la propriété existe avant d'accéder
       if (this.sortColumn in a) valueA = (a as any)[this.sortColumn];
@@ -277,7 +277,7 @@ sortData(): void {
     // Détruire les anciens graphiques s'ils existent
     if (this.statutChart) this.statutChart.destroy();
     if (this.prioriteChart) this.prioriteChart.destroy();
-    
+
     // Graphique des statuts
     this.statutChart = new Chart('statutChart', {
       type: 'pie',
@@ -303,7 +303,7 @@ sortData(): void {
         maintainAspectRatio: false
       }
     });
-    
+
     // Graphique des priorités
     this.prioriteChart = new Chart('prioriteChart', {
       type: 'bar',
@@ -354,10 +354,10 @@ sortData(): void {
   }
 
   // Gestion du tri
- 
+
 
   // Gestion de la pagination
- 
+
 
   getMin(currentPage: number, pageSize: number, totalItems: number): number {
     return Math.min((currentPage + 1) * pageSize, totalItems);
@@ -370,7 +370,7 @@ sortData(): void {
 
   // Export
 
-   
+
  getNextRepetitionDatess(maintenance: any): string[] {
   return maintenance.next_repetition_dates || [];
 }
@@ -393,7 +393,7 @@ exportMaintenancePDF(maintenances: (MaintenanceCorrective | maintenance)[]): voi
   function isMaintenancePreventive(m: MaintenanceCorrective | maintenance): m is maintenance {
     return (m as maintenance).dateFinPrevue !== undefined;
   }
-  
+
 
   // Fonction pour ajouter du texte avec retour à la ligne automatique
   const addTextWithWrap = (text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
@@ -437,7 +437,7 @@ exportMaintenancePDF(maintenances: (MaintenanceCorrective | maintenance)[]): voi
           doc.setFont('helvetica', 'bold');
           doc.text(`${label}:`, pageMargin, yPosition);
           doc.setFont('helvetica', 'normal');
-          
+
           if (value) {
             if (valueColor) doc.setTextColor(valueColor);
             const text = value.toString();
@@ -457,14 +457,14 @@ exportMaintenancePDF(maintenances: (MaintenanceCorrective | maintenance)[]): voi
           addField('Durée Intervention', maintenance.dureeIntervention);
           addField('Date début prévue', maintenance.dateDebutPrevue ? new Date(maintenance.dateDebutPrevue).toLocaleDateString() : undefined);
           addField('Date fin prévue', maintenance.dateFinPrevue ? new Date(maintenance.dateFinPrevue).toLocaleDateString() : undefined);
-        
-        
 
 
 
 
-           
-         
+
+
+
+
           //addField('Date prochain entretien', maintenance.dateProchainemaintenance ? new Date(maintenance.dateProchainemaintenance).toLocaleDateString() : undefined);
           addField('Commentaires', maintenance.commentaires);
           addField('Statut', maintenance.statut, this.getStatusColor(maintenance.statut));
@@ -473,8 +473,8 @@ exportMaintenancePDF(maintenances: (MaintenanceCorrective | maintenance)[]): voi
           addField('Action', maintenance.action);
           addField('Début répétition', maintenance.startDaterep ? new Date(maintenance.startDaterep).toLocaleDateString() : undefined);
           addField('Fin répétition', maintenance.endDaterep ? new Date(maintenance.endDaterep).toLocaleDateString() : undefined);
-         
-          
+
+
          // Dates de répétition (pour les maintenances préventives avec répétition)
 // Dates de répétition
 const repetitionDates = this.getNextRepetitionDatess(maintenance);
@@ -504,9 +504,9 @@ if (maintenance.selectedmois && maintenance.selectedmois.length > 0) {
 
 
 
-          
-            
-          
+
+
+
 
         } else {
           // Maintenance corrective : champs spécifiques
@@ -560,18 +560,18 @@ if (maintenance.selectedmois && maintenance.selectedmois.length > 0) {
 
 
 
-  
+
   private generateMaintenancePDFWithoutLogo(doc: jsPDF, maintenance: maintenance): void {
     // Version simplifiée sans logo
     doc.setFontSize(14);
     doc.setTextColor('#4169E1');
     doc.text('Fiche Maintenance', 105, 20, { align: 'center' });
-    
+
     // ... (reprendre le reste du contenu sans le logo)
-    
+
     doc.save(`fiche_maintenance_${maintenance.id}_simple.pdf`);
   }
-  
+
   // Méthodes utilitaires
   private getStatusColor(status: string): string {
     const colors: {[key: string]: string} = {
@@ -582,7 +582,7 @@ if (maintenance.selectedmois && maintenance.selectedmois.length > 0) {
     };
     return colors[status] || '#000000';
   }
-  
+
   private getPriorityColor(priority: string): string {
     const colors: {[key: string]: string} = {
       'URGENTE': '#DC143C',    // Crimson
@@ -591,10 +591,10 @@ if (maintenance.selectedmois && maintenance.selectedmois.length > 0) {
     };
     return colors[priority] || '#000000';
   }
-  
-  
-  
- 
+
+
+
+
 
   // Utilitaires
   getMonthName(month: number): string {
@@ -629,68 +629,68 @@ if (maintenance.selectedmois && maintenance.selectedmois.length > 0) {
     return priorityLabels[priority] || priority;
   }
 
- 
-  
-  
+
+
+
   generateMonthlyReportIfScheduled(): void {
     const now = new Date();
-  
+
     // Vérifie si on est le 1er jour du mois à 8h00 (heure exacte)
     const isFirstDayOfMonth = now.getDate() === 1;
     const is8AM = now.getHours() === 8 && now.getMinutes() < 1; // Donne une fenêtre d'une minute
-    
+
     if (!(isFirstDayOfMonth && is8AM)) {
       return; // Ce n'est pas le moment de générer
     }
-  
+
     const today = new Date();
     const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
     const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-  
+
     startOfLastMonth.setHours(0, 0, 0, 0);
     endOfLastMonth.setHours(23, 59, 59, 999);
-  
+
     // Filtrage des maintenances clôturées le mois passé
     const filtered = this.allMaintenances.filter(m => {
     //  if (!m.dateFinPrevue) return false;
      // const dateFinPrevue = new Date(m.dateFinPrevue);
       return //dateFinPrevue >= startOfLastMonth && dateFinPrevue <= endOfLastMonth;
     });
-  
+
     if (filtered.length === 0) {
       console.log("Aucune maintenance clôturée le mois dernier.");
       return;
     }
-  
+
     const monthName = startOfLastMonth.toLocaleString('fr-FR', { month: 'long' });
     const year = startOfLastMonth.getFullYear();
-  
+
     let content = `Rapport Mensuel - ${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}\n\n`;
     content += `Total des maintenances : ${filtered.length}\n\n`;
-    
+
     // Groupement par type de maintenance
-   
- 
-    
+
+
+
     content += '\nDétail des maintenances :\n';
     filtered.forEach((m, i) => {
      // content += `${i + 1}. [${m.repetitiontype}] ${m.equipement} - ${m.commentaires || 'sans commentaire'} (Clôturé le ${new Date(m.dateFinPrevue).toLocaleDateString('fr-FR')})\n`;
     });
-  
+
     content += `\nGénéré automatiquement le ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR')}`;
-  
+
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const filename = `rapport-mensuel-${year}-${(startOfLastMonth.getMonth() + 1).toString().padStart(2, '0')}.txt`;
     saveAs(blob, filename);
-  
+
     console.log(`✅ Rapport mensuel généré pour ${monthName} ${year} avec ${filtered.length} maintenances.`);
 }
-  
 
 
- 
 
-  
+
+
+
 
 
   getNextMonday(): Date {
@@ -699,12 +699,12 @@ if (maintenance.selectedmois && maintenance.selectedmois.length > 0) {
     nextMonday.setDate(today.getDate() + ((1 + 7 - today.getDay()) % 7));
     return nextMonday;
   }
-  
+
   getFirstDayNextMonth(): Date {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth() + 1, 1);
   }
-  
+
 downloadReport(maintenances: any[]): void {
   if (!maintenances || maintenances.length === 0) {
     console.warn('Aucune maintenance à traiter.');
@@ -826,9 +826,9 @@ downloadReport(maintenances: any[]): void {
 
 
 
-  
-  
- 
+
+
+
 generateMonthlyReportMetadata(baseDate: Date = new Date()): { type: string; period: string; generatedDate: Date; filePath: string } {
   const months = [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
@@ -957,7 +957,7 @@ downloadWeeklyReport(maintenances: any[]): void {
 
       doc.text(m.id?.toString() || '-', 15, y);
       doc.text(m.repetitiontype || 'maintenance corrective', 30, y);  // 👈 ICI : le typeMaintenance bien affiché
-     doc.text(m.equipementNom || '-', 70, y);  // 
+     doc.text(m.equipementNom || '-', 70, y);  //
       let dateToShow: string;
       try {
         const datePrevue = new Date(m.dateDebutPrevue);
@@ -1034,16 +1034,16 @@ generateWeeklyReportMetadata(baseDate: Date = new Date()): { type: string; perio
     };
 }
 
-  
+
 generateReports(): void {
   const today = new Date();
-  
+
   // Générer le rapport hebdomadaire
    const weeklyReport = this.generateWeeklyReportMetadata(today);
-  
+
   // Générer le rapport mensuel
   const monthlyReport = this.generateMonthlyReportMetadata(today);
-  
+
   // Ajouter les rapports dans le tableau
   this.generatedReports = [
       {
@@ -1061,11 +1061,11 @@ generateReports(): void {
   ];
 }
 
-  
 
 
 
 
-  
+
+
 }
 

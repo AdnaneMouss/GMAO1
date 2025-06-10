@@ -1,10 +1,11 @@
 import { NgModule } from '@angular/core';
 
+import { NgChartsModule } from 'ng2-charts';
 
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
-import { FullCalendarModule } from '@fullcalendar/angular';
+
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
@@ -16,12 +17,17 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
+import { CommonModule } from '@angular/common'; // <- pour les pipes slice, uppercase, date
+import { ToastrModule } from 'ngx-toastr';
+import { FullCalendarModule } from '@fullcalendar/angular';
+
+import { MatInputModule } from '@angular/material/input';
 
 import {MatOption} from "@angular/material/autocomplete";
 import {MatSelect} from "@angular/material/select";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
-import {RouterLink, RouterOutlet} from "@angular/router";
+
 import {AppRoutingModule} from "./app-routing.module";
 import {LoginComponent} from "./components/login/login.component";
 import {NgOptimizedImage} from "@angular/common";
@@ -49,7 +55,7 @@ import { BatimentsListeComponent } from './components/batiments/batiments-liste/
 
 
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { ToastrModule } from 'ngx-toastr';
+
 import {UserRapportComponent} from "./components/Rapports/user-rapport/user-rapport.component";
 import {
   MaintenanceCalendarComponent
@@ -65,10 +71,7 @@ import { TachesPreventivesAffecteeComponent } from './components/Interventions/t
 
 
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common'; // <- pour les pipes slice, uppercase, date
 
-
-import { MatInputModule } from '@angular/material/input';
 import { LotAchatPieceComponent } from './components/Stocks/lot-achat-piece/lot-achat-piece.component';
 import { EtagesListeComponent } from './components/batiments/etages-liste/etages-liste.component';
 import { SallesListeComponent } from './components/batiments/salles-liste/salles-liste.component';
@@ -87,7 +90,7 @@ import { DashboardMaintenanceComponent } from './components/dashboards/dashboard
 import { DashboardInterventionsComponent } from './components/dashboards/dashboard-interventions/dashboard-interventions.component';
 import { DashboardBatimentsComponent } from './components/dashboards/dashboard-batiments/dashboard-batiments.component';
 import { DashboardServicesComponent } from './components/dashboards/dashboard-services/dashboard-services.component';
-//import {BaseChartDirective} from "ng2-charts";
+import {BaseChartDirective} from "ng2-charts";
 import { EquipementFormComponent } from './components/equipement-form/equipement-form.component';
 import { AccepterDemandesMaintenancesComponent } from './components/Maintenances/accepter-demandes-maintenances/accepter-demandes-maintenances.component';
 import { InventaireComponent } from './components/Stocks/inventaire/inventaire.component';
@@ -128,20 +131,33 @@ import { InventaireComponent } from './components/Stocks/inventaire/inventaire.c
     EtagesListeComponent,
     SallesListeComponent,
     EquipementsParSalleComponent,
+    ListeFournisseursComponent,
+    EquipementFormComponent,
+    DemandeMaintenancesComponent,
+    HistoriqueDemandesComponent,
+    DashboardAdminComponent,
+    DashboardUsersComponent,
+    DashboardEquipementsComponent,
+    DashboardPiecesComponent,
+    DashboardMaintenanceComponent,
+    DashboardInterventionsComponent,
+    DashboardBatimentsComponent,
+    DashboardServicesComponent,
+    AccepterDemandesMaintenancesComponent,
+    InventaireComponent,
 
-    ListeFournisseursComponent
-  
   ],
   imports: [
     AppRoutingModule,
     MatFormFieldModule,
     MatInputModule,
-  MatSelectModule,
-  MatAutocompleteModule,
+    MatSelectModule,
+    MatAutocompleteModule,
     ToastrModule.forRoot(),
     ListeEquipementsComponent,
     LoginComponent,
     MatSnackBarModule,
+    NgChartsModule,
     FullCalendarModule,
     BrowserModule,
     HttpClientModule,
@@ -157,22 +173,11 @@ import { InventaireComponent } from './components/Stocks/inventaire/inventaire.c
     MatCardModule,
     MatListModule,
     MatDividerModule,
+    PanneauNavigationComponent,
 
-    //DemandeMaintenancesComponent,
-    //HistoriqueDemandesComponent,
-    //DashboardAdminComponent,
-    //DashboardUsersComponent,
-    //DashboardEquipementsComponent,
-    //DashboardPiecesComponent,
-    //DashboardMaintenanceComponent,
-    //DashboardInterventionsComponent,
-    //DashboardBatimentsComponent,
-    //DashboardServicesComponent,
-    //EquipementFormComponent,
-    //AccepterDemandesMaintenancesComponent,
-    //InventaireComponent,
+
   ],
-   
+
   providers: [
     provideAnimationsAsync()
   ],

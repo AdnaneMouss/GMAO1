@@ -88,6 +88,31 @@
       <!-- Separator -->
       <div *ngIf="user?.role === 'ADMIN' || user?.role === 'RESPONSABLE'" class="border-t border-gray-200 my-2"></div>
 
+      <div *ngIf="user?.role === 'ADMIN' || user?.role === 'RESPONSABLE'" class="w-full">
+        <!-- Bouton principal du menu -->
+        <button class="flex items-center justify-between w-full py-3 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300"
+                (click)="toggleSubmenu('fournisseur')">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-tools text-xl"></i>
+            <span *ngIf="!isSidebarCollapsed" class="font-medium">Gestion des fournisseurs</span>
+          </div>
+          <i class="fas" [ngClass]="{'fa-chevron-down': !isSubmenuOpen('fournisseur'), 'fa-chevron-up': isSubmenuOpen('equipements')}"></i>
+        </button>
+
+        <!-- Sous-menu -->
+        <div *ngIf="isSubmenuOpen('fournisseur')" class="ml-6 mt-2 space-y-2 border-l-2 border-gray-300 pl-3">
+
+          <a routerLink="/fournisseur"  class="flex items-center space-x-3 py-2 px-4 rounded-lg hover:bg-green-700 hover:text-white transition-all duration-300"
+          [ngClass]="{'bg-green-800 text-white': isActive('/fournisseur')}">
+            <i class="fas fa-truck text-xl"></i>
+            <span *ngIf="!isSidebarCollapsed">Liste des fournisseurs</span>
+          </a>
+        </div>
+      </div>
+
+      <div *ngIf="user?.role === 'ADMIN' || user?.role === 'RESPONSABLE'" class="border-t border-gray-200 my-2"></div>
+
+
       <!-- Batiment Management with Submenu -->
       <div *ngIf="user?.role === 'ADMIN'" class="w-full">
         <!-- Bouton principal du menu -->
@@ -293,15 +318,10 @@
       <div *ngIf="user?.role === 'TECHNICIEN'" class="border-t border-gray-200 my-2"></div>
       <div *ngIf="user?.role === 'TECHNICIEN'" class="h-[20px]"></div>
 
-<<<<<<< HEAD
- <a routerLink="/fournisseur" class="flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-green-700 hover:text-white transition-all ease-in-out duration-300"
-           [ngClass]="{'bg-green-800 text-white': isActive('/fournisseur')}">
-         <i class="fas fa-truck text-xl"></i>  
-          <span *ngIf="!isSidebarCollapsed">fournisseur</span>
-        </a>
-       
+
+
         <!-- Settings -->
-=======
+
 
       <!-- Dashboard lambda-->
       <div *ngIf="user?.role === 'LAMBDA'" class="w-full">
@@ -357,7 +377,7 @@
 
 
       <!-- Settings -->
->>>>>>> 3d5094479310ee1849bac026b9a817743775dbee
+
         <a routerLink="/parametres" class="flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-green-700 hover:text-white transition-all ease-in-out duration-300"
            [ngClass]="{'bg-green-800 text-white': isActive('/parametres')}">
           <i class="fas fa-cogs text-xl"></i>

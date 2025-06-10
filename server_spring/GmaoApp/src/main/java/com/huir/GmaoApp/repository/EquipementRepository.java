@@ -29,15 +29,9 @@ public interface EquipementRepository extends JpaRepository<Equipement, Long> {
     boolean existsByEtage(Etage etage);
 
     boolean existsBySalle(Salle salle);
-<<<<<<< HEAD
-  
-   
-    
-    
-=======
 
     boolean existsByService(Services service);
 
     long countByStatut(StatutEquipement statut);
->>>>>>> 3d5094479310ee1849bac026b9a817743775dbee
+
 }
