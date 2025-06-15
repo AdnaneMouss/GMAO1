@@ -17,14 +17,41 @@ export class FournisseurService {
     return this.http.get<Fournisseur[]>(this.apiUrl);
   }
 
+  getAllFournisseursInactifs(): Observable<Fournisseur[]> {
+    return this.http.get<Fournisseur[]>(`${this.apiUrl}/inactifs`);
+  }
+
   getFournisseurById(id: number): Observable<Fournisseur> {
     return this.http.get<Fournisseur>(`${this.apiUrl}/${id}`);
   }
 
+  updateFournisseur(
+    fournisseurId: number,
+    fournisseurData: {
+      nom: string;
+      email: string;
+      telephone: string;
+      adresse: string;
+      codepostal: number | null;
+      type: string;
+    },
+    imageFile?: File
+  ): Observable<any> {
+    const formData = new FormData();
+    formData.append('nom', fournisseurData.nom);
+    formData.append('email', fournisseurData.email);
+    formData.append('telephone', fournisseurData.telephone);
+    formData.append('adresse', fournisseurData.adresse);
+    formData.append('codepostal', fournisseurData.codepostal?.toString() || '');
+    formData.append('type', fournisseurData.type);
 
- updateFournisseur(id: number, formData: FormData): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}`, formData);
+    if (imageFile) {
+      formData.append('file', imageFile); // Adapter selon le nom attendu côté backend
+    }
+
+    return this.http.put<any>(`${this.apiUrl}/${fournisseurId}`, formData);
   }
+
 
   deleteFournisseur(id: number): Observable<any> {
   return this.http.delete(`${this.apiUrl}/${id}`).pipe(
@@ -45,5 +72,23 @@ private handleError(error: HttpErrorResponse) {
   return throwError(errorMessage);
 }
 
-  
-} 
+  archiverFournisseur(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/archiver`, null);
+  }
+
+  // ✅ Restaurer un fournisseur
+  restaurerFournisseur(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/restaurer`, null);
+  }
+
+  // ✅ Archiver plusieurs fournisseurs
+  archiverMultipleFournisseurs(ids: number[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/archiver-multiple`, ids);
+  }
+
+  // ✅ Restaurer plusieurs fournisseurs
+  restaurerMultipleFournisseurs(ids: number[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/restaurer-multiple`, ids);
+  }
+
+}

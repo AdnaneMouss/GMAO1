@@ -8,11 +8,175 @@
   <i class="fas fa-check-circle text-2xl"></i>
   <span class="font-semibold">Fournisseur modifié avec succès !</span>
 </div>
-<!-- Message de succès suppression -->
-<div *ngIf="showDeleteSuccessMessage" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+
+<div *ngIf="isRestored" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
   <i class="fas fa-check-circle text-2xl"></i>
-  <span class="font-semibold">Fournisseur supprimé avec succès !</span>
+  <span class="font-semibold">Service restauré avec succès !</span>
 </div>
+
+<div *ngIf="isBulkRestored" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Fournisseurs restaurés avec succès !</span>
+</div>
+
+<div *ngIf="isBulkArchived" class="fixed top-5 right-5 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Fournisseur archivés avec succès !</span>
+</div>
+
+<div *ngIf="isArchived" class="fixed top-5 right-5 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">Fournisseur archivé avec succès et placé à la corbeille !</span>
+</div>
+
+<!-- Error Modal -->
+<div *ngIf="impossibleToArchive" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-center">
+    <h2 class="text-2xl font-semibold text-red-600 mb-4">⚠️ Erreur</h2>
+    <p class="text-gray-700 mb-6">{{ errorMessage }}</p>
+    <button
+      (click)="impossibleToArchive = false"
+      class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+    >
+      Fermer
+    </button>
+  </div>
+</div>
+
+<div *ngIf="showTrash" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+  <!-- Modal Content -->
+  <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-xl relative overflow-y-auto max-h-[90vh]">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-semibold text-gray-800">🗑️ Fournisseurs archivés</h3>
+      <button (click)="toggleTrash()" class="text-gray-400 hover:text-red-500 text-lg">
+        ✖
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="fournisseursInactifs.length > 0; else noArchived" class="space-y-4">
+
+      <!-- Error Alert -->
+      <div *ngIf="fournisseurTaken" class="error flex items-start justify-between bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg relative shadow-sm">
+        <div class="error__icon mr-3">
+          <!-- SVG icon -->
+        </div>
+        <div class="flex-1">
+          <div class="error__title font-semibold">{{ errorMessage }}</div>
+        </div>
+        <div class="error__close cursor-pointer" (click)="fournisseurTaken = false">
+          <!-- Close icon SVG -->
+        </div>
+      </div>
+
+      <div *ngIf="fournisseurTakenBulk" class="error flex items-start justify-between bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg relative shadow-sm">
+        <div class="error__icon mr-3">
+          <!-- SVG icon -->
+        </div>
+        <div class="flex-1">
+          <div class="error__title font-semibold">{{ errorMessage }}</div>
+        </div>
+        <div class="error__close cursor-pointer" (click)="fournisseurTakenBulk = false">
+          <!-- Close icon SVG -->
+        </div>
+      </div>
+
+
+      <!-- Bulk Restore Button -->
+      <div *ngIf="selectedFournisseurIds.length > 0" class="flex justify-end">
+        <button
+          class="mb-2 px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition"
+          (click)="restaurerFournisseursSelection()"
+        >
+          Restaurer la sélection ({{ selectedFournisseurIds.length }})
+        </button>
+      </div>
+      <!-- Select All / Reset Buttons -->
+      <div class="flex justify-between items-center">
+        <div>
+          <button
+            class="mr-2 px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            (click)="selectAll()"
+          >
+            Tout sélectionner
+          </button>
+
+          <button
+            class="px-4 py-2 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+            (click)="resetFournisseurSelection()"
+          >
+            Réinitialiser
+          </button>
+        </div>
+      </div>
+
+      <!-- Cards -->
+      <div
+        *ngFor="let fournisseur of fournisseursInactifs"
+        class="flex flex-col border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
+      >
+        <div class="flex items-center justify-between p-4">
+          <div class="flex items-center space-x-4">
+            <!-- Checkbox -->
+            <input
+              type="checkbox"
+              [checked]="selectedFournisseurIds.includes(fournisseur.id)"
+              (change)="toggleSelection(fournisseur.id)"
+              class="form-checkbox h-5 w-5 text-green-600 border-gray-300"
+            />
+
+            <!-- Image + Label -->
+            <img
+              [src]="getImageUrl(fournisseur.image)"
+              alt="Type Image"
+              class="w-12 h-12 object-cover rounded-full border"
+            />
+            <span class="text-gray-700 font-medium text-lg">{{ fournisseur.nom }}</span>
+          </div>
+
+          <!-- Single Restore Button -->
+          <button
+            class="px-3 py-1 text-sm text-green-600 border border-green-500 rounded hover:bg-green-50"
+            (click)="restaurerFournisseur(fournisseur.id)"
+          >
+            Restaurer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- No archived Services -->
+    <ng-template #noArchived>
+      <p class="text-gray-400 italic text-sm">Aucun fournisseur archivé pour le moment.</p>
+    </ng-template>
+  </div>
+</div>
+
+
+<div *ngIf="showConfirmationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md text-center">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Confirmer l'archive</h2>
+    <p class="text-gray-600 mb-6">Voulez-vous vraiment archiver ce service?</p>
+    <small class="text-gray-600 mb-6">Vous pourrez toujours le restaurer depuis la corbeille.</small>
+
+    <div class="flex justify-center gap-4">
+      <button
+        class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+        (click)="showConfirmationModal = false">
+        Annuler
+      </button>
+
+      <button
+        class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+        (click)="archiverFournisseur(selectedFournisseurToArchive?.id); showConfirmationModal = false">
+        Confirmer
+      </button>
+    </div>
+  </div>
+</div>
+
 
 <!-- Modale formulaire ajout/modif fournisseur -->
 <div *ngIf="showPanel" class="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50">
@@ -35,6 +199,7 @@
     <div *ngIf="nom.invalid && nom.touched" class="text-red-500 text-sm mt-1">
       Le nom est requis.
     </div>
+    <div *ngIf="nomTakenError" class="text-red-500 text-sm mt-1">{{errorMessage}}</div>
   </div>
 
   <!-- Adresse -->
@@ -57,21 +222,26 @@
     </div>
   </div>
 
-  <!-- Type -->
-  <div>
-    <label class="block text-gray-700 font-medium mb-1"><i class="fas fa-tags text-green-700 mr-1"></i> Type <span class="text-red-500">*</span></label>
-    <select [(ngModel)]="newFournisseur.type" name="type" required #type="ngModel"
-            class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
-      <option [ngValue]="null" disabled selected>-- Sélectionnez un type --</option>
-      <option [ngValue]="'pharmaceutique'">💊 Pharmaceutique</option>
-      <option [ngValue]="'equipement'">🔧 Équipement</option>
-      <option [ngValue]="'consommable'">📦 Consommable</option>
-      <option [ngValue]="'service'">🛠️ Service</option>
-    </select>
-    <div *ngIf="type.invalid && type.touched" class="text-red-500 text-sm mt-1">
-      Le type est requis.
-    </div>
-  </div>
+       <!-- Type -->
+       <div>
+         <label class="block text-gray-700 font-medium mb-1">
+           <i class="fas fa-tags text-green-700 mr-1"></i> Type <span class="text-red-500">*</span>
+         </label>
+         <select [(ngModel)]="newFournisseur.type" name="type" required #type="ngModel"
+                 class="w-full py-2 px-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+           <option [ngValue]="null" disabled selected>-- Sélectionnez un type --</option>
+           <option [ngValue]="'PIECES_DETACHEES'">🔩 Pièces</option>
+           <option [ngValue]="'EQUIPEMENTS_MEDICAUX'">🧪 Équipements médicaux</option>
+           <option [ngValue]="'EQUIPEMENTS_HOSPITALIERS'">🏥 Équipements hospitaliers</option>
+           <option [ngValue]="'CONSOMMABLES'">📦 Consommables</option>
+           <option [ngValue]="'SERVICES_TECHNIQUES'">🛠️ Services techniques</option>
+           <option [ngValue]="'MULTI_CATEGORIE'">🌐 Multi-catégorie</option>
+         </select>
+         <div *ngIf="type.invalid && type.touched" class="text-red-500 text-sm mt-1">
+           Le type est requis.
+         </div>
+       </div>
+
 
   <!-- Email -->
   <div>
@@ -82,6 +252,7 @@
       Email valide requis <span>&#64;domaine.com</span>
 
     </div>
+    <div *ngIf="emailTakenError" class="text-red-500 text-sm mt-1">{{errorMessage}}</div>
   </div>
 
   <!-- Téléphone -->
@@ -93,6 +264,7 @@
     <div *ngIf="telephone.invalid && telephone.touched" class="text-red-500 text-sm mt-1">
       Téléphone invalide (10 chiffres requis).
     </div>
+    <div *ngIf="gsmTakenError" class="text-red-500 text-sm mt-1">{{errorMessage}}</div>
   </div>
 
   <!-- Image -->
@@ -117,8 +289,7 @@
 
 <!-- Liste fournisseurs -->
 <div class="container mx-auto p-8">
-  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 border border-gray-200">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6">
       <div>
         <h2 class="text-2xl font-bold text-gray-800 flex items-center">
           <i class="fas fa-truck text-green-600 mr-3"></i>
@@ -126,356 +297,499 @@
         </h2>
         <p class="text-gray-500 text-sm mt-1">Recherchez, triez et gérez facilement tous les fournisseurs.</p>
       </div>
-      
-      <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
-        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center transition-all" 
-                (click)="togglePanel()">
-          <i class="fas fa-plus mr-2"></i> Ajouter
-        </button>
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-all"
-                (click)="exportToExcel()">
-          <i class="fas fa-file-excel mr-2"></i> Exporter
-        </button>
-      </div>
-    </div>
+      <div style="margin-top:60px;" class="absolute top-6 right-10 z-50">
+        <button
+          (click)="showTrash = !showTrash"
+          class="flex items-center gap-2 px-3 py-1.5 border border-red-300 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition shadow-md"
+          title="Afficher les services archivés"
+        >
+          <div class="relative w-5 h-5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a2 2 0 012 2v0a2 2 0 01-2 2H7a2 2 0 01-2-2v0a2 2 0 012-2h10z" />
+            </svg>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-   
-      <div *ngFor="let fournisseur of filteredFournisseurs"
-           class="bg-gradient-to-br from-white to-gray-50 p-6 border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all">
-        <!-- En-tête avec nom et image -->
-       <div class="flex items-center justify-between mb-4">
-  <!-- Image + Nom -->
-  <div class="flex items-center space-x-4">
-    <div class="relative">
-      <img [src]="'/uploads/fournisseurs/' + fournisseur.image"
-           alt="{{ fournisseur.nom }}"
-           class="w-16 h-16 object-cover rounded-full border-4 border-green-100 shadow-sm" />
-      <div class="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-1">
-      
-      </div>
-    </div>
-    <h3 class="text-lg font-bold text-gray-800 truncate">{{ fournisseur.nom }}</h3>
-  </div>
-
-
-  <div class="flex items-center space-x-4 mb-4">
-    
-
-    <!-- Bouton icône bleu sans texte ni hover -->
-    <button (click)="openAddContratForm(fournisseur)"
-            class="text-blue-600 p-2 rounded focus:outline-none"
-            style="background: none;">
-      <i class="fas fa-file-signature"></i>
-    </button>
-  </div>
-
-  <!-- Formulaire Add Contrat, affiché uniquement si fournisseur.id === selectedFournisseurId -->
-  <div *ngIf="selectedFournisseurId === fournisseur.id" class="bg-white p-6 rounded-lg shadow border mt-4">
-  
-
-  <!-- Conteneur qui prend toute la fenêtre, centre le formulaire -->
-<div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-  <form [formGroup]="contratForm" (ngSubmit)="submitContrat()"
-        class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full mx-4"
-        style="backdrop-filter: none;">
-
-    <!-- Numéro de contrat -->
-    <div>
-      <label class="block text-sm font-medium mb-1">
-        <i class="fas fa-file-contract text-green-700 mr-1"></i> Numéro de contrat
-      </label>
-      <input formControlName="numeroContrat" type="text"
-             class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-    </div>
-
-    <!-- Type -->
-    <div class="mt-4">
-      <label class="block text-sm font-medium mb-1">
-        <i class="fas fa-tag text-green-700 mr-1"></i> Type
-      </label>
-      <input formControlName="type" type="text"
-             class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-    </div>
-
-    <!-- Date début -->
-    <div class="mt-4">
-      <label class="block text-sm font-medium mb-1">
-        <i class="fas fa-calendar-plus text-green-700 mr-1"></i> Date début
-      </label>
-      <input formControlName="dateDebut" type="date"
-             class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-    </div>
-
-    <!-- Date fin -->
-    <div class="mt-4">
-      <label class="block text-sm font-medium mb-1">
-        <i class="fas fa-calendar-check text-green-700 mr-1"></i> Date fin
-      </label>
-      <input formControlName="dateFin" type="date"
-             class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-    </div>
-
-    <!-- Montant -->
-    <div class="mt-4">
-      <label class="block text-sm font-medium mb-1">
-        <i class="fas fa-dollar-sign text-green-700 mr-1"></i> Montant
-      </label>
-      <input formControlName="montant" type="number"
-             class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-    </div>
-
-    <!-- Fichier PDF -->
-<div class="mt-4">
-  <label class="block text-sm font-medium mb-1">
-    <i class="fas fa-file-upload text-green-700 mr-1"></i> Ajouter un fichier PDF
-  </label>
- <input type="file" (change)="onFileSelected($event)" />
-
-</div>
-
-
-    <!-- Boutons -->
-    <div class="flex justify-end space-x-4 mt-6">
-      <button type="button" (click)="cancelAddContrat()"
-              class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded transition">
-        <i class="fas fa-times-circle mr-2"></i> Annuler
-      </button>
-      <button type="submit" [disabled]="contratForm.invalid"
-              class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded transition">
-        <i class="fas fa-plus-circle mr-2"></i> Ajouter
-      </button>
-    </div>
-  </form>
-</div>
-
-
-
-
-  </div>
-
-
-
-  <!-- Bouton Ajouter un contrat -->
- 
-
-</div>
-
-
-
-
-        <!-- Détails du fournisseur -->
-        <div class="space-y-3">
-         
-          
-          <div class="flex items-center">
-            <i class="fas fa-envelope text-green-600 mr-3 w-4"></i>
-            <a [href]="'mailto:' + fournisseur.email" class="text-blue-600 hover:underline text-sm">
-              {{ fournisseur.email }}
-            </a>
+            <span
+              *ngIf="fournisseursInactifs?.length"
+              class="absolute -top-1.5 -right-1.5 text-[11px] bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold shadow"
+            >
+    {{ fournisseursInactifs.length }}
+  </span>
           </div>
-          
-          <div *ngIf="fournisseur.telephone" class="flex items-center">
-            <i class="fas fa-phone-alt text-green-600 mr-3 w-4"></i>
-            <a [href]="'tel:' + fournisseur.telephone" class="text-gray-600 hover:text-blue-600 text-sm">
-              {{ fournisseur.telephone }}
-            </a>
+
+
+          <span class="font-medium">Corbeille</span>
+        </button>
+      </div>
+
+      <div class="flex flex-wrap md:flex-nowrap justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+        <div class="flex space-x-4 w-full md:w-auto">
+          <div class="relative">
+            <input type="text" class="w-full py-2 px-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+                   [(ngModel)]="searchTermNom" placeholder="Rechercher par Nom">
+            <span class="absolute right-3 top-2 text-gray-500"><i class="fa fa-search"></i></span>
           </div>
         </div>
-        
-        <!-- Boutons d'action -->
-        <div class="flex justify-end space-x-2 mt-4 pt-3 border-t border-gray-100">
-          <button class="text-blue-600 hover:text-blue-800 transition-colors" 
-                  (click)="editFournisseur(fournisseur)"
-                  title="Modifier">
-            <i class="fas fa-edit"></i>
+
+      <div class="flex space-x-4">
+
+        <div
+          class="relative group flex items-center justify-center text-primary-600 font-semibold cursor-pointer select-none"
+          (click)="togglePanel()"
+        >
+          <!-- Floating Panel -->
+          <div
+            class="absolute opacity-0 group-hover:opacity-100 group-hover:-translate-y-[140%] transition-all duration-300 ease-out"
+          >
+            <div class="flex items-center gap-2 bg-white p-3 rounded-lg shadow-md">
+              <i class="fas fa-layer-group text-blue-600"></i>
+              <span class="text-gray-800">Nouveau type</span>
+            </div>
+            <div
+              class="absolute bottom-0 left-1/2 w-3 h-3 bg-white transform -translate-x-1/2 translate-y-1/2 rotate-45 shadow"
+            ></div>
+          </div>
+
+          <!-- Main Button -->
+          <div
+            class="flex items-center gap-2 bg-gradient-to-br from-primary-100 to-primary-200 hover:from-primary-200 hover:to-primary-300 p-3 rounded-full shadow transition duration-300"
+          >
+            <i class="fas fa-plus text-blue-600"></i> <!-- Blue Icon -->
+            <span class="hidden group-hover:inline text-primary-700 text-sm transition duration-300">
+      Ajouter
+    </span>
+          </div>
+        </div>
+
+
+        <div
+          class="relative group flex justify-center items-center text-green-600 text-sm font-bold cursor-pointer"
+          (click)="exportToExcel()"
+        >
+          <!-- Floating Panel -->
+          <div
+            class="absolute opacity-0 group-hover:opacity-100 group-hover:-translate-y-[150%] transition-all duration-500 group-hover:delay-500 ease-out"
+          >
+            <div class="flex items-center gap-1 bg-white p-2 rounded-md">
+              <i class="fas fa-file-excel text-green-700"></i> <!-- Green Icon -->
+              <span class="text-green-700 relative z-100">
+  Exporter en format excel
+</span>
+
+            </div>
+            <div
+              class="absolute bottom-0 left-1/2 w-3 h-3 bg-white transform -translate-x-1/2 translate-y-1/2 rotate-45 shadow"
+            ></div>
+          </div>
+
+          <!-- Main Button -->
+          <div
+            class="flex items-center group-hover:gap-2 bg-white p-3 rounded-full shadow-md transition duration-300"
+          >
+            <i class="fas fa-download text-green-700"></i> <!-- Green Icon -->
+            <span class="text-[0px] group-hover:text-sm text-green-700 transition duration-300">
+      Exporter
+    </span>
+          </div>
+        </div>
+        <br><br>
+        <!-- View Toggle placed below -->
+        <div class="inline-flex border border-gray-300 rounded-md overflow-hidden bg-white shadow-sm">
+          <button
+            (click)="toggleView('table')"
+            [ngClass]="{
+        'bg-green-700 text-white': viewMode === 'table',
+        'text-gray-600 hover:bg-gray-100': viewMode !== 'table'
+      }"
+            class="px-2 py-1 text-lg transition"
+            title="Vue Table"
+          >
+            <i class="fas fa-table"></i>
           </button>
-         <button (click)="fournisseur.id && deleteFournisseur(fournisseur.id)">
-  <i class="fas fa-trash-alt"></i>
-</button>
-     <!-- Bouton dans la carte fournisseur -->
-<button class="text-green-600 hover:text-green-800 transition-colors" 
-        title="Voir détails"
-        (click)="showFournisseurDetails(fournisseur)">
-  <i class="fas fa-eye"></i>
-</button>
-
- 
-
-
-<!-- Panel des détails (à placer à la fin de votre template) -->
-<div *ngIf="showDetailsPanel && selectedFournisseur" class="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-  <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-    <!-- En-tête -->
-     
-    <div class="bg-green-600 text-white p-6 rounded-t-xl flex justify-between items-center">
-      <div class="flex items-center">
-        <i class="fas fa-file-contract text-2xl mr-3"></i>
-        <div>
-          <h3 class="text-xl font-bold">Fiche complète du fournisseur</h3>
-          <p class="text-green-100 text-sm">{{ selectedFournisseur.nom }}</p>
+          <button
+            (click)="toggleView('card')"
+            [ngClass]="{
+        'bg-green-700 text-white': viewMode === 'card',
+        'text-gray-600 hover:bg-gray-100': viewMode !== 'card'
+      }"
+            class="px-2 py-1 text-lg transition border-l border-gray-300"
+            title="Vue Carte"
+          >
+            <i class="fas fa-th-large"></i>
+          </button>
         </div>
       </div>
-      <button (click)="closeDetailsPanel()" class="text-white hover:text-gray-200 text-2xl">
-        <i class="fas fa-times"></i>
+
+
+        </div>
+
+    <br>
+    <br>
+
+    <div class="mb-4 flex justify-between items-center">
+      <div class="text-2xl font-semibold text-gray-800"></div>
+      <button
+        class="bg-green-600 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition duration-300"
+        (click)="toggleBulkMode()"
+      >
+        {{ bulkMode ? 'Quitter le mode sélection' : 'Activer le mode sélection' }}
       </button>
     </div>
-    
-    <!-- Contenu -->
-    <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div  *ngIf="viewMode === 'card'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
+      <div *ngFor="let fournisseur of fournisseurs" class="bg-white p-6 border-2 border-green-700 rounded-xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl">
+        <!-- Checkbox for Bulk Selection -->
+        <div *ngIf="bulkMode" class="absolute top-3 left-3 z-20">
+          <input
+            type="checkbox"
+            [checked]="isSelected(fournisseur)"
+            (change)="toggleSelection(fournisseur.id)"
+            class="form-checkbox w-5 h-5 text-green-600"
+          />
+        </div>
+        <!-- rest of the card content -->
 
-     
+        <!-- Top-right Actions: Delete + Edit -->
+        <div class="absolute top-3 right-3 z-10 flex gap-2">
 
-      <!-- Colonne de gauche - Profil -->
-      <div class="lg:col-span-1">
-        
-        <div class="bg-gray-50 p-4 rounded-lg">
+          <!-- Delete Button -->
+          <button class="bin-button"
+                  (click)="selectedFournisseurToArchive = fournisseur; showConfirmationModal = true">
+            <svg
+              class="bin-top"
+              viewBox="0 0 39 7"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+              <line
+                x1="12"
+                y1="1.5"
+                x2="26.0357"
+                y2="1.5"
+                stroke="white"
+                stroke-width="3"
+              ></line>
+            </svg>
+            <svg
+              class="bin-bottom"
+              viewBox="0 0 33 39"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <mask id="path-1-inside-1_8_19" fill="white">
+                <path
+                  d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"
+                ></path>
+              </mask>
+              <path
+                d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+                fill="white"
+                mask="url(#path-1-inside-1_8_19)"
+              ></path>
+              <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+              <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+            </svg>
+          </button>
+        </div>
 
-          
-          <div class="flex flex-col items-center">
-              <img [src]="'/uploads/fournisseurs/' + selectedFournisseur.image" 
-                 alt="Logo" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md mb-4">
-            <h4 class="text-xl font-bold text-center">{{ selectedFournisseur.nom }}</h4>
-          
-          </div>
-          
-          <div class="mt-6 space-y-4">
-            <div class="flex items-center">
-              <div class="bg-green-100 p-2 rounded-full mr-3">
-                <i class="fas fa-calendar-alt text-green-600"></i>
-              </div>
-             <div>
-  <p class="text-xs text-gray-500">Date d'ajout</p>
-  <p class="font-medium">{{ selectedFournisseur.dateajout | date: 'dd/MM/yyyy' }}</p>
-</div>
 
+
+
+        <img
+          [src]="getImageUrl(fournisseur.image)"
+          class="rounded-full mx-auto mb-4 border-t-4 border-l-2 border-r-2 border-b-2 border-gray-200"
+          width="70"
+          height="70"
+          alt="Image indisponible"
+          style="object-fit: contain; width: 100px; height: 100px;"
+        >
+
+        <h5 class="text-lg font-semibold text-center text-gray-800">{{ fournisseur.nom }}</h5>
+        <p class="text-gray-500 text-center">{{ fournisseur.type }}</p>
+        <div style="margin-left: 30px;" class="flex justify-between mt-6">
+          <button (click)="viewDetails(fournisseur.id)"
+                  class="px-4 py-2 text-sm font-semibold text-white bg-green-700 hover:bg-green-700 rounded-lg shadow-md transition duration-200">
+            Voir détails  >
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="viewMode === 'table'" class="max-w-full overflow-x-auto">
+      <div class="w-[1600px] overflow-x-scroll scrollbar-thin scrollbar-track-gray-100">
+        <table class="min-w-max border-collapse rounded-lg overflow-hidden shadow-lg">
+          <thead class="bg-green-700 text-white uppercase text-sm font-semibold">
+          <tr>
+            <th class="px-8 py-4 text-left">Image</th>
+            <th class="px-8 py-4 text-left">Nom</th>
+            <th class="px-8 py-4 text-left">Email</th>
+            <th class="px-8 py-4 text-left">Téléphone</th>
+            <th class="px-8 py-4 text-left">Type</th>
+            <th class="px-8 py-4 text-left">Actif</th>
+            <th class="px-8 py-4 text-left">Date d'ajout</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let fournisseur of fournisseurs" class="border-b hover:bg-gray-100 transition duration-200">
+            <td class="px-8 py-4">
+              <img [src]="getImageUrl(fournisseur.image)"
+                   alt="fournisseur image"
+                   class="w-14 h-14 rounded-full object-cover shadow-sm">
+            </td>
+            <td class="px-8 py-4">{{ fournisseur.nom }}</td>
+            <td class="px-8 py-4">{{ fournisseur.email }}</td>
+            <td class="px-8 py-4">{{ fournisseur.telephone }}</td>
+            <td class="px-8 py-4">
+<span class="px-4 py-1 text-xs font-bold rounded-full"
+      [ngClass]="{
+        'bg-blue-100 text-blue-700': fournisseur.type === 'PIECES_DETACHEES',
+        'bg-green-100 text-green-700': fournisseur.type === 'EQUIPEMENTS_MEDICAUX',
+        'bg-yellow-100 text-yellow-700': fournisseur.type === 'EQUIPEMENTS_HOSPITALIERS',
+        'bg-red-100 text-red-700': fournisseur.type === 'CONSOMMABLES',
+        'bg-purple-100 text-purple-700': fournisseur.type === 'SERVICES_TECHNIQUES',
+        'bg-gray-100 text-gray-700': fournisseur.type === 'MULTI_CATEGORIE'
+      }">
+  {{ typeLabels[fournisseur.type] }}
+</span>
+
+
+            </td>
+            <td class="px-8 py-4">
+            <span [ngClass]="{
+              'text-green-600 font-bold': fournisseur.actif,
+              'text-red-600 font-bold': !fournisseur.actif
+            }">
+              {{ fournisseur.actif ? 'Oui' : 'Non' }}
+            </span>
+            </td>
+            <td class="px-8 py-4 whitespace-nowrap">{{ formatDateWithIntl(fournisseur.dateajout) }}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="showEditPanel" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white p-6 rounded-xl shadow-lg w-1/3 relative">
+      <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" (click)="closePanel()">
+        ✖
+      </button>
+      <h2 class="text-xl font-semibold text-gray-800">Détails du fournisseur</h2>
+      <!-- Fiche fournisseur affichée uniquement si on n'édite pas -->
+      <div
+        class="mt-8 p-8 bg-white shadow-lg rounded-lg w-full max-w-2xl mx-auto transition-all ease-in-out duration-300"
+        *ngIf="!isEditing"
+      >
+        <div class="relative">
+          <button
+            style="margin-left: 380px;"
+            class="bg-green-700 text-white hover:bg-green-800 hover:text-white p-2 rounded-md text-sm transition-all ease-in-out duration-300"
+            (click)="enableEditing()"
+          >
+            <i class="fas fa-pen text-lg"></i>
+          </button>
+        </div>
+
+        <div class="relative flex flex-col items-center">
+          <!-- Image de profil -->
+          <img
+            [src]="getImageUrl(selectedFournisseur?.image)"
+            class="rounded-full mb-6 border-4 border-gray-200 shadow-xl transition-all ease-in-out duration-300 transform hover:scale-105"
+            width="120"
+            height="120"
+            alt="Avatar"
+          />
+
+          <!-- Informations du fournisseur -->
+          <div class="text-center space-y-4 w-full">
+            <!-- Nom complet -->
+            <div class="text-center">
+              <p class="text-xl font-semibold text-gray-800">
+                {{ selectedFournisseur?.nom }}
+              </p>
             </div>
-            
-            <div class="flex items-center">
-             
-             
+
+            <!-- Infos principales -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left text-gray-600">
+              <p class="text-sm">
+                <strong><i class="fas fa-map-marker-alt"></i> Adresse :</strong>
+                {{ selectedFournisseur?.adresse || 'Non renseignée' }}
+              </p>
+              <p class="text-sm">
+                <strong><i class="fas fa-envelope"></i> Email :</strong>
+                {{ selectedFournisseur?.email || 'Non renseigné' }}
+              </p>
+              <p class="text-sm">
+                <strong><i class="fas fa-phone"></i> Téléphone :</strong>
+                {{ selectedFournisseur?.telephone || 'Non renseigné' }}
+              </p>
+              <p class="text-sm">
+                <strong><i class="fas fa-map-pin"></i> Code postal :</strong>
+                {{ selectedFournisseur?.codepostal || 'Non renseigné' }}
+              </p>
+            </div>
+
+            <!-- Type de fournisseur -->
+            <div class="text-left text-gray-600 mt-4">
+              <p class="text-sm">
+                <strong><i class="fas fa-tags"></i> Type :</strong>
+                <span class="capitalize">
+            {{
+                    selectedFournisseur?.type
+                  }}
+          </span>
+              </p>
+            </div>
+
+            <!-- Statut et date d'ajout -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 text-left text-gray-600">
+              <p class="text-sm">
+                <strong><i class="fas fa-check-circle"></i> Statut :</strong>
+                <span
+                  class="inline-flex items-center space-x-2 text-sm font-semibold"
+                  [ngClass]="{
+              'text-green-500': selectedFournisseur?.actif,
+              'text-red-500': !selectedFournisseur?.actif
+            }"
+                >
+            <i
+              class="fas"
+              [ngClass]="{
+                'fa-check-circle': selectedFournisseur?.actif,
+                'fa-times-circle': !selectedFournisseur?.actif
+              }"
+            ></i>
+                  {{ selectedFournisseur?.actif ? 'Actif' : 'Inactif' }}
+          </span>
+              </p>
+
+              <p class="text-sm">
+                <strong><i class="fas fa-calendar-alt"></i> Date d'ajout :</strong>
+                {{ formatDateWithIntl(selectedFournisseur?.dateajout) }}
+              </p>
             </div>
           </div>
         </div>
       </div>
-      
-      <!-- Colonne centrale - Détails -->
-      <div class="lg:col-span-2">
-        <div class="space-y-6">
-          <!-- Section Coordonnées -->
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <h4 class="font-bold text-lg text-gray-700 mb-3 flex items-center">
-              <i class="fas fa-address-book text-green-600 mr-2"></i>
-              Coordonnées
-            </h4>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="flex items-start">
-                <div class="bg-green-100 p-2 rounded-full mr-3">
-                  <i class="fas fa-map-marked-alt text-green-600"></i>
-                </div>
-                <div>
-                  <p class="text-xs text-gray-500">Adresse</p>
-                  <p class="font-medium">{{ selectedFournisseur.adresse }}</p>
-                  <p class="font-medium">{{ selectedFournisseur.codepostal }}</p>
-                </div>
-              </div>
-              
-              <div class="flex items-start">
-                <div class="bg-blue-100 p-2 rounded-full mr-3">
-                  <i class="fas fa-at text-blue-600"></i>
-                </div>
-                <div>
-                  <p class="text-xs text-gray-500">Email</p>
-                  <a [href]="'mailto:' + selectedFournisseur.email" class="font-medium text-blue-600 hover:underline">
-                    {{ selectedFournisseur.email }}
-                  </a>
-                </div>
-              </div>
-
-               <div class="flex items-start">
-                <div class="bg-blue-100 p-2 rounded-full mr-3">
-                <i class="fas fa-envelope-open-text text-blue-600 mr-1"></i>
-                </div>
-                <div>
-                  <p class="text-xs text-gray-500">type</p>
-                  <a [href]="'mailto:' + selectedFournisseur.type" class="font-medium text-blue-600 hover:underline">
-                    {{ selectedFournisseur.type }}
-                  </a>
-                </div>
-              </div>
-              
-              <div class="flex items-start" *ngIf="selectedFournisseur.telephone">
-                <div class="bg-purple-100 p-2 rounded-full mr-3">
-                  <i class="fas fa-phone-alt text-purple-600"></i>
-                </div>
-                <div>
-                  <p class="text-xs text-gray-500">Téléphone</p>
-                  <a [href]="'tel:' + selectedFournisseur.telephone" class="font-medium text-gray-700 hover:text-blue-600">
-                    {{ selectedFournisseur.telephone }}
-                  </a>
-                </div>
-              </div>
 
 
-              
-              
-            
-            </div>
+      <!-- Edit Fournisseur Form -->
+  <div class="mt-4" *ngIf="isEditing">
+    <div class="overflow-hidden px-4 py-4 bg-white rounded-lg shadow-md">
+      <div class="grid grid-cols-2 gap-4">
+
+        <!-- Nom and Adresse -->
+        <div>
+          <label class="block mb-2 text-gray-700">Nom</label>
+          <input type="text" [(ngModel)]="selectedFournisseur!.nom"
+                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+        </div>
+
+        <div>
+          <label class="block mb-2 text-gray-700">Adresse</label>
+          <input type="text" [(ngModel)]="selectedFournisseur!.adresse"
+                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+        </div>
+
+        <!-- Email and Téléphone -->
+        <div>
+          <label class="block mb-2 text-gray-700">Email</label>
+          <input type="email" [(ngModel)]="selectedFournisseur!.email"
+                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+        </div>
+
+        <div>
+          <label class="block mb-2 text-gray-700">Téléphone</label>
+          <input type="tel" [(ngModel)]="selectedFournisseur!.telephone"
+                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+        </div>
+
+        <!-- Code Postal and Type -->
+        <div>
+          <label class="block mb-2 text-gray-700">Code Postal</label>
+          <input type="number" [(ngModel)]="selectedFournisseur!.codepostal"
+                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+        </div>
+
+        <div>
+          <label class="block mb-2 text-gray-700">Type de Fournisseur</label>
+          <select [(ngModel)]="selectedFournisseur!.type"
+                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option value="PIECES_DETACHEES">Pièces de rechange</option>
+            <option value="EQUIPEMENTS_MEDICAUX">Équipements médicaux</option>
+            <option value="EQUIPEMENTS_HOSPITALIERS">Équipements hospitaliers</option>
+            <option value="CONSOMMABLES">Consommables</option>
+            <option value="SERVICES_TECHNIQUES">Services techniques</option>
+            <option value="MULTI_CATEGORIE">Multi-catégorie</option>
+          </select>
+        </div>
+
+        <!-- Statut Actif -->
+        <div>
+          <label class="block mb-2 text-gray-700">Statut</label>
+          <div class="flex items-center">
+            <label for="actif-toggle" class="inline-flex items-center cursor-pointer">
+            <span class="relative">
+              <input type="checkbox" id="actif-toggle" [(ngModel)]="selectedFournisseur!.actif"
+                     class="sr-only" />
+              <span class="block w-10 h-5 rounded-full transition-colors duration-300 ease-in-out"
+                    [class.bg-gray-300]="!selectedFournisseur!.actif"
+                    [class.bg-green-500]="selectedFournisseur!.actif"></span>
+              <span class="dot absolute left-0 top-0 w-5 h-5 bg-white rounded-full border-2 border-gray-300 transition-all duration-300 ease-in-out"
+                    [class.translate-x-5]="selectedFournisseur!.actif"></span>
+            </span>
+            </label>
+            <span class="text-gray-700 ml-2">{{ selectedFournisseur!.actif ? 'Actif' : 'Inactif' }}</span>
           </div>
-          
-          <!-- Section Contrats -->
-          <!-- Section Contrats -->
-<div class="bg-gray-50 p-4 rounded-lg" *ngIf="selectedFournisseur.contrats?.length > 0">
-  <h4 class="font-bold text-lg text-gray-700 mb-3 flex items-center">
-    <i class="fas fa-file-signature text-green-600 mr-2"></i>
-    Contrats 
-  </h4>
-  <div class="border-l-4 border-green-500 pl-4 space-y-6">
-    <div *ngFor="let contrat of selectedFournisseur.contrats" class="relative">
-      <div class="absolute -left-2 top-1.5 w-4 h-4 bg-green-500 rounded-full"></div>
-      <div class="bg-white p-4 rounded-lg shadow-sm border">
-        <p class="font-semibold text-gray-700"> numeroContrat:{{ contrat.numeroContrat }} </p>
-        <p class="text-sm text-gray-500">type : {{ contrat.type }}</p>
-        <p class="text-sm text-gray-500">Début : {{ contrat.dateDebut | date: 'dd/MM/yyyy' }}</p>
-        <p class="text-sm text-gray-500">Fin : {{ contrat.dateFin | date: 'dd/MM/yyyy' }}</p>
-        <p class="text-sm text-gray-500">Montant : {{ contrat.montant }}</p>
-        <p class="text-sm text-gray-500">Durée : {{ contrat.dureeFormatee }}</p>
- <a 
-  [href]="'http://localhost:8080/api/contrats/api/pdf/' + contrat.fichierPdf" 
-  target="_blank"
-  class="text-blue-600 underline"
->
-  {{ contrat.fichierPdf }}
-</a>
+        </div>
 
+        <!-- Image Upload -->
+        <div class="col-span-2">
+          <label class="block mb-2 text-gray-700">Image</label>
+          <div class="relative">
+            <input type="file" id="fileInput" (change)="onFileChange($event)"
+                   class="absolute inset-0 w-full opacity-0 cursor-pointer" />
+            <button type="button"
+                    class="w-5/12 px-4 py-2 text-white bg-green-700 rounded-lg hover:bg-green-700 transition focus:outline-none focus:ring-2 focus:ring-green-500">
+              Choisir une image
+            </button>
+          </div>
+          <div *ngIf="imageError" class="text-red-500 text-sm mt-1">
+            {{ imageError }}
+          </div>
+        </div>
 
+      </div>
 
-
-
-
-
-
+      <!-- Action Buttons -->
+      <div class="flex justify-end mt-4">
+        <button class="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2 hover:bg-gray-600 transition"
+                (click)="isEditing = false">
+          Annuler
+        </button>
+        <button type="button"
+                (click)="updateFournisseur()"
+                class="bg-blue-600 text-white py-2 px-4 rounded-md shadow-md hover:bg-green-600 transition duration-300 ease-in-out flex items-center gap-2">
+          <i class="fas fa-save"></i> Mettre à jour
+        </button>
       </div>
     </div>
   </div>
-  <!-- Pied de page -->
-<div *ngIf="selectedFournisseur" class="bg-gray-50 px-6 py-3 flex justify-end space-x-3 rounded-b-xl">
-  <button (click)="closeDetailsPanel()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">
-    <i class="fas fa-times mr-2"></i> Fermer
-  </button>
- 
-  
 </div>
-</div>
-
-</div>
-
-        </div>
-      </div>
+    <div
+      *ngIf="bulkMode && selectedFournisseurIds.length > 0"
+      class="fixed bottom-6 right-6 z-50"
+    >
+      <button
+        class="bg-green-700 text-white px-6 py-3 rounded-full shadow-xl hover:bg-green-900 transition duration-300"
+        (click)="archiverFournisseursSelection()"
+      >
+        🗂 Archiver tout ({{ selectedFournisseurIds.length }})
+      </button>
     </div>
-    
+  </div>
 
-
-  
- 
+</div>

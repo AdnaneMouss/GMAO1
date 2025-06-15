@@ -1,6 +1,7 @@
 package com.huir.GmaoApp.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,6 +13,7 @@ import com.huir.GmaoApp.model.Type;
 
 import jakarta.persistence.Column;
 
+
 public class FournisseurDTO {
     private Long id;
     private String nom;
@@ -19,12 +21,13 @@ public class FournisseurDTO {
     private String adresse;
     private String email;
     private String telephone;
+	private boolean actif = true;
     private List<ContratDTO> contrats;
     private String image;
     private Type type;
     @Column(updatable = false)
     @CreationTimestamp
-    private LocalDate dateajout;
+    private LocalDateTime dateajout;
     
     
     public FournisseurDTO() {
@@ -40,14 +43,14 @@ public class FournisseurDTO {
         this.email = f.getEmail();
         this.image = f.getImage();
         this.type=f.getType();
-        
+		this.actif=f.isActif();
         this.telephone = f.getTelephone();
         this.contrats = f.getContrats() != null
                 ? f.getContrats().stream()
                       .map(ContratDTO::new)
                       .collect(Collectors.toList())
                 : null;
-        
+        this.dateajout=f.getDateajout();
     }
 
 	public Long getId() {
@@ -82,14 +85,6 @@ public class FournisseurDTO {
 		this.adresse = adresse;
 	}
 
-	
-	public LocalDate getDateajout() {
-		return dateajout;
-	}
-
-	public void setDateajout(LocalDate dateajout) {
-		this.dateajout = dateajout;
-	}
 
 	public String getEmail() {
 		return email;

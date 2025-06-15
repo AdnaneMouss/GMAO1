@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.huir.GmaoApp.model.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -103,6 +104,26 @@ public class FournisseurService {
         return fournisseurRepository.save(fournisseur);
     }
 
+
+    public boolean existsByEmail(String email) {
+        return fournisseurRepository.existsByEmail(email);
+    }
+
+    public boolean existsByNom(String nom) {
+        return fournisseurRepository.existsByNom(nom);
+    }
+
+    public boolean existsByTelephone(String telephone) {
+        return fournisseurRepository.existsByTelephone(telephone);
+    }
+
+    public List<Fournisseur> getFournisseursActifs() {
+        return fournisseurRepository.findByActifTrue();
+    }
+
+    public List<Fournisseur> getFournisseursInactifs() {
+        return fournisseurRepository.findByActifFalse();
+    }
 
 }
 

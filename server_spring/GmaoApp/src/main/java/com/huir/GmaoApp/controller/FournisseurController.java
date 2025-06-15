@@ -2,16 +2,15 @@ package com.huir.GmaoApp.controller;
 
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import java.nio.file.Files;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 
+import com.huir.GmaoApp.dto.ServiceDTO;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,6 +46,7 @@ import com.huir.GmaoApp.repository.FournisseurRepository;
 import com.huir.GmaoApp.service.FournisseurService;
 
 import jakarta.transaction.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @RestController
@@ -59,12 +59,17 @@ public class FournisseurController {
 
   
     @GetMapping
-    @Transactional
-    public List<FournisseurDTO> getAllFournisseurs() {
-        return fournisseurRepository.findAll()
-            .stream()
-            .map(FournisseurDTO::new)
-            .collect(Collectors.toList());
+    public List<FournisseurDTO> getServicesActifs() {
+        return fournisseurService.getFournisseursActifs().stream()
+                .map(FournisseurDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/inactifs")
+    public List<FournisseurDTO> getServicesInactifs() {
+        return fournisseurService.getFournisseursInactifs().stream()
+                .map(FournisseurDTO::new)
+                .collect(Collectors.toList());
     }
 
 
@@ -91,58 +96,81 @@ public class FournisseurController {
     public void delete(@PathVariable Long id) {
         fournisseurService.deleteFournisseur(id);
     }
-    
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createFournisseurWithImage(@RequestParam(value = "file", required = false) MultipartFile file,
-                                                        @RequestParam("nom") String nom,
-                                                        @RequestParam("codepostal") String codepostal,
-                                                        @RequestParam("adresse") String adresse,
-                                                        @RequestParam("email") String email,
-                                                        @RequestParam("type") String type,
-                                                        @RequestParam("telephone") String telephone) {
-     
-      
+    public ResponseEntity<?> createFournisseurWithImage(
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam("nom") String nom,
+            @RequestParam("codepostal") String codepostal,
+            @RequestParam("adresse") String adresse,
+            @RequestParam("email") String email,
+            @RequestParam("type") String typeString,
+            @RequestParam("telephone") String telephone
+    ) {
+        // Uniqueness checks
+        if (fournisseurService.existsByEmail(email)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("field", "email", "message", "Cet email est déjà utilisé par un autre fournisseur."));
+        }
+
+        if (fournisseurService.existsByTelephone(telephone)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("field", "telephone", "message", "Ce numéro de téléphone est déjà utilisé."));
+        }
+
+        // You can also add this if "nom" must be unique
+         if (fournisseurService.existsByNom(nom)) {
+             return ResponseEntity.status(HttpStatus.CONFLICT)
+                     .body(Map.of("field", "nom", "message", "Ce nom est déjà utilisé."));
+         }
 
         Fournisseur fournisseur = new Fournisseur();
         fournisseur.setNom(nom);
         fournisseur.setCodepostal(codepostal);
         fournisseur.setAdresse(adresse);
         fournisseur.setEmail(email);
-        try {
-            fournisseur.setType(Type.valueOf(type.toLowerCase()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Type de fournisseur invalide : " + type);
-        }
-
         fournisseur.setTelephone(telephone);
+        fournisseur.setDateajout(LocalDateTime.now());
+
+        try {
+            // Validate and set enum type
+            Type type = Type.valueOf(typeString.toUpperCase());
+            fournisseur.setType(type);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Type de fournisseur invalide : " + typeString);
+        }
 
         try {
             if (file != null && !file.isEmpty()) {
                 String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                Path filePath = Paths.get("uploads/fournisseurs", fileName);
+                Path filePath = Paths.get("uploads", fileName);
                 Files.createDirectories(filePath.getParent());
                 Files.write(filePath, file.getBytes());
 
-                fournisseur.setImage(fileName);  // ou setImageUrl selon ton attribut
+                fournisseur.setImage(fileName); // or setImageUrl if needed
             }
 
             Fournisseur saved = fournisseurService.addFournisseur(fournisseur);
-
             return ResponseEntity.ok(saved);
+
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Image upload failed");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Échec de l'enregistrement de l'image.");
         }
     }
 
+
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateFournisseurWithImage(@PathVariable Long id,
-                                                        @RequestParam(value = "file", required = false) MultipartFile file,
-                                                        @RequestParam("nom") String nom,
-                                                        @RequestParam("codepostal") String codepostal,
-                                                        @RequestParam("adresse") String adresse,
-                                                        @RequestParam("type") String type,
-                                                        @RequestParam("email") String email,
-                                                        @RequestParam("telephone") String telephone) {
+    public ResponseEntity<?> updateFournisseurWithImage(
+            @PathVariable Long id,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam("nom") String nom,
+            @RequestParam("codepostal") String codepostal,
+            @RequestParam("adresse") String adresse,
+            @RequestParam("type") String type,
+            @RequestParam("email") String email,
+            @RequestParam("telephone") String telephone
+    ) {
         try {
             Optional<Fournisseur> existingOpt = fournisseurService.getFournisseursById(id);
 
@@ -151,26 +179,47 @@ public class FournisseurController {
                         .body(Map.of("message", "Fournisseur non trouvé avec l'ID : " + id));
             }
 
-            Fournisseur fournisseur = existingOpt.get();
-            fournisseur.setNom(nom);
-            fournisseur.setCodepostal(codepostal);
-            fournisseur.setAdresse(adresse);
-            fournisseur.setEmail(email);
-            fournisseur.setTelephone(telephone);
+            Fournisseur existing = existingOpt.get();
 
-            // Conversion String -> Enum Type
+            // 🔍 Unicity checks (only if changed)
+            if (!email.equalsIgnoreCase(existing.getEmail()) &&
+                    fournisseurService.existsByEmail(email)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("field", "email", "message", "Cet email est déjà utilisé par un autre fournisseur."));
+            }
+
+            if (!telephone.equals(existing.getTelephone()) &&
+                    fournisseurService.existsByTelephone(telephone)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("field", "telephone", "message", "Ce numéro est déjà utilisé par un autre fournisseur."));
+            }
+
+
+             if (!nom.equalsIgnoreCase(existing.getNom()) &&
+                     fournisseurService.existsByNom(nom)) {
+                 return ResponseEntity.status(HttpStatus.CONFLICT)
+                         .body(Map.of("field", "nom", "message", "Ce nom est déjà utilisé."));
+             }
+
+            // 🔧 Update fields
+            existing.setNom(nom);
+            existing.setCodepostal(codepostal);
+            existing.setAdresse(adresse);
+            existing.setEmail(email);
+            existing.setTelephone(telephone);
+
+            // ✅ Enum conversion
             try {
                 Type typeEnum = Arrays.stream(Type.values())
-                    .filter(t -> t.name().equalsIgnoreCase(type))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Type invalide"));
-
-                fournisseur.setType(typeEnum);
+                        .filter(t -> t.name().equalsIgnoreCase(type))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Type invalide"));
+                existing.setType(typeEnum);
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body("Type de fournisseur invalide : " + type);
             }
 
-            // Gestion image si uploadé
+            // 🖼️ Image upload
             if (file != null && !file.isEmpty()) {
                 String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
                 Path uploadDir = Paths.get("uploads", "fournisseurs");
@@ -179,10 +228,11 @@ public class FournisseurController {
                 Path filePath = uploadDir.resolve(fileName);
                 Files.write(filePath, file.getBytes());
 
-                fournisseur.setImage(fileName);
+                existing.setImage(fileName);
             }
 
-            Fournisseur updated = fournisseurService.updateFournisseur(fournisseur);
+            // ✅ Save & return updated entity
+            Fournisseur updated = fournisseurService.updateFournisseur(existing);
             return ResponseEntity.ok(updated);
 
         } catch (IOException e) {
@@ -211,7 +261,76 @@ public class FournisseurController {
         );
         return dto;
     }
-    
-   
+
+
+    @PutMapping("/{id}/archiver")
+    public ResponseEntity<Map<String, String>> archiverFournisseur(@PathVariable Long id) {
+        Fournisseur fournisseur = fournisseurRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Fournisseur non trouvé"));
+
+        fournisseur.setActif(false);
+        fournisseurRepository.save(fournisseur);
+
+        return ResponseEntity.ok(Map.of("message", "Fournisseur archivé avec succès"));
+    }
+
+    @PutMapping("/archiver-multiple")
+    public ResponseEntity<?> archiverFournisseurs(@RequestBody List<Long> ids) {
+        List<Fournisseur> fournisseurs = fournisseurRepository.findAllById(ids);
+
+        if (fournisseurs.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun fournisseur trouvé pour les IDs donnés.");
+        }
+
+        fournisseurs.forEach(f -> f.setActif(false));
+        fournisseurRepository.saveAll(fournisseurs);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Fournisseurs archivés avec succès",
+                "archivés", fournisseurs.stream().map(Fournisseur::getNom).toList()
+        ));
+    }
+
+    @PutMapping("/{id}/restaurer")
+    public ResponseEntity<?> restaurerFournisseur(@PathVariable Long id) {
+        Fournisseur fournisseur = fournisseurRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Fournisseur non trouvé"));
+
+        if (fournisseurRepository.existsByEmailAndActifTrue(fournisseur.getEmail())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Un fournisseur actif avec cet email existe déjà.");
+        }
+
+        fournisseur.setActif(true);
+        fournisseurRepository.save(fournisseur);
+
+        return ResponseEntity.ok(Map.of("message", "Fournisseur restauré avec succès"));
+    }
+
+
+    @PutMapping("/restaurer-multiple")
+    public ResponseEntity<?> restaurerFournisseurs(@RequestBody List<Long> ids) {
+        List<Fournisseur> fournisseurs = fournisseurRepository.findAllById(ids);
+        List<String> conflits = new ArrayList<>();
+
+        for (Fournisseur fournisseur : fournisseurs) {
+            if (fournisseurRepository.existsByEmailAndActifTrue(fournisseur.getEmail())) {
+                conflits.add("Email déjà utilisé : " + fournisseur.getEmail());
+                continue;
+            }
+
+            fournisseur.setActif(true);
+        }
+
+        if (!conflits.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(conflits);
+        }
+
+        fournisseurRepository.saveAll(fournisseurs);
+
+        return ResponseEntity.ok(Map.of("message", "Fournisseurs restaurés avec succès"));
+    }
+
+
 
 }

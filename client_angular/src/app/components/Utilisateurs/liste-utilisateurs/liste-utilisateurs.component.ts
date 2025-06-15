@@ -378,6 +378,7 @@ export class ListeUtilisateursComponent implements OnInit {
       this.filteredUsers = this.users.filter(user => user.role === this.selectedFilter);
     } else {
       this.filteredUsers = this.users;
+      this.filteredUsers = this.users;
     }
   }
 
