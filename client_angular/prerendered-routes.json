@@ -1,0 +1,32 @@
+{
+  "routes": [
+    "/batiments/liste",
+    "/CHAT",
+    "/dashboard",
+    "/equipements/categories",
+    "/equipements/liste",
+    "/equipements/type_equipements",
+    "/form",
+    "/fournisseur",
+    "/interventions/liste",
+    "/interventions/taches",
+    "/interventionsP/liste",
+    "/interventionsP/taches",
+    "/login",
+    "/maintenances/calendar",
+    "/maintenances/correctives",
+    "/maintenances/demandes",
+    "/maintenances/demandes/accepter-demande",
+    "/maintenances/demandes/historique",
+    "/maintenances/historique",
+    "/maintenances/historique-maintenances-correctives",
+    "/maintenances/preventives",
+    "/parametres",
+    "/rapports/coutMaintenance",
+    "/rapports/statistiques",
+    "/rapports/Utiliateurs",
+    "/stock/inventaire",
+    "/stock/liste",
+    "/utilisateurs/liste"
+  ]
+}
