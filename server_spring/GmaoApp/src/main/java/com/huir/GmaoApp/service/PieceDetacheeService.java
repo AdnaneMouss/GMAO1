@@ -76,9 +76,29 @@ public class PieceDetacheeService {
     public void deletePieceDetachee(Long id) {
         pieceDetacheeRepository.deleteById(id);
     }
-    public PieceDetachee findPieceDetacheeById(Long id) {
-        return pieceDetacheeRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Pièce détachée non trouvée avec ID " + id));
+    public PieceDetacheeDTO findPieceDetacheeById(Long id) {
+
+        PieceDetachee piece = pieceDetacheeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pièce détachée non trouvée avec ID " + id));
+
+        PieceDetacheeDTO dto = new PieceDetacheeDTO();
+
+        dto.setId(piece.getId());
+        dto.setNom(piece.getNom());
+        dto.setDescription(piece.getDescription());
+        dto.setReference(piece.getReference());
+        dto.setImage(piece.getImage());
+        dto.setQuantiteMinimale(piece.getQuantiteMinimale());
+        dto.setQuantiteStock(piece.getQuantiteStock());
+        dto.setStatut(piece.getStatut());
+
+        // ✅ IMPORTANT: fournisseur mapping
+        if (piece.getFournisseur() != null) {
+            dto.setFournisseurID(piece.getFournisseur().getId());
+            dto.setFournisseurNom(piece.getFournisseur().getNom());
+        }
+
+        return dto;
     }
 
    

@@ -161,29 +161,35 @@ public class UserController {
         if (civilite != null) existingUser.setCivilite(Civilite.valueOf(civilite));
         if (actif != null) existingUser.setActif(actif);
 
-        // Handle image upload if provided
-        if (imageFile != null && !imageFile.isEmpty()) {
-            try {
-                // Generate a unique filename for the image
-                String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
-                // Save the file in the static/uploads folder within the resources
-                Path filePath = Paths.get("uploads", fileName);  // Just save to 'uploads' directly (relative to project root)
-                Files.createDirectories(filePath.getParent());
-                Files.write(filePath, imageFile.getBytes());
 
-                // Set the image URL in the user
-                String imageUrl = fileName;
-                existingUser.setImage(imageUrl);  // Assuming your User entity has a setImage method
+        try {
+                if (imageFile != null && !imageFile.isEmpty()) {
 
-            } catch (IOException e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Image upload failed");
+                    // Delete old image if it exists
+                    if (existingUser.getImage() != null) {
+                        Files.deleteIfExists(Paths.get("uploads", existingUser.getImage()));
+                    }
+
+                    // Save new image
+                    String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+                    Path filePath = Paths.get("uploads", fileName);
+
+                    Files.createDirectories(filePath.getParent());
+                    Files.write(filePath, imageFile.getBytes());
+
+                    existingUser.setImage(fileName);
+                }
+
+                // Save the updated user in the database
+                userRepository.save(existingUser);
+
+                return ResponseEntity.ok(existingUser);  // Return the updated user
             }
-        }
 
-        // Save the updated user in the database
-        userRepository.save(existingUser);
-
-        return ResponseEntity.ok(existingUser);  // Return the updated user
+                catch (IOException e) {
+                    return ResponseEntity.internalServerError()
+                            .body("Erreur lors de la mise à jour de l'image.");
+                }
     }
 
 

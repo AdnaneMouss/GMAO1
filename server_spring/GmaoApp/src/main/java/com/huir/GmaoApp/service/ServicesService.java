@@ -64,39 +64,40 @@ public class ServicesService {
             service.setNom(serviceDTO.getNom());
             service.setDescription(serviceDTO.getDescription());
 
-            // If a new image is uploaded, handle it
-            if (imageFile != null && !imageFile.isEmpty()) {
-                try {
-                    // Delete the old image (if exists)
+            try {
+                // If a new image is uploaded, handle it
+                if (imageFile != null && !imageFile.isEmpty()) {
+
+                    // Delete old image if exists
                     if (service.getImage() != null) {
-                        File oldImage = new File("uploads/" + service.getImage());
-                        if (oldImage.exists()) {
-                            oldImage.delete();
-                        }
+                        Files.deleteIfExists(Paths.get("uploads", service.getImage()));
                     }
 
-                    // Generate a unique image filename
-                    String filename = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-                    Path imagePath = Paths.get("uploads/" + filename);
+                    // Generate unique filename
+                    String filename = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+                    Path imagePath = Paths.get("uploads", filename);
 
-                    // Save the new image
-                    Files.copy(imageFile.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
+                    // Ensure directory exists
+                    Files.createDirectories(imagePath.getParent());
 
-                    // Update entity with new image path
+                    // Save new image
+                    Files.write(imagePath, imageFile.getBytes());
+
+                    // Update entity
                     service.setImage(filename);
-                } catch (IOException e) {
-                    throw new RuntimeException("Error while saving image", e);
                 }
+
+                serviceRepository.save(service);
+                return new ServiceDTO(service);
+
+            } catch (IOException e) {
+                throw new RuntimeException("Error while saving image", e);
             }
 
-            serviceRepository.save(service);
-            return new ServiceDTO(service);
         } else {
             return null;
         }
     }
-
-
     // Delete a Services
     public void deleteService(Long id) {
         serviceRepository.deleteById(id);

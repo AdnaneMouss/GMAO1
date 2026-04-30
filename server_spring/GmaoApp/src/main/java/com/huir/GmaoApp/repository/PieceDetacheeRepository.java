@@ -15,3 +15,4 @@ public interface PieceDetacheeRepository extends JpaRepository<PieceDetachee, Lo
 
     boolean existsByReference(String reference);
 }
+

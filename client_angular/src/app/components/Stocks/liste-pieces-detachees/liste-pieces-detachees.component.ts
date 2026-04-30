@@ -1,10 +1,15 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { PieceDetacheeService } from '../../../services/piece-detachee.service';
+
 import { PieceDetachee } from '../../../models/piece-detachee';
 import * as XLSX from 'xlsx';
 //@ts-ignore
 import { saveAs } from 'file-saver';
 import {environment} from "../../../../environments/environment";
+import {AchatPieceService} from "../../../services/achat-piece.service";
+import {FournisseurService} from "../../../services/FournisseurService";
+import {Fournisseur} from "../../../models/Fournisseur";
 @Component({
   selector: 'app-liste-pieces-detachees',
   templateUrl: './liste-pieces-detachees.component.html',
@@ -13,6 +18,7 @@ import {environment} from "../../../../environments/environment";
 export class ListePiecesDetacheesComponent  implements OnInit {
 
   pieces_detachees: PieceDetachee[] = [];
+  fournisseurs: Fournisseur[]=[];
   searchTermNom = '';
   filteredPiecesDetachees = [...this.pieces_detachees];
   showAddSuccessMessage: boolean = false;
@@ -22,19 +28,24 @@ export class ListePiecesDetacheesComponent  implements OnInit {
   showEditPanel: boolean = false;  // Toggle the visibility of the edit panel
   pieceUpdated: boolean = false;
   successMessage: string = '';
+  isEditing: boolean = false;
+  imageError: string | null = null;
+  isAddingLot: { [key: number]: boolean } = {};  // Pour suivre l'état d'affichage du formulaire pour chaque pièce
 
 
+  newAchat: any = {  // Object to store new achat data
+    dateAchat: '',
+    quantite: 0,
+    coutUnitaire: 0
+  };
   newPiece: PieceDetachee = {
   id: 0,
   nom: '',
   description: '',
   reference: '',
-  fournisseur: '',
-  coutUnitaire: 0,
-  quantiteStock: 0,
+  fournisseurId: 0,
+  fournisseurNom: '',
   quantiteMinimale: 0,
-  dateAchat: new Date().toISOString().split('T')[0], // Format YYYY-MM-DD
-  datePeremption: '',
   historiqueUtilisation: '',
   image:''
 
@@ -45,20 +56,30 @@ selectedPiece: any = {};
 
   showPanel = false;
 
-  constructor(private PieceDetacheeService: PieceDetacheeService) { }
+  constructor(private PieceDetacheeService: PieceDetacheeService,private fournisseurService: FournisseurService, private AchatPieceService: AchatPieceService, private router: Router) { }
   ngOnInit(): void {
     this.fetchPieces();
+    this.loadFournisseurs();
   }
   fetchPieces(): void {
     this.PieceDetacheeService.getAllPiecesDetachees().subscribe({
       next: (data) => {
         this.pieces_detachees = data;
         this.filteredPiecesDetachees=data;
-        console.log(this.PieceDetacheeService.getAllPiecesDetachees())
+        console.log(this.filteredPiecesDetachees);
       },
       error: (err) => {
         console.error('Error fetching Pieces:', err);
       }
+    });
+  }
+
+  loadFournisseurs(): void {
+    this.fournisseurService.getAllFournisseurs().subscribe({
+      next: (data) => {
+        this.fournisseurs = data;
+      },
+      error: (err) => console.error(err)
     });
   }
 
@@ -68,6 +89,48 @@ selectedPiece: any = {};
       this.selectedFile = file;
     }
   }
+
+
+  addLotAchat(pieceId: number): void {
+    const { dateAchat, quantite, coutUnitaire } = this.newAchat;
+    if (!dateAchat || quantite <= 0 || coutUnitaire <= 0) {
+      this.errorMessage = "Tous les champs doivent être remplis avec des valeurs valides.";
+      return;
+    }
+
+    // Call the service to add a new purchase lot
+    this.AchatPieceService.ajouterAchat({
+      pieceId,
+      dateAchat,
+      quantite,
+      coutUnitaire
+    }).subscribe({
+      next: (result) => {
+        this.successMessage = "Lot d'achat ajouté avec succès!";
+        this.newAchat = { dateAchat: '', quantite: 0, coutUnitaire: 0 }; // Clear form
+        this.fetchPieces();  // Re-fetch the pieces to update the UI
+      },
+      error: (err) => {
+        console.error("Erreur lors de l'ajout du lot", err);
+        this.errorMessage = 'Erreur lors de l\'ajout du lot.';
+      }
+    });
+  }
+
+  // Select a piece to manage
+  selectPiece(piece: any): void {
+    this.selectedPiece = piece;
+    this.showEditPanel = true;
+  }
+
+  toggleLotForm(pieceId: number): void {
+    this.isAddingLot[pieceId] = !this.isAddingLot[pieceId];
+  }
+
+  goToLotAchat(pieceId: number): void {
+    this.router.navigate(['/stock/lot', pieceId]);
+  }
+
 
   addPiece(): void {
     // Call the service method to create the piece with image
@@ -100,87 +163,88 @@ selectedPiece: any = {};
   }
 
   updatePiece(): void {
-    // Check if the selected piece exists and is properly selected
+
+    this.errorMessage = '';
+    this.referenceTaken = false;
+
     if (!this.selectedPiece || this.selectedPiece.id === undefined) {
       this.errorMessage = 'Aucune pièce sélectionnée pour la mise à jour!';
       return;
     }
 
-    // Check for missing required fields
-    if (!this.selectedPiece.nom || !this.selectedPiece.reference || !this.selectedPiece.fournisseur) {
+    if (!this.selectedPiece.nom || !this.selectedPiece.reference || !this.selectedPiece.fournisseurID) {
       this.errorMessage = 'Les champs nom, référence et fournisseur sont obligatoires';
       return;
     }
 
-    // Check if a file has been selected (if required for the update)
-    const fileToSend = this.selectedFile === null ? undefined : this.selectedFile;
+    const fileToSend = this.selectedFile || undefined;
 
-
-    // Prepare the piece data
     const pieceData = {
       nom: this.selectedPiece.nom,
       description: this.selectedPiece.description,
       reference: this.selectedPiece.reference,
-      fournisseur: this.selectedPiece.fournisseur,
-      coutUnitaire: this.selectedPiece.coutUnitaire,
-      quantiteStock: this.selectedPiece.quantiteStock,
-      quantiteMinimale: this.selectedPiece.quantiteMinimale,
-      dateAchat: this.selectedPiece.dateAchat,
-      datePeremption: this.selectedPiece.datePeremption,
+      fournisseurId: this.selectedPiece.fournisseurID,
+      quantiteMinimale: this.selectedPiece.quantiteMinimale
     };
 
-    // Call the service to update the piece with the selected file if available
     this.PieceDetacheeService.updatePiece(
       this.selectedPiece.id,
       pieceData,
       fileToSend
     ).subscribe(
       (updatedPiece) => {
-        // Find and update the piece in the pieces list
-        const index = this.pieces_detachees.findIndex(piece => piece.id === updatedPiece.id);
+
+        const index = this.pieces_detachees.findIndex(
+          piece => piece.id === updatedPiece.id
+        );
+
         if (index !== -1) {
           this.pieces_detachees[index] = updatedPiece;
         }
 
         this.resetNewPiece();
-        this.fetchPieces();
-        this.pieceUpdated = true;
         this.showEditPanel = false;
+        this.pieceUpdated = true;
         this.successMessage = 'Pièce modifiée avec succès';
 
-        // Hide the success message after 3 seconds
         setTimeout(() => {
           this.pieceUpdated = false;
         }, 3000);
       },
       (error) => {
-        // Handle specific error cases
-        if (error.status === 409 && error.error) {
-          // Check for conflict errors (reference, fournisseur, etc.)
-          const field = error.error.field;
-          const message = error.error.message;
-
-          if (field === 'reference') {
-            this.referenceTaken = true;
-            this.errorMessage = message;
-          }
-          else {
-            this.errorMessage = message || 'Un conflit est survenu lors de la mise à jour.';
-          }
-        } else if (error.status === 400) {
-          console.log("Sent data:",pieceData);
-          this.errorMessage = 'Des données invalides ont été envoyées. Veuillez vérifier et réessayer.';
-        } else if (error.status === 404) {
-          // Handle not found error (piece not found)
-          this.errorMessage = 'Pièce non trouvée.';
+        if (error.status === 409) {
+          this.referenceTaken = true;
+          this.refTakenErrorMessage = 'Une pièce avec cette référence existe déjà.';
         } else {
-          // Generic error fallback
-          this.errorMessage = 'Échec de la mise à jour de la pièce.';
+          this.errorMessage = 'Erreur lors de la mise à jour';
         }
       }
     );
   }
+  enableEditing(): void {
+    this.isEditing = true;
+  }
 
+  viewDetails(pieceId: number): void {
+    this.PieceDetacheeService.getPieceDetacheeById(pieceId).subscribe({
+      next: (piece) => {
+        this.selectedPiece = { ...piece }; // Clone the object to prevent unwanted changes
+        this.showEditPanel = true;
+        this.isEditing = false; // Ensure it's in view mode by default
+        console.log(this.selectedPiece);
+      },
+      error: (err) => {
+        console.error('Error fetching piece details:', err);
+      }
+    });
+  }
+
+
+// Method to close the panel
+  closePanel(): void {
+    this.showEditPanel = false;
+    this.resetNewPiece();
+  }
 
   openEditPanel(piece: any): void {
     this.selectedPiece = { ...piece };
@@ -207,12 +271,9 @@ selectedPiece: any = {};
           nom: '',
           description: '',
           reference: '',
-          fournisseur: '',
-          coutUnitaire: 0,
-          quantiteStock: 0,
+          fournisseurId: 0,
+          fournisseurNom: '',
           quantiteMinimale: 0,
-          dateAchat: new Date().toISOString().split('T')[0], // Format YYYY-MM-DD
-          datePeremption: '',
           historiqueUtilisation: '',
           image:''
       };
@@ -230,12 +291,8 @@ selectedPiece: any = {};
         'Nom': piece.nom,
         'Description': piece.description,
         'Référence': piece.reference,
-        'Fournisseur': piece.fournisseur,
-        'Coût Unitaire (€)': piece.coutUnitaire,
-        'Quantité en Stock': piece.quantiteStock,
+        'Fournisseur': piece.fournisseurNom,
         'Quantité Minimale': piece.quantiteMinimale,
-        'Date Achat': piece.dateAchat,
-        'Date Péremption': piece.datePeremption,
         'Historique Utilisation': piece.historiqueUtilisation,
         'Image': piece.image,
       };

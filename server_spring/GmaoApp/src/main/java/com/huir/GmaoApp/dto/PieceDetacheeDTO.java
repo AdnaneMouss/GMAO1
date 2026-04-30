@@ -1,10 +1,11 @@
 package com.huir.GmaoApp.dto;
 
+import com.huir.GmaoApp.model.Fournisseur;
 import com.huir.GmaoApp.model.PieceDetachee;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -16,33 +17,29 @@ public class PieceDetacheeDTO {
 	private String nom;
 	private String description;
 	private String reference;
-	private String fournisseur;
-	private double coutUnitaire;
-	private int quantiteStock;
+	private Long fournisseurID;
+	private String fournisseurNom;
 	private int quantiteMinimale;
-	private LocalDate dateAchat;
-	private LocalDate datePeremption;
-	private List<String> historiqueUtilisation; // Or DTO if it's an object
 	private String image;
-	private String statut;  // Ensure this is a string value or map enum to string
+	private String statut;
 
-	// Constructor to map PieceDetachee to PieceDetacheeDTO
+	// Ajout des achats (setter séparé)
+	private List<AchatPieceDTO> achats;
+
 	public PieceDetacheeDTO(PieceDetachee pieceDetachee) {
 		this.id = pieceDetachee.getId();
 		this.nom = pieceDetachee.getNom();
 		this.description = pieceDetachee.getDescription();
 		this.reference = pieceDetachee.getReference();
-		this.fournisseur = pieceDetachee.getFournisseur();
-		this.coutUnitaire = pieceDetachee.getCoutUnitaire();
-		this.quantiteStock = pieceDetachee.getQuantiteStock();
+		this.fournisseurID = pieceDetachee.getFournisseur().getId();
+		this.fournisseurNom = pieceDetachee.getFournisseur().getNom();
 		this.quantiteMinimale = pieceDetachee.getQuantiteMinimale();
-		this.dateAchat = pieceDetachee.getDateAchat();
-		this.datePeremption = pieceDetachee.getDatePeremption();
-		this.historiqueUtilisation = pieceDetachee.getHistoriqueUtilisation();
 		this.image = pieceDetachee.getImage();
-
-
-
-		this.statut = pieceDetachee.getStatut();  // Utilise la méthode dynamique du modèle
+		this.statut = pieceDetachee.getStatut();
+		this.achats = pieceDetachee.getAchats() != null
+				? pieceDetachee.getAchats().stream()
+				.map(AchatPieceDTO::new)
+				.collect(Collectors.toList())
+				: null;
 	}
 }

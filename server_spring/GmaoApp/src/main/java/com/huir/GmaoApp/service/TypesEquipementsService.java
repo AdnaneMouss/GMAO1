@@ -53,38 +53,46 @@ public class TypesEquipementsService {
 
             // Update text fields
             typesEquipements.setType(typesEquipementsDTO.getType());
-            // If a new image is uploaded, handle it
-            if (imageFile != null && !imageFile.isEmpty()) {
-                try {
-                    // Delete the old image (if exists)
+
+            try {
+                // If a new image is uploaded, handle it
+                if (imageFile != null && !imageFile.isEmpty()) {
+
+                    // Delete the old image if it exists
                     if (typesEquipements.getImage() != null) {
-                        File oldImage = new File("uploads/" + typesEquipements.getImage());
-                        if (oldImage.exists()) {
-                            oldImage.delete();
-                        }
+                        Files.deleteIfExists(Paths.get("uploads", typesEquipements.getImage()));
                     }
 
-                    // Generate a unique image filename
-                    String filename = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-                    Path imagePath = Paths.get("uploads/" + filename);
+                    // Generate unique filename
+                    String filename = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+                    Path imagePath = Paths.get("uploads", filename);
 
-                    // Save the new image
-                    Files.copy(imageFile.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
+                    // Create uploads folder if missing
+                    Files.createDirectories(imagePath.getParent());
 
-                    // Update entity with new image path
+                    // Save new image
+                    Files.write(imagePath, imageFile.getBytes());
+
+                    // Update entity image
                     typesEquipements.setImage(filename);
-                } catch (IOException e) {
-                    throw new RuntimeException("Error while saving image", e);
                 }
+
+                // Save updated entity
+                typesEquipementsRepository.save(typesEquipements);
+
+                return new TypesEquipementsDTO(typesEquipements);
+
+            } catch (IOException e) {
+                throw new RuntimeException("Erreur lors de la mise à jour de l'image", e);
+
+            } catch (Exception e) {
+                throw new RuntimeException("Erreur lors de la mise à jour du type d'équipement", e);
             }
 
-            typesEquipementsRepository.save(typesEquipements);
-            return new TypesEquipementsDTO(typesEquipements);
         } else {
             return null;
         }
     }
-
 
 
     public TypesEquipements saveType(TypesEquipements type) {

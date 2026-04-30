@@ -95,14 +95,16 @@ public class ServicesController {
             @RequestParam(value = "description", required = false) String description) {
 
         Optional<Services> existingUserOpt = servicesRepository.findById(id);
-        if (!existingUserOpt.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        if (existingUserOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Service introuvable");
         }
 
         Services existingService = existingUserOpt.get();
-        if (nom != null && !existingService.getNom().equals(nom)) {
-            Optional<Services> serviceExists = Optional.ofNullable(servicesRepository.findByNom(nom));
-            if (serviceExists.isPresent()) {
+
+        // Check duplicate name safely
+        if (nom != null && !nom.equals(existingService.getNom())) {
+            Services serviceExists = servicesRepository.findByNom(nom);
+            if (serviceExists != null) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(Map.of("field", "nom", "message", "Ce nom de service est déjà utilisé."));
             }
@@ -112,10 +114,21 @@ public class ServicesController {
         serviceDTO.setNom(nom);
         serviceDTO.setDescription(description);
 
-        ServiceDTO updatedService = serviceService.updateService(id, imageFile, serviceDTO);
-        return updatedService != null ? ResponseEntity.ok(updatedService) : ResponseEntity.notFound().build();
-    }
+        try {
+            ServiceDTO updatedService = serviceService.updateService(id, imageFile, serviceDTO);
 
+            if (updatedService == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            return ResponseEntity.ok(updatedService);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+
+        }
+    }
 
     // Delete service
     @DeleteMapping("/{id}")
