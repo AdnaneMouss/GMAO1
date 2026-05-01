@@ -13,7 +13,5 @@ import java.util.List;
 @Repository
 public interface InterventionRepository extends JpaRepository<Intervention, Long> {
     List<Intervention> findByTechnicienId(Long id);
-    @Query("SELECT i.piecesDetachees FROM Intervention i WHERE i.id = :interventionId")
-    List<PieceDetachee> findPiecesByInterventionId(@Param("interventionId") Long interventionId);
 
 }

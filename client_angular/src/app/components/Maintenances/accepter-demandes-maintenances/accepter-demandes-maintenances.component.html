@@ -1,0 +1,228 @@
+<script src="../../../models/salle.ts"></script>
+<div *ngIf="approvalSuccessful" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">{{ successMessage }}</span>
+</div>
+
+
+
+<div class="container mx-auto p-8">
+  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6">
+
+    <button
+      class="flex items-center text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg px-4 py-2 transition duration-200"
+      [routerLink]="'/maintenances/correctives'">
+      <i class="fas fa-arrow-left mr-2"></i> Retour
+    </button>
+
+    <h2 class="text-3xl font-semibold text-gray-800 mb-4">Demandes de Maintenances</h2>
+    <p class="text-gray-600 mb-6">Créez des tickets de maintenances et consultez leur statut.</p>
+
+    <div class="flex space-x-4 justify-end w-full sm:w-auto">
+      <button class="text-green-600 hover:text-green-700 transition duration-200">
+        <i class="fas fa-download fa-lg"></i>
+      </button>
+
+    </div>
+    <br>
+    <!-- Modal for adding new maintenance -->
+    <div *ngIf="showModal" class="fixed inset-0 z-50 bg-gray-800 bg-opacity-60 flex justify-center items-center overflow-y-auto">
+      <div class="bg-white rounded-lg max-h-[90vh] overflow-y-scroll w-full max-w-4xl p-6 relative">
+
+        <!-- Close button -->
+        <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-10" (click)="closeAddModal()">
+          ✖
+        </button>
+        <form (ngSubmit)="approveMaintenanceTask()">
+          <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center">🛠️ Nouvelle Maintenance Corrective</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div>
+              <label class="block text-gray-700 mb-2 font-medium">
+                👨‍🔧 Technicien <span class="text-red-500">*</span>
+              </label>
+              <div class="flex gap-2">
+                <select id="user" [(ngModel)]="newMaintenance.affecteAId" name="affecte" required
+                        class="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                  <option *ngFor="let user of users" [value]="user.id">
+                    {{ user.nom }} - Tâches en cours: {{ technicianWorkloads[user.id] }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-8 flex justify-end gap-4">
+            <button
+              type="button"
+              class="bg-yellow-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-yellow-600 transition duration-300 ease-in-out flex items-center gap-2"
+              (click)="resetNewMaintenance()"
+            >
+              <i class="fas fa-undo"></i> Réinitialiser
+            </button>
+            <button type="submit"
+                    class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700">
+              Ajouter
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+
+    <!-- Filters Section -->
+    <div class="flex flex-wrap gap-2 md:gap-3 items-center mb-4">
+      <input
+        type="text"
+        [(ngModel)]="selectedEquipement"
+        (input)="applyFilters()"
+        placeholder="Nom d'équipement..."
+        class="px-3 py-1.5 border rounded-md text-sm"
+      />
+
+      <select
+        [(ngModel)]="selectedPriorite"
+        (change)="applyFilters()"
+        class="px-3 py-1.5 border rounded-md text-sm"
+      >
+        <option value="">Priorité</option>
+        <option value="URGENTE">Urgente</option>
+        <option value="NORMALE">Normale</option>
+        <option value="FAIBLE">Faible</option>
+      </select>
+
+      <input
+        type="date"
+        [(ngModel)]="startDate"
+        (change)="applyFilters()"
+        class="px-3 py-1.5 border rounded-md text-sm"
+        title="Sélectionnez une date de début"
+      />
+
+      <input
+        type="date"
+        [(ngModel)]="endDate"
+        (change)="applyFilters()"
+        class="px-3 py-1.5 border rounded-md text-sm"
+        title="Sélectionnez une date de fin"
+      />
+    </div>
+
+    <div *ngIf="isLoading" class="text-center text-gray-500">Chargement des maintenances...</div>
+
+    <div class="overflow-x-auto rounded-xl shadow-md bg-white">
+      <table class="min-w-full text-sm text-left border-collapse">
+        <thead class="bg-green-700 text-white uppercase tracking-wide text-xs font-bold">
+        <tr>
+          <th class="px-6 py-3">#</th>
+          <th class="px-6 py-3">Titre</th>
+          <th class="px-6 py-3">Équipement</th>
+          <th class="px-6 py-3">Emplacement</th>
+          <th class="px-6 py-3">Description</th>
+          <th class="px-6 py-3">Statut</th>
+          <th class="px-6 py-3">Priorité</th>
+          <th class="px-6 py-3">Demandée le</th>
+          <th class="px-6 py-3">Actions</th>
+        </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+        <tr *ngFor="let maintenance of filteredMaintenanceCorrectives; let i = index" class="hover:bg-gray-50">
+          <td class="px-6 py-4 font-medium text-gray-900">{{ i + 1 }}</td>
+          <td class="px-6 py-4">{{ maintenance.titre }}</td>
+          <td class="px-6 py-4">{{ maintenance.equipementNom }}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">
+            {{ maintenance.equipementBatiment }}<br />
+            <span class="text-xs text-gray-500">Étage {{maintenance.equipementEtage}}, Salle {{maintenance.equipementSalle}}</span>
+          </td>
+          <td class="px-6 py-4 text-gray-600 italic">
+            {{ maintenance.description || 'Non renseignée' }}
+          </td>
+          <td class="px-6 py-4">
+<span
+  class="px-3 py-1 rounded-full text-xs font-semibold"
+  [ngClass]="{
+    'bg-yellow-100 text-yellow-700': maintenance.statut === 'DEMANDEE',
+  }"
+>
+  {{ maintenance.statut === 'DEMANDEE' ? 'DEMANDE_EN_ATTENTE': maintenance.statut }}
+</span>
+
+          </td>
+          <td class="px-6 py-4">
+          <span
+            class="px-3 py-1 rounded-full text-xs font-semibold"
+            [ngClass]="{
+              'bg-red-100 text-red-700': maintenance.priorite === 'URGENTE',
+              'bg-yellow-100 text-yellow-700': maintenance.priorite === 'NORMALE',
+              'bg-green-100 text-green-700': maintenance.priorite === 'FAIBLE'
+            }"
+          >
+            {{ maintenance.priorite }}
+          </span>
+          </td>
+          <td class="px-6 py-4 text-gray-600">
+            {{ formatDateWithIntl(maintenance.dateDemande) }}
+          </td>
+
+          <td class="px-6 py-4">
+            <button
+              *ngIf="maintenance.statut === 'DEMANDEE'"
+              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300"
+              (click)="openAddModal(maintenance.id)"
+            >
+              ✅ Confirmer
+            </button>
+            <button
+              *ngIf="maintenanceToCancel !== maintenance.id"
+              (click)="confirmCancelTask(maintenance.id)"
+              class="inline-flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+            >
+              <i class="fas fa-times-circle"></i>
+              <span class="text-xs font-medium">Annuler</span>
+            </button>
+          </td>
+
+
+
+        </tr>
+        </tbody>
+      </table>
+
+      <!-- Confirmation Modal -->
+      <div
+        *ngIf="maintenanceToCancel !== null"
+        class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50"
+      >
+        <div class="bg-white p-6 rounded-xl shadow-xl max-w-sm w-full text-center">
+          <h2 class="text-lg font-semibold text-red-600 mb-4">❗ Annuler cette maintenance ?</h2>
+          <div class="flex justify-center gap-4 mt-4">
+            <button
+              (click)="cancelTask(maintenanceToCancel!)"
+              class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
+            >
+              Oui
+            </button>
+            <button
+              (click)="cancelCancelTask()"
+              class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg transition"
+            >
+              Non
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="flex justify-center mt-6">
+      <button (click)="changePage(currentPage - 1)" *ngIf="currentPage != 1" [disabled]="currentPage === 1" class="px-4 py-2 bg-gray-200 rounded-l-md hover:bg-gray-300" aria-label="Page précédente">Précédent</button>
+      <span class="px-4 py-2 text-gray-700">Page {{ currentPage }}</span>
+      <button (click)="changePage(currentPage + 1)" class="px-4 py-2 bg-gray-200 rounded-r-md hover:bg-gray-300" aria-label="Page suivante">Suivant</button>
+    </div>
+  </div>
+</div>

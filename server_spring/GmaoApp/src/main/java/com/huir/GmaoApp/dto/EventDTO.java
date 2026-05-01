@@ -1,4 +1,4 @@
-package com.huir.GmaoApp.dto;
+ package com.huir.GmaoApp.dto;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +27,7 @@ public class EventDTO {
         dto.setStartDate(event.getStartDate());
         dto.setEndDate(event.getEndDate());
         dto.setRepetitionType(event.getRepetitionType().toString()); // Convertir l'énumération en chaîne
-        dto.setSelectedDays(event.getSelectedDays());
+     //   dto.setSelectedDays(event.getSelectedDays());
         dto.setSelectedMonth(event.getSelectedMonth());
         return dto;
     };

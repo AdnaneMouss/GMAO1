@@ -1,4 +1,5 @@
 package com.huir.GmaoApp.service;
+import com.huir.GmaoApp.model.Equipement;
 import com.huir.GmaoApp.model.Etage;
 import com.huir.GmaoApp.model.Salle;
 import com.huir.GmaoApp.repository.EtageRepository;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -25,4 +27,22 @@ public class SalleService {
         return sallesRepository.existsByNumAndEtageId(num, etageId);
     }
 
-}
+    public List<Salle> getSallesActifs() {
+        return sallesRepository.findByActifTrue();
+    }
+
+    public List<Salle> getSallesInactifs() {
+        return sallesRepository.findByActifFalse();
+    }
+
+
+    public boolean existsByPrefixeAndNumAndEtageIdAndActifTrue(String prefixe, Integer num, Long etageId) {
+        return sallesRepository.existsByPrefixeAndNumAndEtageIdAndActifTrue(prefixe,num,etageId);
+    }
+
+
+    public Optional<Salle> findSalleById(Long salleId) {
+            return sallesRepository.findById(salleId);
+        }
+
+    }

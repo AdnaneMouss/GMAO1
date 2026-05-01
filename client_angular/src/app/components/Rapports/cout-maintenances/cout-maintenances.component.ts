@@ -293,7 +293,7 @@ async generateWeeklyReport(): Promise<void> {
   yPosition += 15;
 
   // ➤ Statistiques générales (à compléter si nécessaire)
-  
+
 
   // ➤ Équipements critiques
   doc.setFontSize(14);
@@ -355,8 +355,8 @@ async generateMonthlyReport(): Promise<void> {
   const equipementsDansPeriode = this.equipements.filter(eq => {
     const dateDerniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
     return (
-      dateDerniereMaintenance && 
-      dateDerniereMaintenance >= dateDebut && 
+      dateDerniereMaintenance &&
+      dateDerniereMaintenance >= dateDebut &&
       dateDerniereMaintenance <= dateFin
     );
   });
@@ -450,8 +450,8 @@ async generateMonthlyReport(): Promise<void> {
     body: rapport.equipementsCritiques.map((eq: any, index: number) => [
       index + 1,
       eq.nom || 'N/A',
-    
-     
+
+
       eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance).toLocaleDateString() : 'N/A'
     ]),
     styles: {
@@ -535,12 +535,12 @@ async viewWeeklyReport(): Promise<void> {
   const maintenancesCetteSemaine = this.getMaintenancesForPeriod(dateDebut, dateFin);
 
   const equipementsDansPeriode = this.equipements.filter(eq => {
-    const derniereMaintenance = eq.dateDerniereMaintenance 
-      ? new Date(eq.dateDerniereMaintenance) 
+    const derniereMaintenance = eq.dateDerniereMaintenance
+      ? new Date(eq.dateDerniereMaintenance)
       : null;
     return (
-      derniereMaintenance && 
-      derniereMaintenance >= dateDebut && 
+      derniereMaintenance &&
+      derniereMaintenance >= dateDebut &&
       derniereMaintenance <= dateFin
     );
   });
@@ -553,8 +553,8 @@ async viewWeeklyReport(): Promise<void> {
   // ➤ 5. Création du rapport avec formatage amélioré
   this.rapportHebdo = {
     dateGeneration: currentDate,
-    periode: { 
-      debut: dateDebut, 
+    periode: {
+      debut: dateDebut,
       fin: dateFin,
       // Formatage lisible ex: "Semaine du 15/04/2024 au 21/04/2024"
       semaine: `Semaine du ${dateDebut.toLocaleDateString('fr-FR')} au ${dateFin.toLocaleDateString('fr-FR')}`,
@@ -567,7 +567,7 @@ async viewWeeklyReport(): Promise<void> {
       maintenances: maintenancesCetteSemaine.length,
       tauxDisponibilite: tauxDisponibilite,
       // Ajouts optionnels
-     
+
     },
     pannes: pannesCetteSemaine,
     maintenances: maintenancesCetteSemaine,
@@ -617,16 +617,16 @@ private getWeekNumber(date: Date): string {
   const equipementsDansPeriode = this.equipements.filter(eq => {
     const derniereMaintenance = eq.dateDerniereMaintenance ? new Date(eq.dateDerniereMaintenance) : null;
     return (
-      derniereMaintenance && 
-      derniereMaintenance >= dateDebut && 
+      derniereMaintenance &&
+      derniereMaintenance >= dateDebut &&
       derniereMaintenance <= dateFin
     );
   });
 
   this.rapportMens = {
     dateGeneration: currentDate,
-    periode: { 
-      debut: dateDebut, 
+    periode: {
+      debut: dateDebut,
       fin: dateFin,
       nomMois: dateDebut.toLocaleString('fr-FR', { month: 'long', year: 'numeric' }) // Ajout du nom du mois
     },
@@ -720,7 +720,7 @@ private getWeekNumber(date: Date): string {
       .slice(0, 10);
   }
 
-  
+
 
 
 
@@ -772,7 +772,7 @@ exportEquipmentPDF(equipment: Equipement): void {
       });
     };
 
-    
+
 
     // Fonction principale async
     (async () => {
@@ -788,7 +788,7 @@ exportEquipmentPDF(equipment: Equipement): void {
           doc.text('Hôpital Universitaire International de Rabat', marginLeft + 35, yPosition + 10);
           doc.setFont('helvetica', 'normal');
           doc.text('Système de Gestion des Equipements', marginLeft + 35, yPosition + 16);
-          
+
           // Cadre autour du logo et texte
           doc.setDrawColor(primaryColor);
           doc.setLineWidth(0.3);
@@ -802,7 +802,7 @@ exportEquipmentPDF(equipment: Equipement): void {
         doc.setTextColor(primaryColor);
         doc.setFont('helvetica', 'bold');
         doc.text('FICHE TECHNIQUE EQUIPEMENT', 105, yPosition, { align: 'center' });
-        
+
         // Ligne de séparation stylisée
         yPosition += 7;
         doc.setDrawColor(primaryColor);
@@ -817,7 +817,7 @@ exportEquipmentPDF(equipment: Equipement): void {
         const sections = [
           {
             title: 'INFORMATIONS GÉNÉRALES',
-            
+
             fields: [
               { label: 'Nom', value: equipment.nom || 'N/A', color: textColor },
               { label: 'Numéro de série', value: equipment.numeroSerie || 'N/A', color: textColor },
@@ -825,22 +825,27 @@ exportEquipmentPDF(equipment: Equipement): void {
               { label: 'Marque', value: equipment.marque || 'N/A', color: textColor },
               { label: 'Description', value: equipment.description || 'N/A', color: textColor },
               { label: 'Statut', value: equipment.statut || 'N/A', special: 'status' },
+
               { label: 'Actif', value: equipment.actif ? 'Oui' : 'Non', color: equipment.actif ? accentColor : dangerColor },
-              { label: 'Type', value: equipment.typeEquipement || 'N/A', color: textColor }
+              { label: 'Type', value: equipment.typeEquipementNom || 'N/A', color: textColor },
+
+              { label: 'Actif', value: equipment.actif ? 'Oui' : 'Non' },
+              { label: 'Type', value: equipment.typeEquipementNom || 'N/A' }
+
             ]
           },
           {
             title: 'DATES IMPORTANTES',
-           
+
             fields: [
-              
+
               { label: 'Date dernière maintenance', value: equipment.dateDerniereMaintenance ? new Date(equipment.dateDerniereMaintenance).toLocaleDateString() : 'N/A', color: textColor },
              // { label: 'Date Mise en  service', value: equipment.dateMiseEnService ? new Date(equipment.dateMiseEnService).toLocaleDateString() : 'N/A', color: warningColor }
             ]
           },
           {
             title: 'LOCALISATION',
-         
+
             fields: [
               { label: 'Bâtiment', value: equipment.batimentNom?.toString() || 'N/A', color: textColor },
               { label: 'Étage', value: equipment.etageNum?.toString() || 'N/A', color: textColor },
@@ -850,7 +855,7 @@ exportEquipmentPDF(equipment: Equipement): void {
           },
           {
             title: 'COÛTS ET SUIVI',
-          
+
             fields: [
               { label: 'Coût d\'achat', value: equipment.coutAchat ? `${equipment.coutAchat} DH` : 'N/A', color: textColor },
               { label: 'Label suivi', value: equipment.labelSuivi || 'N/A', color: textColor },
@@ -898,13 +903,13 @@ exportEquipmentPDF(equipment: Equipement): void {
             } else {
               doc.setTextColor(field.color || textColor);
             }
-            
+
             doc.setFont('helvetica', 'normal');
-            
+
             // Gestion des textes longs avec splitTextToSize
             const valueLines = doc.splitTextToSize(field.value, 120);
             doc.text(valueLines, marginLeft + labelWidth, yPosition);
-            
+
             // Ajustement de la position Y en fonction du nombre de lignes
             yPosition += Math.max(7, valueLines.length * 7);
 
@@ -912,7 +917,7 @@ exportEquipmentPDF(equipment: Equipement): void {
           }
 
           yPosition += 10; // Espace entre sections
-          
+
           // Ligne de séparation fine entre sections
           doc.setDrawColor(secondaryColor);
           doc.setLineWidth(0.2);
@@ -924,7 +929,7 @@ exportEquipmentPDF(equipment: Equipement): void {
         doc.setTextColor(secondaryColor);
         doc.setFont('helvetica', 'italic');
         doc.text(`Document généré le ${new Date().toLocaleDateString()} - Système de Gestion des Equipements H.U.I.R`, 105, 285, { align: 'center' });
-        
+
         // Ligne de séparation du pied de page
         doc.setDrawColor(primaryColor);
         doc.setLineWidth(0.3);

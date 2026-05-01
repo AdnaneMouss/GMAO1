@@ -3,6 +3,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {EquipementService} from "../../../services/equipement.service";
 import {Equipement} from "../../../models/equipement";
 import {ServiceService} from "../../../services/service.service";
+import {environment} from "../../../../environments/environment";
 
 @Component({
   selector: 'app-equipements-par-categorie',
@@ -15,10 +16,17 @@ export class EquipementsParCategorieComponent implements OnInit{
   showForm: boolean = false;
   filteredEquipements = [...this.equipements];
   message: string = '';
+  equipement: Equipement = this.initEquipement();
   searchTermNum = '';
   searchTermNom = '';
   selectedStatus: string = '';
+  viewMode: 'table' | 'card' = 'table'; // default to table
   sortColumn: string = '';
+  startDate: string='';
+  endDate: string='';
+  isEditing: boolean = false;
+  showEditPanel: boolean = false;
+  selectedEquipement: Equipement | null = null; // Store selected user details
   sortDirection: 'asc' | 'desc' = 'asc';
   serviceName: string = '';
   equipementsAttributs: { [key: number]: Map<string, string> } = {};
@@ -43,6 +51,36 @@ export class EquipementsParCategorieComponent implements OnInit{
     }
   }
 
+  applyAllFilters() {
+    this.filteredEquipements = this.equipements.filter(e => {
+      const nomMatch = this.searchTermNom
+        ? e.nom.toLowerCase().includes(this.searchTermNom.toLowerCase())
+        : true;
+
+      const numSerieMatch = this.searchTermNum
+        ? e.numeroSerie && e.numeroSerie.toLowerCase().includes(this.searchTermNum.toLowerCase())
+        : true;
+
+      const statusMatch = this.selectedStatus
+        ? e.statut === this.selectedStatus
+        : true;
+
+      const dateAchat = new Date(e.dateAchat);
+      const start = this.startDate ? new Date(this.startDate) : null;
+      const end = this.endDate ? new Date(this.endDate) : null;
+
+      const dateMatch = (!start || dateAchat >= start) && (!end || dateAchat <= end);
+
+      return nomMatch && numSerieMatch && statusMatch && dateMatch;
+    });
+  }
+
+
+  getImageUrl(imagePath: string): string {
+    return `${environment.apiUrl}${imagePath}`;
+  }
+
+
   sortTable(column: string): void {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -51,6 +89,20 @@ export class EquipementsParCategorieComponent implements OnInit{
       this.sortDirection = 'asc';
     }
   }
+
+  viewDetails(eqId: number): void {
+    this.equipementService.getEquipementById(eqId).subscribe({
+      next: (eq) => {
+        this.selectedEquipement = { ...eq }; // Clone the object to prevent unwanted changes
+        this.showEditPanel = true;
+        this.isEditing = false; // Ensure it's in view mode by default
+      },
+      error: (err) => {
+        console.error('Error fetching user details:', err);
+      }
+    });
+  }
+
 
 
   getEquipements(): void {
@@ -69,21 +121,10 @@ export class EquipementsParCategorieComponent implements OnInit{
     });
   }
 
-  getAttributs(equipementId: number) {
-    const attributsMap = this.equipementsAttributs[equipementId];
-
-    // Check if it's a plain object
-    if (typeof attributsMap === 'object' && !Array.isArray(attributsMap)) {
-      return Object.entries(attributsMap).map(([key, value]) => ({ key, value }));
-    }
-
-    // If it's a Map, you can use .entries()
-    if (attributsMap instanceof Map) {
-      return Array.from(attributsMap.entries()).map(([key, value]) => ({ key, value }));
-    }
-
-    return [];
+  toggleView(mode: 'table' | 'card') {
+    this.viewMode = mode;
   }
+
 
   getAttributsByEquipement(equipementId: number): void {
     this.equipementService.getAttributsByEquipement(equipementId).subscribe(
@@ -98,23 +139,70 @@ export class EquipementsParCategorieComponent implements OnInit{
     );
   }
 
-  filterEquipementsByName() {
-    this.filteredEquipements = this.equipements.filter(equipement =>
-      equipement.nom.toLowerCase().includes(this.searchTermNom.toLowerCase())
-    );
-  }
+  getAttributs(equipementId: number) {
+    const attributs = this.equipementsAttributs[equipementId];
 
-  filterEquipementsByNumSerie() {
-    this.filteredEquipements = this.equipements.filter(equipement =>
-      equipement.numeroSerie && equipement.numeroSerie.toLowerCase().includes(this.searchTermNum.toLowerCase())
-    );
-  }
-
-  filterEquipementsByStatus() {
-    if (this.selectedStatus) {
-      this.filteredEquipements = this.equipements.filter(e => e.statut === this.selectedStatus);
-    } else {
-      this.filteredEquipements = [...this.equipements]; // Réinitialiser si aucun statut sélectionné
+    // If it's an array of objects with a `nom` and a value, return it as key-value
+    if (Array.isArray(attributs)) {
+      return attributs.map(attr => ({ key: attr.nom, value: attr.valeur || '-' }));
     }
+
+    if (typeof attributs === 'object' && !Array.isArray(attributs)) {
+      return Object.entries(attributs).map(([key, value]) => ({ key, value }));
+    }
+
+    if (attributs instanceof Map) {
+      return Array.from(attributs.entries()).map(([key, value]) => ({ key, value }));
+    }
+
+    return [];
   }
+  enableEditingEquipment(): void {
+    this.isEditing = true;
+  }
+  closeEquipmentPanel(): void {
+    this.isEditing = false;
+    this.showEditPanel=false;
+    this.resetForm();
+  }
+
+  resetForm(): void {
+    this.equipement = this.initEquipement();
+    this.showForm = false;  // Hide the form after submission
+  }
+
+  private initEquipement(): Equipement {
+    return {
+      batimentId: 0,
+      batimentNum: 0,
+      etageId: 0,
+      garantie: "",
+      salleId: 0,
+      sallePrefixe: "",
+      serviceId: 0,
+      typeEquipementId: 0,
+      attributsEquipement: [],
+      batimentNom: "", etageNum: 0, salleNum: 0,
+      serviceNom: "",
+      id: 0,
+      image: '',
+      nom: '',
+      description: '',
+      numeroSerie: '',
+      modele: '',
+      marque: '',
+      statut: '',
+      actif: false,  // Default value for 'actif'
+      dateAchat: '',
+      dateMiseEnService: '',
+      dateDerniereMaintenance: '',
+      coutAchat: 0,
+      valeurSuivi:0,
+      labelSuivi:'',
+      typeEquipementNom: '',
+      attributsValeurs: []  // Assuming this is an empty array initially
+
+    }
+  };
+
 }

@@ -9,12 +9,13 @@ import java.util.Optional;
 
 public interface AttributEquipementsValeursRepository extends JpaRepository<AttributEquipementValeur, Long> {
 
-    AttributEquipementValeur findByEquipementAndAttributEquipement(Equipement equipement, AttributEquipements attribut);
+    Optional<AttributEquipementValeur> findByEquipementAndAttributEquipement(Equipement equipement, AttributEquipements attribut);
 
     List<AttributEquipementValeur> findByEquipement(Equipement equipement);
-    
+
     Optional<AttributEquipementValeur> findByAttributEquipement(AttributEquipements attributEquipement);
 
+    List<AttributEquipementValeur> findByEquipementId(Long id);
 }
 
 

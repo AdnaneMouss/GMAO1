@@ -1,0 +1,176 @@
+<div *ngIf="addSuccessful" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">{{ successMessage }}</span>
+</div>
+
+<div *ngIf="updateSuccessful" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+  <i class="fas fa-check-circle text-2xl"></i>
+  <span class="font-semibold">{{ successMessage }}</span>
+</div>
+
+
+<div class="container mx-auto p-8">
+  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6">
+    <button
+      class="flex items-center text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg px-4 py-2 transition duration-200"
+      [routerLink]="'/maintenances/correctives'">
+      <i class="fas fa-arrow-left mr-2"></i> Retour
+    </button>
+
+    <h2 class="text-3xl font-semibold text-gray-800 mb-4">Historique des Maintenances Correctives</h2>
+    <p class="text-gray-600 mb-6">Consultez l’historique des tickets de maintenance corrective des équipements hospitaliers.</p>
+
+    <div class="flex space-x-4 justify-end w-full sm:w-auto">
+
+      <button class="text-green-600 hover:text-green-700 transition duration-200">
+        <i class="fas fa-download fa-lg"></i>
+      </button>
+    </div>
+    <br>
+
+
+    <!-- Filters Section -->
+    <div class="flex justify-between mb-6">
+      <input type="text" [(ngModel)]="selectedEquipement" (input)="applyFilters()" placeholder="Nom d'équipement..." class="px-4 py-2 border rounded-md" />
+      <select [(ngModel)]="selectedStatut" (change)="applyFilters()" class="px-4 py-2 border rounded-md">
+        <option value="">Statut</option>
+        <option value="TERMINEE">Terminée</option>
+        <option value="ANNULEE">Annulée</option>
+      </select>
+      <select [(ngModel)]="selectedPriorite" (change)="applyFilters()" class="px-4 py-2 border rounded-md">
+        <option value="">Priorité</option>
+        <option value="URGENTE">Urgente</option>
+        <option value="NORMALE">Normale</option>
+        <option value="FAIBLE">Faible</option>
+      </select>
+      <input type="date" [(ngModel)]="startDate" (change)="applyFilters()" class="px-4 py-2 border rounded-md" title="Sélectionnez une date de début" />
+      <input type="date" [(ngModel)]="endDate" (change)="applyFilters()" class="px-4 py-2 border rounded-md" title="Sélectionnez une date de fin" />
+    </div>
+
+    <div *ngIf="isLoading" class="text-center text-gray-500">Chargement des maintenances...</div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full table-auto text-left bg-white border-collapse">
+        <thead class="bg-green-700 text-white">
+        <tr>
+          <th class="px-6 py-3 text-sm font-semibold">#</th>
+          <th class="px-6 py-3 text-sm font-semibold">Titre</th>
+          <th class="px-6 py-3 text-sm font-semibold">Equipement</th>
+          <th class="px-6 py-3 text-sm font-semibold">Emplacement</th>
+          <th class="px-6 py-3 text-sm font-semibold">Description</th>
+          <th class="px-6 py-3 text-sm font-semibold">Statut</th>
+          <th class="px-6 py-3 text-sm font-semibold">Priorité</th>
+          <th class="px-6 py-3 text-sm font-semibold">Date de Création</th>
+          <th class="px-6 py-3 text-sm font-semibold">Créée par</th>
+          <th class="px-6 py-3 text-sm font-semibold">Affectée à</th>
+          <th class="px-6 py-3 text-sm font-semibold text-center">Actions</th> <!-- 👈 New -->
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr *ngFor="let maintenance of filteredMaintenanceCorrectives; let i = index" class="border-b hover:bg-gray-50">
+          <td class="px-6 py-4 text-gray-800 font-medium">{{ i + 1 }}</td>
+          <td class="px-6 py-4 text-gray-800 font-medium">{{ maintenance.titre }}</td>
+          <td class="px-6 py-4 text-gray-800 font-medium">{{ maintenance.equipementNom }}</td>
+          <td class="px-6 py-4 text-gray-800 font-medium">{{ maintenance.equipementBatiment }}  Etage:{{maintenance.equipementEtage}}  Salle:{{maintenance.equipementSalle}}</td>
+          <td class="px-6 py-4 text-gray-600">{{ maintenance.description || 'Non renseignée' }}</td>
+          <td class="px-6 py-4">
+              <span [ngClass]="{
+                'bg-green-100 text-green-700': maintenance.statut === 'TERMINEE',
+
+                'bg-gray-100 text-gray-700': maintenance.statut === 'ANNULEE'
+              }" class="px-4 py-1 rounded-full text-xs font-semibold">
+                {{ maintenance.statut }}
+              </span>
+          </td>
+          <td class="px-6 py-4">
+              <span [ngClass]="{
+                'bg-red-100 text-red-700': maintenance.priorite === 'URGENTE',
+                'bg-yellow-100 text-yellow-700': maintenance.priorite === 'NORMALE',
+                'bg-green-100 text-green-700': maintenance.priorite === 'FAIBLE'
+              }" class="px-4 py-1 rounded-full text-xs font-semibold">
+                {{ maintenance.priorite }}
+              </span>
+          </td>
+          <td class="px-6 py-4 text-gray-600">{{ formatDateWithIntl(maintenance.dateCreation)}}</td>
+          <td class="px-6 py-4 text-gray-600">{{ maintenance.creeParNom }}</td>
+          <td class="px-6 py-4 text-gray-600">{{ maintenance.affecteANom }}</td>
+          <td class="px-6 py-4 text-center">
+            <button
+              (click)="openInterventionsModal(maintenance)"
+              class="bg-green-700 text-white px-4 py-1 rounded-full hover:bg-green-800 transition text-sm font-semibold">
+              Voir intervention
+            </button>
+          </td>
+
+
+
+        </tr>
+        </tbody>
+        <!-- Intervention Modal -->
+        <div
+          *ngIf="selectedMaintenance"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
+
+          <div class="relative w-full max-w-3xl p-6 bg-white rounded-2xl shadow-2xl">
+
+            <!-- Modal Header -->
+            <div class="flex items-start justify-between mb-6">
+              <h2 class="text-2xl font-bold text-green-700">
+                Interventions – "{{ selectedMaintenance?.titre }}"
+              </h2>
+              <button
+                (click)="closeInterventionsModal()"
+                class="text-gray-400 hover:text-gray-800 text-2xl font-bold leading-none">
+                &times;
+              </button>
+            </div>
+
+            <!-- Interventions List -->
+            <ul class="space-y-6">
+              <li
+                *ngFor="let inter of selectedMaintenance?.interventions"
+                class="p-5 bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
+
+                <div class="space-y-2 text-gray-700 text-sm">
+                  <p><span class="font-semibold">🛠️ Description :</span> {{ inter.description }}</p>
+                  <p><span class="font-semibold">⏳ Durée :</span> {{ inter.duree }} minutes</p>
+                  <p><span class="font-semibold">📅 Début :</span> {{ formatDateWithIntl(inter.dateCommencement) || 'N/A' }}</p>
+                  <p><span class="font-semibold">📅 Fin :</span> {{ formatDateWithIntl(inter.dateCloture) || 'N/A' }}</p>
+                  <p><span class="font-semibold">💡 Remarques :</span> {{ inter.remarques || 'Aucune' }}</p>
+                </div>
+
+                <!-- Pièces utilisées -->
+                <div class="mt-4 p-4 bg-white border border-dashed border-gray-300 rounded-md">
+                  <h4 class="mb-2 text-sm font-semibold text-gray-800">🧩 Pièces utilisées</h4>
+
+                  <!-- Trigger data loading -->
+                  <ng-container *ngIf="!piecesByIntervention[inter.id]">
+                    {{ getPiecesForIntervention(inter.id) }}
+                  </ng-container>
+
+                  <!-- List or fallback -->
+                  <ul *ngIf="piecesByIntervention[inter.id]?.length; else noPieces" class="list-disc pl-5 text-gray-600 text-sm space-y-1">
+                    <li *ngFor="let piece of piecesByIntervention[inter.id]">{{ piece.nom }}</li>
+                  </ul>
+
+                  <ng-template #noPieces>
+                    <p class="text-gray-400 italic text-sm">Aucune pièce utilisée</p>
+                  </ng-template>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="flex justify-center mt-6">
+      <button (click)="changePage(currentPage - 1)" *ngIf="currentPage != 1" [disabled]="currentPage === 1" class="px-4 py-2 bg-gray-200 rounded-l-md hover:bg-gray-300" aria-label="Page précédente">Précédent</button>
+      <span class="px-4 py-2 text-gray-700">Page {{ currentPage }}</span>
+      <button (click)="changePage(currentPage + 1)" class="px-4 py-2 bg-gray-200 rounded-r-md hover:bg-gray-300" aria-label="Page suivante">Suivant</button>
+    </div>
+  </div>
+</div>

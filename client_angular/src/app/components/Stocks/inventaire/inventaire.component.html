@@ -1,0 +1,329 @@
+
+<div class="container mx-auto p-8">
+  <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-700 mb-4">Gestion des Utilisateurs</h2>
+    <p class="text-gray-500 text-sm mb-6">Recherchez, triez et gérez facilement tous les utilisateurs du système.</p>
+
+    <div class="flex space-x-4 justify-end w-full sm:w-auto">
+
+
+      <button class="text-blue-600 hover:text-blue-700 transition duration-200" (click)="openAddModal()">
+        <i class="fas fa-plus fa-lg"></i>
+      </button>
+      <button class="text-green-600 hover:text-green-700 transition duration-200">
+        <i class="fas fa-download fa-lg"></i>
+      </button>
+
+    </div>
+
+    <div class="flex flex-wrap gap-4 mb-6">
+      <!-- Responsable Search -->
+      <input
+        type="text"
+        [(ngModel)]="selectedResponsable"
+        (input)="applyInventaireFilters()"
+        placeholder="Nom du responsable..."
+        class="px-4 py-2 border rounded-md"
+      />
+
+      <!-- Statut Filter -->
+      <select
+        [(ngModel)]="selectedStatut"
+        (change)="applyInventaireFilters()"
+        class="px-4 py-2 border rounded-md"
+      >
+        <option value="">Statut</option>
+        <option value="CORRIGE">Corrigé</option>
+        <option value="NON_CORRIGE">Non corrigé</option>
+      </select>
+
+      <!-- Date Filters -->
+      <input
+        type="date"
+        [(ngModel)]="startDate"
+        (change)="applyInventaireFilters()"
+        class="px-4 py-2 border rounded-md"
+        title="Date de début"
+      />
+
+      <input
+        type="date"
+        [(ngModel)]="endDate"
+        (change)="applyInventaireFilters()"
+        class="px-4 py-2 border rounded-md"
+        title="Date de fin"
+      />
+    </div>
+
+
+
+
+    <!-- Panneau d’ajout (centré + foreground) -->
+    <div *ngIf="showAddPanel"
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white border rounded-lg shadow-xl p-8 w-full max-w-4xl mx-auto relative overflow-y-auto max-h-[90vh]">
+
+        <!-- Title -->
+        <h2 class="text-2xl font-bold text-green-700 mb-6 flex items-center gap-2">
+          <i class="fas fa-plus-circle"></i> Nouvel inventaire
+        </h2>
+
+        <!-- Lignes d'inventaire -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Lignes d'inventaire</h3>
+
+          <div *ngFor="let ligne of newInventaire.lignes; let i = index"
+               class="border border-gray-300 rounded-lg shadow-sm p-4 mb-5 bg-white hover:shadow-md transition-all duration-200">
+
+            <!-- 🧾 Header Ligne -->
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-md font-semibold text-green-700 flex items-center gap-2">
+                <i class="fas fa-stream"></i> Ligne {{ i + 1 }}
+              </h4>
+              <button (click)="removeLigne(i)" class="text-red-600 hover:text-red-800 flex items-center gap-1 text-sm">
+                <i class="fas fa-trash-alt"></i> Supprimer
+              </button>
+            </div>
+
+            <!-- 📋 Champs Ligne -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Pièce -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                  <i class="fas fa-cogs text-green-700"></i> Pièce détachée
+                </label>
+                <select [(ngModel)]="ligne.pieceId"
+                        class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-green-600">
+                  <option [ngValue]="null">-- Choisir une pièce --</option>
+                  <option *ngFor="let piece of pieces_detachees" [value]="piece.id">{{ piece.nom }}</option>
+                </select>
+                <small class="text-gray-500">Sélectionnez la pièce concernée.</small>
+              </div>
+
+              <!-- Stock physique -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                  <i class="fas fa-boxes-stacked text-green-700"></i> Stock physique
+                </label>
+                <input type="number" [(ngModel)]="ligne.stockPhysique"
+                       class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-green-600"
+                       placeholder="Quantité observée">
+                <small class="text-gray-500">Nombre réel en stock.</small>
+              </div>
+
+              <!-- Commentaire -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                  <i class="fas fa-comment-dots text-green-700"></i> Commentaire
+                </label>
+                <textarea [(ngModel)]="ligne.commentaire"
+                          class="w-full border px-3 py-2 rounded resize-none focus:ring-2 focus:ring-green-600"
+                          rows="1"
+                          placeholder="Optionnel"></textarea>
+                <small class="text-gray-500">Infos additionnelles si besoin.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- ➕ Ajouter ligne -->
+          <button (click)="addLigne()"
+                  class="text-green-700 font-semibold text-sm hover:underline flex items-center gap-1 mb-6">
+            <i class="fas fa-plus"></i> Ajouter une ligne
+          </button>
+        </div>
+
+        <!-- 📦 Boutons d’action -->
+        <div class="flex flex-wrap gap-4 mt-4">
+          <button (click)="addInventaire()"
+                  class="bg-green-700 text-white font-bold px-6 py-2 rounded hover:bg-green-800 flex items-center gap-2">
+            <i class="fas fa-save"></i> Enregistrer
+          </button>
+          <button (click)="resetForm()"
+                  class="text-gray-600 hover:underline flex items-center gap-1">
+            <i class="fas fa-rotate-left"></i> Réinitialiser
+          </button>
+          <button (click)="showAddPanel = false"
+                  class="text-gray-600 hover:underline flex items-center gap-1 ml-auto">
+            <i class="fas fa-times-circle"></i> Fermer
+          </button>
+        </div>
+
+        <!-- 🔴 Erreur -->
+        <p *ngIf="errorMessage" class="text-red-600 mt-4 flex items-center gap-2">
+          <i class="fas fa-exclamation-triangle"></i> {{ errorMessage }}
+        </p>
+      </div>
+    </div>
+
+
+      <!-- 🔧 Panneau de modification -->
+      <div *ngIf="showUpdatePanel && selectedInventaire"
+           class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white border rounded-lg shadow-xl p-8 w-full max-w-4xl mx-auto relative overflow-y-auto max-h-[90vh]">
+
+        <h2 class="text-xl font-semibold text-yellow-600 mb-4">Modifier l'inventaire</h2>
+
+      <!-- Sélection du responsable -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Responsable</label>
+        <select [(ngModel)]="selectedInventaire.responsableId"
+                class="w-full border border-gray-300 rounded px-3 py-2">
+          <option [ngValue]="null">-- Choisir un responsable --</option>
+          <option *ngFor="let user of users" [value]="user.id">{{ user.nom }}</option>
+        </select>
+      </div>
+
+      <!-- Lignes d'inventaire -->
+      <div class="mb-4">
+        <h3 class="text-lg font-medium mb-2">Lignes d'inventaire</h3>
+
+        <div *ngFor="let ligne of selectedInventaire.lignes; let i = index" class="mb-2 bg-gray-100 p-4 rounded">
+          <div class="grid grid-cols-3 gap-4 mb-2">
+            <select [(ngModel)]="ligne.pieceId" class="border px-3 py-2 rounded">
+              <option [ngValue]="null">-- Pièce --</option>
+              <option *ngFor="let piece of pieces_detachees" [value]="piece.id">{{ piece.nom }}</option>
+            </select>
+
+            <input type="number" [(ngModel)]="ligne.stockPhysique" class="border px-3 py-2 rounded"
+                   placeholder="Stock physique">
+
+            <button (click)="removeLigneFromUpdate(i)" class="text-red-600 hover:underline">Supprimer</button>
+          </div>
+          <div>
+        <textarea [(ngModel)]="ligne.commentaire"
+                  class="w-full border border-gray-300 rounded px-3 py-2 mt-1"
+                  placeholder="Commentaire (facultatif)"></textarea>
+          </div>
+        </div>
+
+        <button (click)="addLigneToUpdate()" class="text-green-700 font-semibold hover:underline">
+          + Ajouter une ligne
+        </button>
+      </div>
+
+      <!-- Boutons -->
+      <div class="flex gap-4">
+        <button (click)="updateInventaire()"
+                class="bg-yellow-600 text-white font-bold px-6 py-2 rounded hover:bg-yellow-700">
+          Mettre à jour
+        </button>
+        <button (click)="selectedInventaire = null; showUpdatePanel = false"
+                class="text-gray-600 hover:underline">Annuler</button>
+      </div>
+
+      <!-- Message d'erreur -->
+      <p *ngIf="errorMessage" class="text-red-600 mt-3">{{ errorMessage }}</p>
+    </div>
+</div>
+
+    <div class="max-w-full overflow-x-auto">
+      <div class="w-[1600px] overflow-x-scroll scrollbar-thin scrollbar-track-gray-100">
+        <table class="min-w-full border-separate border-spacing-y-2 text-sm text-gray-800">
+          <thead class="bg-green-700 text-white uppercase text-xs font-semibold tracking-wide">
+          <tr>
+            <th class="px-6 py-3 rounded-tl-lg text-left">#</th>
+            <th class="px-6 py-3 text-left">Responsable</th>
+            <th class="px-6 py-3 text-left">Date d'inventaire</th>
+            <th class="px-6 py-3 text-left">Nb lignes</th>
+            <th class="px-6 py-3 text-left">Statut</th>
+            <th class="px-6 py-3 rounded-tr-lg text-left">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <ng-container *ngFor="let inv of filteredInventaires; let i = index">
+            <!-- Main Row -->
+            <tr class="bg-white shadow-sm hover:shadow-md transition rounded-lg">
+              <td class="px-6 py-4 font-medium text-gray-700">{{ i + 1 }}</td>
+              <td class="px-6 py-4">{{ inv.responsableNom }}</td>
+              <td class="px-6 py-4">{{ formatDateWithIntl(inv.dateInventaire) }}</td>
+              <td class="px-6 py-4">{{ inv.lignes?.length }}</td>
+              <td class="px-6 py-4">
+          <span
+            class="inline-block px-2 py-1 text-xs rounded-full"
+            [ngClass]="{
+              'bg-green-100 text-green-700 font-semibold': inv.statut === 'CORRIGE',
+              'bg-red-100 text-red-600 font-semibold': inv.statut === 'NON_CORRIGE'
+            }"
+          >
+            {{ inv.statut === 'CORRIGE' ? 'Corrigé' : 'Non corrigé' }}
+          </span>
+              </td>
+              <td class="px-6 py-4 flex items-center gap-2">
+                <!-- Voir / Masquer -->
+                <button
+                  (click)="toggleDetails(inv)"
+                  class="p-2 rounded-full bg-gray-100 hover:bg-green-100 text-gray-600 hover:text-green-600 transition"
+                  title="{{ inv.showDetails ? 'Masquer' : 'Voir' }}"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+
+                <!-- Modifier -->
+                <button
+                  (click)="openEditPanel(inv)"
+                  class="p-2 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 transition"
+                  title="Modifier"
+                >
+                  <i class="fas fa-pen"></i>
+                </button>
+
+                <!-- Corriger Stock (si non corrigé) -->
+                <button
+                  *ngIf="inv.statut === 'NON_CORRIGE'"
+                  (click)="corrigerStock(inv.id)"
+                  class="p-2 rounded-full bg-gray-100 hover:bg-yellow-100 text-gray-600 hover:text-yellow-600 transition"
+                  title="Corriger le stock"
+                >
+                  <i class="fas fa-wrench"></i>
+                </button>
+              </td>
+
+
+            </tr>
+
+            <!-- Detail Row -->
+            <tr *ngIf="inv.showDetails" class="bg-gray-50 rounded-b-lg">
+              <td colspan="6" class="px-6 py-4">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-xs text-left text-gray-700">
+                    <thead class="bg-green-100 text-gray-800 font-semibold">
+                    <tr>
+                      <th class="px-4 py-2">Pièce</th>
+                      <th class="px-4 py-2">Stock théorique</th>
+                      <th class="px-4 py-2">Stock physique</th>
+                      <th class="px-4 py-2">Écart</th>
+                      <th class="px-4 py-2">Commentaire</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let ligne of inv.lignes" class="border-b hover:bg-white transition">
+                      <td class="px-4 py-2">{{ ligne.nomPiece }}</td>
+                      <td class="px-4 py-2">{{ ligne.stockTheorique }}</td>
+                      <td class="px-4 py-2">{{ ligne.stockPhysique }}</td>
+                      <td class="px-4 py-2">
+                    <span
+                      [ngClass]="{
+                        'text-green-600 font-bold': ligne.ecart === 0,
+                        'text-yellow-600 font-semibold': ligne.ecart !== 0 && Math.abs(ligne.ecart) <= 3,
+                        'text-red-600 font-bold': Math.abs(ligne.ecart) > 3
+                      }"
+                    >
+                      {{ ligne.ecart }}
+                    </span>
+                      </td>
+                      <td class="px-4 py-2">{{ ligne.commentaire || '—' }}</td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -35,7 +35,7 @@ public class UserDTO {
     private String username;
     private Civilite civilite;
     private LocalDateTime dateInscription;
-
+    private boolean notifications;
   
     public UserDTO() {
     }
@@ -52,6 +52,7 @@ public class UserDTO {
         this.username = user.getUsername();
         this.civilite = user.getCivilite();
         this.dateInscription = user.getDateInscription();
+        this.notifications = user.isNotifications();
     }
 
     // Getters et Setters

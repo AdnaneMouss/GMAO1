@@ -17,18 +17,24 @@ public class EtageDTO {
 
     private Long id;
     private int num; // e.g. "1st Floor"
-    private Batiment batiment;
-    private List<SalleDTO> salles; // List of salles on the Etage
+	private Long batimentId;
+    private boolean actif;
+	private List<SalleDTO> salles; // List of salles on the Etage
 
     public EtageDTO(Etage etage) {
 
         this.id = etage.getId();
         this.num = etage.getNum();
-        this.batiment = etage.getBatiment();
+        this.actif = etage.isActif();
+		this.batimentId = etage.getBatiment() != null ? etage.getBatiment().getId() : null;
         this.salles = etage.getSalles() != null
                 ? etage.getSalles().stream()
                 .map(SalleDTO::new)
                 .collect(Collectors.toList())
                 : null;
     }
+
+    
+    
+    
 }

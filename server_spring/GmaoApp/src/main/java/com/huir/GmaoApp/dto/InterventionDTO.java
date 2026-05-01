@@ -29,10 +29,9 @@ public class InterventionDTO {
     private String dateCloture;
     private String dateCreation;
     private List<PhotosInterventionDTO> photos;
-    private List<PieceDetacheeDTO> piecesDetachees;
+    private List<InterventionPieceDetacheeDTO> piecesDetachees;
     private String remarques;
     private String maintenanceType;
-
 
 
     public InterventionDTO(Intervention intervention) {
@@ -116,12 +115,18 @@ public class InterventionDTO {
               
           
 
-        // Map PieceDetachee if available
-        this.piecesDetachees = intervention.getPiecesDetachees() != null
-                ? intervention.getPiecesDetachees().stream()
-                .map(pieceDetachee -> new PieceDetacheeDTO(pieceDetachee))
+        this.piecesDetachees = intervention.getInterventionPieces() != null
+                ? intervention.getInterventionPieces().stream()
+                .map(ipd -> InterventionPieceDetacheeDTO.builder()
+                        .pieceDetacheeId(ipd.getPieceDetachee().getId())
+                        .pieceNom(ipd.getPieceDetachee().getNom()) // Adjust based on your fields
+                        .pieceReference(ipd.getPieceDetachee().getReference()) // If you have this
+                        .quantiteUtilisee(ipd.getQuantiteUtilisee())
+                        .build())
                 .collect(Collectors.toList())
                 : null;
+
+
     }
 
 

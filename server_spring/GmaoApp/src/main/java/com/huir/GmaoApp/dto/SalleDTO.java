@@ -4,6 +4,9 @@ import com.huir.GmaoApp.model.Etage;
 import com.huir.GmaoApp.model.Salle;
 import lombok.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,14 +15,22 @@ import lombok.*;
 public class SalleDTO {
 
     private Long id;
+    private String prefixe;
     private int num; // e.g. "Room 101"
-    private Etage etage;
-
+    private Long etageId;
+    private Boolean actif;
+    private List<EquipementDTO> equipement;
     public SalleDTO(Salle salle) {
 
         this.id = salle.getId();
+        this.prefixe = salle.getPrefixe();
         this.num = salle.getNum();
-        this.etage = salle.getEtage();
-
+        this.actif=salle.isActif();
+        this.etageId = salle.getEtage() != null ? salle.getEtage().getId() : null;
+        this.equipement = salle.getEquipement() != null
+                ? salle.getEquipement().stream()
+                .map(EquipementDTO::new)
+                .collect(Collectors.toList())
+                : null;
     }
 }

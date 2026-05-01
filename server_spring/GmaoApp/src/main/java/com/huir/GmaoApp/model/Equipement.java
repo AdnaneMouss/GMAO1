@@ -2,6 +2,7 @@ package com.huir.GmaoApp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.huir.GmaoApp.dto.MaintenanceDTO;
 
@@ -38,6 +39,9 @@ public class Equipement {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
     private LocalDate dateAchat;
 
+    @Column(nullable = true, updatable = false)
+    private LocalDateTime dateMiseEnService;
+
     private String garantie;
     private LocalDate dateDerniereMaintenance;
     private Double coutAchat;
@@ -55,6 +59,7 @@ public class Equipement {
     private Services service;
 
     // Relation avec Salle (Chaque équipement est dans une salle)
+	@JsonBackReference("salle-equipement")
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "salle_id")
     private Salle salle;

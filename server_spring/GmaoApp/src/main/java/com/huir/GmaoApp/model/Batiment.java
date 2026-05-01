@@ -1,9 +1,10 @@
 package com.huir.GmaoApp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import lombok.*;
 
-import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
@@ -20,8 +21,14 @@ public class Batiment {
 
     private int numBatiment;
     private String intitule;
-    private Boolean actif;
-    @OneToMany(mappedBy = "batiment", fetch = FetchType.EAGER)
-    @JsonIgnore
+    private boolean actif = true;
+
+
+    @OneToMany(mappedBy = "batiment", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JsonManagedReference("batiment-etage")
+	@JsonIgnore
     private List<Etage> etages;
+
+    
+    
 }

@@ -1,10 +1,12 @@
 package com.huir.GmaoApp.controller;
 
+import com.huir.GmaoApp.dto.BatimentDTO;
 import com.huir.GmaoApp.dto.EquipementDTO;
 import com.huir.GmaoApp.dto.ServiceDTO;
 import com.huir.GmaoApp.model.Equipement;
 import com.huir.GmaoApp.model.Services;
 import com.huir.GmaoApp.model.User;
+import com.huir.GmaoApp.repository.EquipementRepository;
 import com.huir.GmaoApp.repository.ServicesRepository;
 import com.huir.GmaoApp.service.ServicesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +14,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -32,11 +32,20 @@ public class ServicesController {
     private ServicesService serviceService;
     @Autowired
     private ServicesRepository servicesRepository;
+    @Autowired
+    private EquipementRepository equipementRepository;
 
     // Get all services
     @GetMapping
-    public List<ServiceDTO> getAllServices() {
-        return serviceService.findAllServices().stream()
+    public List<ServiceDTO> getServicesActifs() {
+        return serviceService.getServicesActifs().stream()
+                .map(ServiceDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/inactifs")
+    public List<ServiceDTO> getServicesInactifs() {
+        return serviceService.getServicesInactifs().stream()
                 .map(ServiceDTO::new)
                 .collect(Collectors.toList());
     }
@@ -136,4 +145,106 @@ public class ServicesController {
         serviceService.deleteService(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/archiver")
+    public ResponseEntity<Map<String, String>> archiverService(@PathVariable Long id) {
+        Services service = servicesRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service non trouvé"));
+
+        boolean hasLinkedEquipements = equipementRepository.existsByService(service);
+        if (hasLinkedEquipements) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible d’archiver : Ce service est lié à au moins un équipement.");
+        }
+
+        service.setActif(false);
+        servicesRepository.save(service);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Service archivé avec succès");
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/archiver-multiple")
+    public ResponseEntity<?> archiverServices(@RequestBody List<Long> ids) {
+        List<Services> services = servicesRepository.findAllById(ids);
+
+        if (services.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun service trouvé pour les IDs donnés.");
+        }
+
+        List<String> linkedServices = new ArrayList<>();
+
+        for (Services service : services) {
+            boolean isLinked = equipementRepository.existsByService(service);
+            if (isLinked) {
+                linkedServices.add("Service '" + service.getNom() + "' est lié à des équipements");
+            }
+        }
+
+        if (!linkedServices.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Archivage impossible :\n" + String.join("\n", linkedServices)
+            );
+        }
+
+        for (Services service : services) {
+            service.setActif(false);
+            servicesRepository.save(service);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Tous les services ont été archivés avec succès.");
+        response.put("archivés", services.stream().map(Services::getNom).toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}/restaurer")
+    public ResponseEntity<?> restaurerService(@PathVariable Long id) {
+        Services service = servicesRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service non trouvé"));
+
+        if (serviceService.existsByNomAndActifTrue(service.getNom())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Un service actif avec ce nom existe déjà.");
+        }
+
+        service.setActif(true);
+        servicesRepository.save(service);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Service restauré avec succès");
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/restaurer-multiple")
+    public ResponseEntity<?> restaurerServices(@RequestBody List<Long> ids) {
+        List<Services> services = servicesRepository.findAllById(ids);
+        List<String> conflicts = new ArrayList<>();
+
+        for (Services service : services) {
+            if (serviceService.existsByNomAndActifTrue(service.getNom())) {
+                conflicts.add("Nom déjà utilisé : " + service.getNom());
+                continue;
+            }
+
+            service.setActif(true);
+        }
+
+        if (!conflicts.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(conflicts);
+        }
+
+        servicesRepository.saveAll(services);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Services restaurés avec succès");
+        return ResponseEntity.ok(response);
+    }
+
+
+
+
+
 }

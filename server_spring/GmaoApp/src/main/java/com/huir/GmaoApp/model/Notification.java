@@ -18,7 +18,7 @@ public class Notification {
 
     @ManyToOne
     @JoinColumn(name = "maintenance_id")
-    @JsonBackReference
+    @JsonBackReference("maintenance-notification")
     private Maintenance maintenance;
 
 

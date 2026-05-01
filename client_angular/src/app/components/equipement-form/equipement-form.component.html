@@ -1,0 +1,172 @@
+<div class="max-h-[60vh] overflow-y-auto px-2">
+  <form (ngSubmit)="addEquipement()" #equipementForm="ngForm">
+    <!-- Grid Layout for Inputs -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <!-- Dropdown for Type Equipement -->
+      <div class="col-span-2">
+        <label for="typeEquipement" class="text-gray-700 font-semibold">Type d'équipement</label>
+        <select id="typeEquipement" class="w-full border border-gray-300 rounded-lg p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                [(ngModel)]="newEquipement.typeEquipementId" name="typeEquipement" required
+                (change)="onTypeSelected($event)">
+          <option *ngFor="let type of typesEquipements" [value]="type.id">{{ type.type }}</option>
+        </select>
+      </div>
+
+      <div>
+
+        <!-- Nom -->
+        <div>
+          <label class="text-gray-700 font-semibold">Nom <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="newEquipement.nom" name="nom"
+                 class="w-full border border-gray-300 rounded-lg p-2 shadow-sm"
+                 required />
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="text-gray-700 font-semibold">Description</label>
+          <input type="text" [(ngModel)]="newEquipement.description" name="description"
+                 class="w-full border border-gray-300 rounded-lg p-2 shadow-sm" />
+        </div>
+
+        <!-- Numéro de Série -->
+        <div>
+          <label class="text-gray-700 font-semibold">Numéro de série <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="newEquipement.numeroSerie" name="numeroSerie"
+                 class="w-full border border-gray-300 rounded-lg p-2 shadow-sm"
+                 required />
+        </div>
+
+        <!-- Modèle -->
+        <div>
+          <label class="text-gray-700 font-semibold">Modèle</label>
+          <input type="text" [(ngModel)]="newEquipement.modele" name="modele"
+                 class="w-full border border-gray-300 rounded-lg p-2 shadow-sm" />
+        </div>
+
+        <!-- Marque -->
+        <div>
+          <label class="text-gray-700 font-semibold">Marque</label>
+          <input type="text" [(ngModel)]="newEquipement.marque" name="marque"
+                 class="w-full border border-gray-300 rounded-lg p-2 shadow-sm" />
+        </div>
+
+        <!-- Date d'achat -->
+        <div>
+          <label class="text-gray-700 font-semibold">Date d'achat</label>
+          <input type="date" [(ngModel)]="newEquipement.dateAchat" name="dateAchat"
+                 class="w-full border border-gray-300 rounded-lg p-2 shadow-sm" />
+        </div>
+
+        <!-- Garantie -->
+        <div>
+          <label class="text-gray-700 font-semibold">Garantie</label>
+          <input type="text" [(ngModel)]="newEquipement.garantie" name="garantie"
+                 class="w-full border border-gray-300 rounded-lg p-2 shadow-sm" />
+        </div>
+
+        <!-- Coût d'achat -->
+        <div>
+          <label class="text-gray-700 font-semibold">Coût d'achat</label>
+          <input type="number" [(ngModel)]="newEquipement.coutAchat" name="coutAchat"
+                 class="w-full border border-gray-300 rounded-lg p-2 shadow-sm" />
+        </div>
+
+
+        <!-- Service -->
+        <div>
+          <label class="text-gray-700 font-semibold">Service</label>
+          <select [(ngModel)]="newEquipement.serviceId" name="service"
+                  class="w-full border border-gray-300 rounded-lg p-2 shadow-sm">
+            <option *ngFor="let service of services" [value]="service.id">{{ service.nom }}</option>
+          </select>
+        </div>
+
+        <!-- Bâtiment -->
+        <div>
+          <label class="text-gray-700 font-semibold">Bâtiment</label>
+          <select [(ngModel)]="newEquipement.batimentId" name="batiment"
+                  class="w-full border border-gray-300 rounded-lg p-2 shadow-sm"
+                  (change)="onBatimentChange($event)">
+            <option *ngFor="let batiment of batiments" [value]="batiment.id">{{ batiment.intitule }}</option>
+          </select>
+        </div>
+
+        <!-- Étage -->
+        <div *ngIf="selectedBatimentId">
+          <label class="text-gray-700 font-semibold">Étage</label>
+          <select [(ngModel)]="newEquipement.etageId" name="etage"
+                  class="w-full border border-gray-300 rounded-lg p-2 shadow-sm"
+                  (change)="onEtageChange($event)">
+            <option *ngFor="let etage of etages" [value]="etage.id">{{ etage.num }}</option>
+          </select>
+        </div>
+
+        <!-- Salle -->
+        <div *ngIf="selectedEtageId">
+          <label class="text-gray-700 font-semibold">Salle</label>
+          <select [(ngModel)]="newEquipement.salleId" name="salle"
+                  class="w-full border border-gray-300 rounded-lg p-2 shadow-sm">
+            <option *ngFor="let salle of salles" [value]="salle.id">{{ salle.prefixe }}{{ salle.num }}</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div *ngFor="let attr of selectedAttributs" class="col-span-1">
+        <label class="text-gray-700 font-semibold">
+          {{ attr.nom }}
+          <span *ngIf="attr.obligatoire" class="text-red-500">*</span>
+        </label>
+
+        <!-- STRING -->
+        <input *ngIf="attr.attributEquipementType === 'STRING'" type="text"
+               class="w-full ..." [(ngModel)]="equipementAny[attr.nom]" name="{{ attr.nom }}"
+               [required]="attr.obligatoire" />
+
+        <!-- NUMBER -->
+        <input *ngIf="attr.attributEquipementType === 'NUMBER'" type="number"
+               class="w-full ..." [(ngModel)]="equipementAny[attr.nom]" name="{{ attr.nom }}"
+               [required]="attr.obligatoire" />
+
+        <!-- DATE -->
+        <input *ngIf="attr.attributEquipementType === 'DATE'" type="date"
+               class="w-full ..." [(ngModel)]="equipementAny[attr.nom]" name="{{ attr.nom }}"
+               [required]="attr.obligatoire" />
+
+        <!-- BOOLEAN -->
+        <select *ngIf="attr.attributEquipementType === 'BOOLEAN'"
+                class="w-full ..." [(ngModel)]="equipementAny[attr.nom]" name="{{ attr.nom }}"
+                [required]="attr.obligatoire">
+          <option [value]="true">Oui</option>
+          <option [value]="false">Non</option>
+        </select>
+
+        <!-- FLOAT -->
+        <input *ngIf="attr.attributEquipementType === 'FLOAT'" type="number" step="any"
+               class="w-full ..." [(ngModel)]="equipementAny[attr.nom]" name="{{ attr.nom }}"
+               [required]="attr.obligatoire" />
+
+        <!-- LONGTEXT -->
+        <textarea *ngIf="attr.attributEquipementType === 'LONGTEXT'" rows="3"
+                  class="w-full ..." [(ngModel)]="equipementAny[attr.nom]" name="{{ attr.nom }}"
+                  [required]="attr.obligatoire"></textarea>
+
+        <!-- ENUM (To handle later if ENUM options are defined somewhere) -->
+        <div *ngIf="attr.attributEquipementType === 'ENUM'">
+          <!-- TODO: Add options here -->
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- Submit Button -->
+    <div class="mt-4">
+      <button (click)="addEquipement()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+             >
+        Enregistrer
+      </button>
+    </div>
+  </form>
+</div>

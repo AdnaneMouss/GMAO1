@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Service } from '../models/service';
+import {Batiment} from "../models/batiment";
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +14,11 @@ export class ServiceService {
 
   getAllServices(): Observable<Service[]> {
     return this.http.get<Service[]>(this.apiUrl);
+  }
+
+  // ✅ Get only inactive (archived) Batiments
+  getServicesInactifs(): Observable<Service[]> {
+    return this.http.get<Service[]>(`${this.apiUrl}/inactifs`);
   }
 
   getServiceById(serviceId: string): Observable<Service> {
@@ -49,5 +55,22 @@ export class ServiceService {
     }
 
     return this.http.put<any>(`${this.apiUrl}/${serviceId}`, formData);
+  }
+
+  archiverService(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/archiver`, null);
+  }
+
+  // ✅ Restore a Batiment
+  restaurerService(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/restaurer`, null);
+  }
+
+  restaurerMultiple(ids: number[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/restaurer-multiple`, ids);
+  }
+
+  archiverMultiple(ids: number[]): Observable<any> {
+    return this.http.put(`${this.apiUrl}/archiver-multiple`, ids);
   }
 }

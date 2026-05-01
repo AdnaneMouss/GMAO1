@@ -7,6 +7,17 @@ import { Chart, registerables } from 'chart.js';
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
+  activeTab: string = 'users';
+  
+  tabs = [
+    { id: 'users', name: 'Utilisateurs', icon: 'fas fa-users' },
+    { id: 'equipements', name: 'Équipements', icon: 'fas fa-tools' },
+    { id: 'pieces', name: 'Pièces', icon: 'fas fa-cogs' },
+    { id: 'maintenance', name: 'Maintenances', icon: 'fas fa-wrench' },
+    { id: 'interventions', name: 'Interventions', icon: 'fas fa-clipboard-list' },
+    { id: 'batiments', name: 'Bâtiments', icon: 'fas fa-building' },
+    { id: 'services', name: 'Services', icon: 'fas fa-concierge-bell' }
+  ];
 
   constructor() {
     Chart.register(...registerables); // Enregistre tous les modules de Chart.js

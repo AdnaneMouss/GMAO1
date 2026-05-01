@@ -1,0 +1,59 @@
+/* Style de base pour le rapport */
+.container {
+    max-width: 1200px;
+  }
+  
+  /* Animation pour les cartes de statistiques */
+  .bg-green-50, .bg-blue-50, .bg-orange-50, .bg-purple-50 {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .bg-green-50:hover, .bg-blue-50:hover, .bg-orange-50:hover, .bg-purple-50:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Style pour le tableau */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  
+  th {
+    position: sticky;
+    top: 0;
+  }
+  
+  tr:hover {
+    background-color: #f8fafc !important;
+  }
+  
+  /* Style responsive */
+  @media (max-width: 768px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    
+    #roleChart {
+      max-width: 100%;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .flex.justify-end {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    button {
+      width: 100%;
+    }
+
+
+  }
+

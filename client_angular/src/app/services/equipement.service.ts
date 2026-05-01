@@ -15,10 +15,65 @@ export class EquipementService {
 
   constructor(private http: HttpClient) {}
 
-  createEquipement(equipement: Equipement): Observable<Equipement> {
-    console.log("Payload being sent:", JSON.stringify(equipement, null, 2));
-    return this.http.post<Equipement>(`${this.apiUrl}/create`, equipement);
+  createEquipementWithImage(
+    equipementData: {
+      nom: string;
+      description: string;
+      numeroSerie: string;
+      modele: string;
+      marque: string;
+      dateAchat: string; // yyyy-MM-dd
+      garantie: string;
+      coutAchat: number;
+      typeEquipementNom: string;
+      serviceNom?: string;
+      batimentNom?: string;
+      etageNum?: number;
+      salleNum?: number;
+      attributsValeurs?: { [attributId: number]: string };
+    },
+    file?: File
+  ): Observable<any> {
+    const formData = new FormData();
+
+    // Append file if exists
+    if (file) {
+      formData.append('file', file);
+    }
+
+    // Required fields
+    formData.append('nom', equipementData.nom);
+    formData.append('description', equipementData.description);
+    formData.append('numeroSerie', equipementData.numeroSerie);
+    formData.append('modele', equipementData.modele);
+    formData.append('marque', equipementData.marque);
+    formData.append('dateAchat', equipementData.dateAchat);
+    formData.append('garantie', equipementData.garantie);
+    formData.append('coutAchat', equipementData.coutAchat.toString());
+    formData.append('typeEquipementNom', equipementData.typeEquipementNom);
+
+    // Optional fields
+    if (equipementData.serviceNom) {
+      formData.append('serviceNom', equipementData.serviceNom);
+    }
+    if (equipementData.batimentNom) {
+      formData.append('batimentNom', equipementData.batimentNom);
+    }
+    if (equipementData.etageNum !== undefined) {
+      formData.append('etageNum', equipementData.etageNum.toString());
+    }
+    if (equipementData.salleNum !== undefined) {
+      formData.append('salleNum', equipementData.salleNum.toString());
+    }
+
+    // attributsValeurs JSON stringified
+    if (equipementData.attributsValeurs) {
+      formData.append('attributsValeurs', JSON.stringify(equipementData.attributsValeurs));
+    }
+
+    return this.http.post<any>(`${this.apiUrl}/create`, formData);
   }
+
 
   getEquipementsBySalle(salleId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/bySalle/${salleId}`);
@@ -52,6 +107,6 @@ export class EquipementService {
   getAttributsByEquipementId(id: number): Observable<AttributEquipements[]> {
     return this.http.get<AttributEquipements[]>(`${this.apiUrl}/${id}/attributs`);
   }
-  
+
 
 }

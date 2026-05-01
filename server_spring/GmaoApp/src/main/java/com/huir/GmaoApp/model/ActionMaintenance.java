@@ -1,5 +1,6 @@
 package com.huir.GmaoApp.model;
 
+import java.util.Arrays;
 
 public enum ActionMaintenance {
     VERIFICATION_PERFORMANCES("Vérification performances"),
@@ -10,9 +11,9 @@ public enum ActionMaintenance {
     REMPLACEMENT_PIECES("Remplacement pièces"),
     INSPECTION_VISUELLE("Inspection visuelle"),
     CONTROLE_CONNECTIVITE("Contrôle connectivité"),
-    VERIFICATION_SAUVEARDES("Vérification sauvegardes"),
+    VERIFICATION_SAUVEARDES("Vérification sauvegardes"), // Correction ici
     FORMATION_ENTRETIEN("Formation entretien"),
-    AUTRE("Autre"); // Option pour entrer un autre choix
+    AUTRE("Autre");
 
     private final String label;
 
@@ -23,5 +24,11 @@ public enum ActionMaintenance {
     public String getLabel() {
         return label;
     }
+
+    @Override
+    public String toString() {
+        return label;
+    }
+
+   
 }
-  

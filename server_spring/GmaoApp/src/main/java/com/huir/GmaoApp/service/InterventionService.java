@@ -39,9 +39,9 @@ public class InterventionService {
         return interventionRepository.save(intervention);
     }
 
-    public List<PieceDetachee> getPiecesByInterventionId(Long interventionId) {
+    /*public List<PieceDetachee> getPiecesByInterventionId(Long interventionId) {
         return interventionRepository.findPiecesByInterventionId(interventionId);
-    }
+    }*/
 
     // Get all interventions
     public List<Intervention> findAllInterventions() {

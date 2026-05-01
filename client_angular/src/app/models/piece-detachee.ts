@@ -12,5 +12,6 @@ export interface PieceDetachee {
   quantiteMinimale: number;
   historiqueUtilisation: string;
   image: string;
+  quantiteStock?: number;
   achats?: AchatPiece[];
 }

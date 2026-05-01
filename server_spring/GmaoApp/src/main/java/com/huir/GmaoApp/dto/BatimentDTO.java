@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class BatimentDTO {
 
     private Long id;
-    private int numBatiment;
+    private Integer numBatiment;
     private String intitule;
     private Boolean actif;
     private List<EtageDTO> etages;
@@ -23,11 +23,13 @@ public class BatimentDTO {
         this.id = batiment.getId();
         this.numBatiment = batiment.getNumBatiment();
         this.intitule = batiment.getIntitule();
-        this.actif = batiment.getActif();
+        this.actif = batiment.isActif();
         this.etages = batiment.getEtages() != null
                 ? batiment.getEtages().stream()
                 .map(EtageDTO::new)
                 .collect(Collectors.toList())
                 : null;
     }
+
+
 }

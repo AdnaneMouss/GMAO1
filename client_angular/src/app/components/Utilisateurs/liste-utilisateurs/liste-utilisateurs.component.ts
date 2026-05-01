@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 //@ts-ignore
 import { saveAs } from 'file-saver';
 import {environment} from "../../../../environments/environment";
+import {Intervention} from "../../../models/intervention";
 @Component({
   selector: 'app-liste-utilisateurs',
   templateUrl: './liste-utilisateurs.component.html',
@@ -36,8 +37,10 @@ export class ListeUtilisateursComponent implements OnInit {
     email: '',
     password: '',
     role: 'ADMIN',
-    image: ''
+    image: '',
+    Intervention: {} as Intervention
   };
+  viewMode: 'table' | 'card' = 'card'; // default to table
   passwordVisible = false;
   showAddPanel = false; // Controls the panel visibility
   usernameTaken = false;
@@ -69,9 +72,29 @@ export class ListeUtilisateursComponent implements OnInit {
     this.isEditing = true;
   }
 
+  formatDateWithIntl(date: string | undefined): string {
+    if (!date) {
+      return 'Date non disponible'; // Or provide a default string if date is undefined
+    }
 
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      return 'Invalid Date'; // Return fallback if date parsing fails
+    }
 
+    const formatter = new Intl.DateTimeFormat('fr-FR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    return formatter.format(parsedDate);
+  }
 
+  toggleView(mode: 'table' | 'card') {
+    this.viewMode = mode;
+  }
 
 
 // Method to close the panel
@@ -102,9 +125,6 @@ export class ListeUtilisateursComponent implements OnInit {
   checkUsername(): void {
     this.usernameTaken = this.existingUsernames.includes(this.newUser.username);
   }
-
-
-
 
   getImageUrl(imagePath: string | undefined): string {
     return `${environment.apiUrl}${imagePath}`;
@@ -164,11 +184,6 @@ export class ListeUtilisateursComponent implements OnInit {
     // If a file is selected, include it in the request
     const fileToSend = this.selectedFile === null ? undefined : this.selectedFile;
 
-    if (fileToSend) {
-      userData.file = fileToSend;
-    } else {
-      userData.file = undefined; // You can choose to set it to undefined or omit it, depending on backend requirements
-    }
 
     this.userService.createUserWithImage(userData, fileToSend).subscribe(
       (response) => {
@@ -333,7 +348,8 @@ export class ListeUtilisateursComponent implements OnInit {
       email: '',
       password: '',
       role: 'ADMIN',
-      image: ''
+      image: '',
+      Intervention: {} as Intervention
     };
     this.emailInvalid = false;
     this.gsmInvalid = false;
@@ -361,6 +377,7 @@ export class ListeUtilisateursComponent implements OnInit {
     if (this.selectedFilter) {
       this.filteredUsers = this.users.filter(user => user.role === this.selectedFilter);
     } else {
+      this.filteredUsers = this.users;
       this.filteredUsers = this.users;
     }
   }

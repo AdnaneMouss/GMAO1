@@ -22,9 +22,10 @@ public class TypesEquipements {
     private String type;
 
     private String image;
-
+	private boolean actif;
     @JsonManagedReference
     @OneToMany(mappedBy = "typeEquipement", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<AttributEquipements> attributs;
+
 
 }

@@ -57,14 +57,28 @@ import {SallesListeComponent} from "./components/batiments/salles-liste/salles-l
 import {
   EquipementsParSalleComponent
 } from "./components/Equipements/equipements-par-salle/equipements-par-salle.component";
+
 import { ListeFournisseursComponent } from './components/fournisseur/fournisseur.component';
+
+import {
+  DemandeMaintenancesComponent
+} from "./components/Maintenances/demande-maintenances/demande-maintenances.component";
+import {HistoriqueDemandesComponent} from "./components/Maintenances/historique-demandes/historique-demandes.component";
+import {DashboardAdminComponent} from "./components/dashboard-admin/dashboard-admin.component";
+import {EquipementFormComponent} from "./components/equipement-form/equipement-form.component";
+import {
+  AccepterDemandesMaintenancesComponent
+} from "./components/Maintenances/accepter-demandes-maintenances/accepter-demandes-maintenances.component";
+import {InventaireComponent} from "./components/Stocks/inventaire/inventaire.component";
+
 
 
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
+  { path: 'dashboard', component: DashboardAdminComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
+  { path: 'form', component: EquipementFormComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
   { path: 'utilisateurs/liste', component: ListeUtilisateursComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   { path: 'equipements/liste', component: ListeEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN', 'RESPONSABLE'] } },
   { path: 'equipements/type_equipements', component: TypesEquipementsComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
@@ -78,12 +92,16 @@ const routes: Routes = [
   { path: 'stock/liste', component: ListePiecesDetacheesComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN','RESPONSABLE','MAGASINIER'] } },
   { path: 'stock/lot/:pieceId', component: LotAchatPieceComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN','RESPONSABLE'] } },
   { path: 'stock/demande', component: DemandePieceDetacheeComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE'] } },
+  { path: 'stock/inventaire', component: InventaireComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path:'details-maintenance/:id',component:DetailsMaintenanceComponent, canActivate: [AuthGuard], data: { roles: ['ADMIN'] } },
   
   { path: 'maintenances/correctives', component: MaintenancesCorrectivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
+  { path: 'maintenances/demandes/accepter-demande', component: AccepterDemandesMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/preventives', component: MaintenancesPreventivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/historique', component: HistoriqueMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
   { path: 'maintenances/historique-maintenances-correctives', component: HistoriqueMaintenancesCorrectivesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },
+  { path: 'maintenances/demandes', component: DemandeMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['LAMBDA'] } },
+  { path: 'maintenances/demandes/historique', component: HistoriqueDemandesComponent, canActivate: [AuthGuard], data: { roles: ['LAMBDA'] } },
   { path: 'interventions/taches', component: TachesAffecteesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
   { path: 'interventions/liste', component: InterventionsPrecedentesComponent, canActivate: [AuthGuard], data: { roles: ['TECHNICIEN'] } },
   { path: 'rapports/coutMaintenance', component: CoutMaintenancesComponent, canActivate: [AuthGuard], data: { roles: ['RESPONSABLE','ADMIN'] } },

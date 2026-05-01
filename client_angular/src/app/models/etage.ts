@@ -6,5 +6,5 @@ export interface Etage {
   id: number;
   num: number;
   salles: Salle[];
-  batiment: Batiment;
+  batimentId: number;
 }
